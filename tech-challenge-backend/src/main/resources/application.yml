@@ -11,3 +11,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:uma-chave-local-de-desenvolvimento-com-32-caracteres}
