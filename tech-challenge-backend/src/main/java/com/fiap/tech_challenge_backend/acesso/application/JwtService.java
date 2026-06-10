@@ -1,11 +1,6 @@
-package com.fiap.tech_challenge_backend;
+package com.fiap.tech_challenge_backend.acesso.application;
 
-import java.time.Instant;
-import java.util.Map;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
@@ -14,8 +9,16 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.stereotype.Service;
 
-import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.time.Instant;
+import java.util.Map;
 
+/**
+ * Serviço responsável pela geração de tokens JWT.
+ * Contexto Delimitado: acesso
+ * Camada: Application
+ */
 @Service
 public class JwtService {
 
@@ -45,3 +48,4 @@ public class JwtService {
         ).getTokenValue();
     }
 }
+

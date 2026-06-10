@@ -1,4 +1,4 @@
-package com.fiap.tech_challenge_backend;
+package com.fiap.tech_challenge_backend.shared.infrastructure.web;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,6 +7,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * Controller de saúde da aplicação (Health Check).
+ * Contexto: shared (Infraestrutura compartilhada)
+ * Camada: Infrastructure
+ */
 @RestController
 @RequestMapping("/ping")
 public class PingController {
@@ -21,9 +26,9 @@ public class PingController {
     public Map<String, String> ping() {
         String dbVersion = jdbcTemplate.queryForObject("SELECT version()", String.class);
         return Map.of(
-                "teste", "teste",
-            "status", "ok",
-            "db", dbVersion
+                "status", "ok",
+                "db", dbVersion
         );
     }
 }
+
