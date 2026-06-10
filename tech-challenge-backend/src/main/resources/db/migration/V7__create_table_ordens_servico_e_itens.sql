@@ -1,5 +1,7 @@
 -- V7__create_table_ordens_servico_e_itens.sql
 -- Cria as tabelas centrais do fluxo de ordem de servico (OS)
+-- Autor: Nicole
+-- Data: 2026-06-09
 -- Contexto: atendimento
 
 CREATE TABLE IF NOT EXISTS ordens_servico (

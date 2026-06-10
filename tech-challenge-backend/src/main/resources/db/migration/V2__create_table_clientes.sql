@@ -1,6 +1,6 @@
 -- V2__create_table_clientes.sql
 -- Criação da tabela de clientes para o contexto de cadastro
--- Autor: Sistema
+-- Autor: Nicole
 -- Data: 2026-06-08
 
 CREATE TABLE IF NOT EXISTS clientes (

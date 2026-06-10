@@ -1,7 +1,7 @@
 -- V4__create_table_cliente_veiculo.sql
 -- Criação da tabela associativa cliente_veiculo (relacionamento N:M) para o contexto de cadastro
 -- Permite que um cliente tenha vários veículos e mantém histórico caso ele venda o veículo
--- Autor: Sistema
+-- Autor: Nicole
 -- Data: 2026-06-09
 
 CREATE TABLE IF NOT EXISTS cliente_veiculo (

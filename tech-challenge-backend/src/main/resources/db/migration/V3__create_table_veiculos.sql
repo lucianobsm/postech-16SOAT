@@ -1,6 +1,6 @@
 -- V3__create_table_veiculos.sql
 -- Criação da tabela de veículos para o contexto de cadastro
--- Autor: Sistema
+-- Autor: Nicole
 -- Data: 2026-06-08
 
 CREATE TABLE IF NOT EXISTS veiculos (
