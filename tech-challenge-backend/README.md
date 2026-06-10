@@ -22,7 +22,7 @@ API REST desenvolvida com Spring Boot 3 e PostgreSQL.
 Copie o arquivo de exemplo e ajuste as credenciais se necessário:
 
 ```bash
-cp .env.example .env
+cp ..env.example ..env
 ```
 
 O `.env` padrão já funciona para desenvolvimento:
