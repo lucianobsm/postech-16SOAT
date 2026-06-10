@@ -1,7 +1,4 @@
-package com.fiap.tech_challenge_backend;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
+package com.fiap.tech_challenge_backend.shared.infrastructure.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +12,14 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+/**
+ * Configuração de segurança da aplicação.
+ * Contexto: shared (Infraestrutura compartilhada)
+ * Camada: Infrastructure
+ */
 @Configuration
 public class SecurityConfig {
 
@@ -50,3 +55,4 @@ public class SecurityConfig {
                 .build();
     }
 }
+

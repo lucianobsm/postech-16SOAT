@@ -1,13 +1,19 @@
-package com.fiap.tech_challenge_backend;
+package com.fiap.tech_challenge_backend.acesso.presentation;
 
-import java.util.Map;
-
+import com.fiap.tech_challenge_backend.acesso.application.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
+/**
+ * Controller responsável pela autenticação de usuários.
+ * Contexto Delimitado: acesso
+ * Camada: Presentation
+ */
 @RestController
 public class AuthController {
 
@@ -38,3 +44,4 @@ public class AuthController {
     public static class InvalidCredentialsException extends RuntimeException {
     }
 }
+

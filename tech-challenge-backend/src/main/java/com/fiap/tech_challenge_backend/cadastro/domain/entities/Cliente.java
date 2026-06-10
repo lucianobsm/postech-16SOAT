@@ -1,0 +1,81 @@
+package com.fiap.tech_challenge_backend.cadastro.domain.entities;
+
+import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.UUID;
+
+/**
+ * Entidade que representa um Cliente da oficina mecânica.
+ * Responsável pelo gerenciamento de dados cadastrais de clientes.
+ * Contexto Delimitado: cadastro
+ */
+@Entity
+@Table(name = "clientes", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_cliente_cpf_cnpj", columnNames = "cpf_cnpj")
+})
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Cliente {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
+
+    /**
+     * Relacionamento unidirecional com Usuario.
+     * Um cliente pode estar associado a um usuário do sistema (nullable).
+     */
+    @OneToOne
+    @JoinColumn(name = "usuario_id", referencedColumnName = "id",
+                foreignKey = @ForeignKey(name = "fk_cliente_usuario"))
+    private Usuario usuario;
+
+    @NotBlank(message = "O nome é obrigatório")
+    @Size(min = 3, max = 150, message = "O nome deve ter entre 3 e 150 caracteres")
+    @Column(name = "nome", nullable = false, length = 150)
+    private String nome;
+
+    @NotBlank(message = "O CPF/CNPJ é obrigatório")
+    @Size(min = 11, max = 18, message = "O CPF/CNPJ deve ter entre 11 e 18 caracteres")
+    @Column(name = "cpf_cnpj", nullable = false, unique = true, length = 18)
+    private String cpfCnpj;
+
+    @Size(min = 10, max = 20, message = "O telefone deve ter entre 10 e 20 caracteres")
+    @Column(name = "telefone", length = 20)
+    private String telefone;
+
+    @Size(min = 8, max = 10, message = "O CEP deve ter entre 8 e 10 caracteres")
+    @Column(name = "cep", length = 10)
+    private String cep;
+
+    @Size(max = 150, message = "A rua deve ter no máximo 150 caracteres")
+    @Column(name = "rua", length = 150)
+    private String rua;
+
+    @Size(max = 20, message = "O número deve ter no máximo 20 caracteres")
+    @Column(name = "numero", length = 20)
+    private String numero;
+
+    @Size(max = 100, message = "O complemento deve ter no máximo 100 caracteres")
+    @Column(name = "complemento", length = 100)
+    private String complemento;
+
+    @Size(max = 100, message = "A cidade deve ter no máximo 100 caracteres")
+    @Column(name = "cidade", length = 100)
+    private String cidade;
+
+    @Size(min = 2, max = 2, message = "O estado deve ter exatamente 2 caracteres")
+    @Column(name = "estado", length = 2)
+    private String estado;
+}
+
