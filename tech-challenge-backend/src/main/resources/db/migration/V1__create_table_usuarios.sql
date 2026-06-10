@@ -1,6 +1,6 @@
 -- V1__create_table_usuarios.sql
 -- Criação da tabela de usuários para o contexto de acesso
--- Autor: Sistema
+-- Autor: Nicole
 -- Data: 2026-06-08
 
 CREATE TABLE IF NOT EXISTS usuarios (

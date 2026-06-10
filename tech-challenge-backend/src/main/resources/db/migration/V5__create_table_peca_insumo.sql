@@ -1,7 +1,7 @@
 -- V5__create_table_peca_insumo.sql
 -- Criação da tabela de peças e insumos para o contexto de estoque
 -- Gerencia o inventário de peças e insumos utilizados nos serviços da oficina
--- Autor: Sistema
+-- Autor: Nicole
 -- Data: 2026-06-09
 
 CREATE TABLE IF NOT EXISTS peca_insumo (

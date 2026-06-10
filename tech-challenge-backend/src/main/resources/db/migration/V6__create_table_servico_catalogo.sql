@@ -1,7 +1,7 @@
 -- V6__create_table_servico_catalogo.sql
 -- Criação da tabela de catálogo de serviços para o contexto de atendimento
 -- Define os serviços/mão de obra que a oficina oferece aos clientes
--- Autor: Sistema
+-- Autor: Nicole
 -- Data: 2026-06-09
 
 CREATE TABLE IF NOT EXISTS servico_catalogo (
