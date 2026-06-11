@@ -22,7 +22,7 @@ API REST desenvolvida com Spring Boot 3 e PostgreSQL.
 Copie o arquivo de exemplo e ajuste as credenciais se necessário:
 
 ```bash
-cp ..env.example ..env
+cp .env.example .env
 ```
 
 O `.env` padrão já funciona para desenvolvimento:
@@ -38,7 +38,7 @@ DB_PASS=postgres
 ### Apenas o banco (app rodando pela IDE/Maven)
 
 ```bash
-docker compose -f docker-compose.db.yml up -d
+docker compose up -d postgres
 ./mvnw spring-boot:run
 ```
 

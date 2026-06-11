@@ -1,6 +1,11 @@
 package com.fiap.tech_challenge_backend.acesso.presentation;
 
+import com.fiap.tech_challenge_backend.acesso.application.AuthService;
 import com.fiap.tech_challenge_backend.acesso.application.JwtService;
+import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,26 +23,30 @@ import java.util.Map;
 public class AuthController {
 
     private final JwtService jwtService;
+    private final AuthService authService;
 
-    public AuthController(JwtService jwtService) {
+    public AuthController(JwtService jwtService, AuthService authService) {
         this.jwtService = jwtService;
+        this.authService = authService;
     }
 
     @PostMapping("/auth/login")
-    public Map<String, String> login(@RequestBody LoginRequest request) {
-        if (!"admin@email.com".equals(request.email()) || !"123456".equals(request.password())) {
-            throw new InvalidCredentialsException();
-        }
+    public Map<String, String> login(@Valid @RequestBody LoginRequest request) {
+        Usuario usuario = authService.authenticate(request.email(), request.password())
+                .orElseThrow(InvalidCredentialsException::new);
 
         String token = jwtService.generateToken(
-                request.email(),
-                Map.of("role", "ADMIN")
+                usuario.getEmail(),
+                Map.of("role", usuario.getPerfil().name())
         );
 
         return Map.of("accessToken", token);
     }
 
-    public record LoginRequest(String email, String password) {
+    public record LoginRequest(
+            @NotBlank @Email String email,
+            @NotBlank String password
+    ) {
     }
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
