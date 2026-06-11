@@ -1,6 +1,7 @@
 package com.fiap.tech_challenge_backend.acesso.domain.entities;
 
 import com.fiap.tech_challenge_backend.acesso.domain.enums.PerfilUsuario;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -44,6 +45,12 @@ public class Usuario {
     @Size(max = 150, message = "O email deve ter no máximo 150 caracteres")
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
+
+    @NotBlank(message = "A senha é obrigatória")
+    @Size(min = 60, max = 255, message = "A senha deve conter um hash válido")
+    @JsonIgnore
+    @Column(name = "senha", nullable = false, length = 255)
+    private String senha;
 
     @Size(min = 10, max = 20, message = "O telefone deve ter entre 10 e 20 caracteres")
     @Column(name = "telefone", length = 20)

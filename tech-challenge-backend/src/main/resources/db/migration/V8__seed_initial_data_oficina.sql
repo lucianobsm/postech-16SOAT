@@ -5,12 +5,12 @@
 -- =====================================================
 -- CONTEXTO ACESSO: usuarios
 -- =====================================================
-INSERT INTO usuarios (id, nome, email, telefone, perfil, cpf_cnpj) VALUES
-('11111111-1111-4111-8111-111111111111', 'Carlos Alberto Souza', 'admin@oficina.local', '(11) 98888-1000', 'ADMIN', '123.456.789-09'),
-('22222222-2222-4222-8222-222222222221', 'Marcos Vinicius Lima', 'marcos.lima@oficina.local', '(11) 98888-2001', 'FUNCIONARIO', '987.654.321-00'),
-('22222222-2222-4222-8222-222222222222', 'Fernando Rocha Alves', 'fernando.alves@oficina.local', '(11) 98888-2002', 'FUNCIONARIO', '321.654.987-10'),
-('33333333-3333-4333-8333-333333333331', 'Ana Paula Ribeiro', 'ana.ribeiro@cliente.local', '(11) 97777-3001', 'CLIENTE', '529.982.247-25'),
-('33333333-3333-4333-8333-333333333332', 'Ricardo Mendes Costa', 'ricardo.costa@cliente.local', '(11) 97777-3002', 'CLIENTE', '111.444.777-35')
+INSERT INTO usuarios (id, nome, email, senha, telefone, perfil, cpf_cnpj) VALUES
+('11111111-1111-4111-8111-111111111111', 'Carlos Alberto Souza', 'admin@oficina.local', crypt('123456', gen_salt('bf')), '(11) 98888-1000', 'ADMIN', '123.456.789-09'),
+('22222222-2222-4222-8222-222222222221', 'Marcos Vinicius Lima', 'marcos.lima@oficina.local', crypt('123456', gen_salt('bf')), '(11) 98888-2001', 'FUNCIONARIO', '987.654.321-00'),
+('22222222-2222-4222-8222-222222222222', 'Fernando Rocha Alves', 'fernando.alves@oficina.local', crypt('123456', gen_salt('bf')), '(11) 98888-2002', 'FUNCIONARIO', '321.654.987-10'),
+('33333333-3333-4333-8333-333333333331', 'Ana Paula Ribeiro', 'ana.ribeiro@cliente.local', crypt('123456', gen_salt('bf')), '(11) 97777-3001', 'CLIENTE', '529.982.247-25'),
+('33333333-3333-4333-8333-333333333332', 'Ricardo Mendes Costa', 'ricardo.costa@cliente.local', crypt('123456', gen_salt('bf')), '(11) 97777-3002', 'CLIENTE', '111.444.777-35')
 ON CONFLICT (id) DO NOTHING;
 
 -- =====================================================
