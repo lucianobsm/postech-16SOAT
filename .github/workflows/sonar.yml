@@ -30,6 +30,7 @@ jobs:
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
 
       - name: Cache Maven
         uses: actions/cache@v4
@@ -41,6 +42,5 @@ jobs:
       - name: Build e análise
         working-directory: tech-challenge-backend
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./mvnw verify sonar:sonar
+        run: ./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Grupo15_postech-16SOAT
