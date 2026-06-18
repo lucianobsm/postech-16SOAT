@@ -1,72 +1,320 @@
--- V9__create_tables_estoque_itens_movimentacoes.sql
--- Cria tabela de movimentações de estoque vinculada a peca_insumo.
--- Contexto Delimitado: estoque
--- Nota: coluna quantidade_minima em peca_insumo já adicionada em V8.
-
-CREATE TABLE IF NOT EXISTS movimentacoes_estoque (
-    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    peca_insumo_id      UUID         NOT NULL,
-    tipo_movimentacao   VARCHAR(20)  NOT NULL,
-    quantidade          INTEGER      NOT NULL,
-    observacao          VARCHAR(500),
-    criado_em           TIMESTAMP    NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT fk_movimentacao_peca_insumo FOREIGN KEY (peca_insumo_id) REFERENCES peca_insumo(id),
-    CONSTRAINT ck_movimentacao_tipo  CHECK (tipo_movimentacao IN ('ENTRADA', 'SAIDA', 'AJUSTE')),
-    CONSTRAINT ck_movimentacao_qtd   CHECK (quantidade > 0)
-);
-
-CREATE INDEX IF NOT EXISTS idx_movimentacao_peca_insumo ON movimentacoes_estoque(peca_insumo_id);
-
-COMMENT ON TABLE movimentacoes_estoque IS 'Histórico de movimentações de estoque (entrada/saída) - Contexto: estoque';
+-- V8__seed_initial_data_oficina.sql
+-- Seed inicial do MVP da oficina mecanica
+-- Contextos: acesso, cadastro, estoque, atendimento
 
 -- =====================================================
--- SEED: movimentacoes iniciais de entrada (estoque inicial)
+-- CONTEXTO ACESSO: usuarios
 -- =====================================================
-INSERT INTO movimentacoes_estoque (peca_insumo_id, tipo_movimentacao, quantidade, observacao, criado_em) VALUES
+INSERT INTO usuarios (id, nome, email, senha, telefone, perfil, cpf_cnpj) VALUES
+('11111111-1111-4111-8111-111111111111', 'Carlos Alberto Souza', 'admin@oficina.local', crypt('123456', gen_salt('bf')), '(11) 98888-1000', 'ADMIN', '123.456.789-09'),
+('22222222-2222-4222-8222-222222222221', 'Marcos Vinicius Lima', 'marcos.lima@oficina.local', crypt('123456', gen_salt('bf')), '(11) 98888-2001', 'FUNCIONARIO', '987.654.321-00'),
+('22222222-2222-4222-8222-222222222222', 'Fernando Rocha Alves', 'fernando.alves@oficina.local', crypt('123456', gen_salt('bf')), '(11) 98888-2002', 'FUNCIONARIO', '321.654.987-10'),
+('33333333-3333-4333-8333-333333333331', 'Ana Paula Ribeiro', 'ana.ribeiro@cliente.local', crypt('123456', gen_salt('bf')), '(11) 97777-3001', 'CLIENTE', '529.982.247-25'),
+('33333333-3333-4333-8333-333333333332', 'Ricardo Mendes Costa', 'ricardo.costa@cliente.local', crypt('123456', gen_salt('bf')), '(11) 97777-3002', 'CLIENTE', '111.444.777-35')
+ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
+-- CONTEXTO CADASTRO: clientes
+-- 2 clientes com usuario de acesso + 2 clientes sem app
+-- =====================================================
+INSERT INTO clientes (
+    id, usuario_id, nome, cpf_cnpj, telefone, cep, rua, numero, complemento, cidade, estado
+) VALUES
+(
+    '44444444-4444-4444-8444-444444444441',
+    '33333333-3333-4333-8333-333333333331',
+    'Ana Paula Ribeiro',
+    '529.982.247-25',
+    '(11) 97777-3001',
+    '01310-100',
+    'Avenida Paulista',
+    '1578',
+    'Apto 92',
+    'Sao Paulo',
+    'SP'
+),
+(
+    '44444444-4444-4444-8444-444444444442',
+    '33333333-3333-4333-8333-333333333332',
+    'Ricardo Mendes Costa',
+    '111.444.777-35',
+    '(11) 97777-3002',
+    '04003-001',
+    'Rua Domingos de Morais',
+    '2450',
+    NULL,
+    'Sao Paulo',
+    'SP'
+),
+(
+    '44444444-4444-4444-8444-444444444443',
+    NULL,
+    'Patricia Gomes Nunes',
+    '390.533.447-05',
+    '(11) 96666-4003',
+    '09750-530',
+    'Rua das Acacias',
+    '312',
+    'Casa 2',
+    'Sao Bernardo do Campo',
+    'SP'
+),
+(
+    '44444444-4444-4444-8444-444444444444',
+    NULL,
+    'Joao Batista Ferreira',
+    '862.883.667-57',
+    '(11) 96666-4004',
+    '06020-000',
+    'Avenida dos Autonomistas',
+    '4550',
+    NULL,
+    'Osasco',
+    'SP'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
+-- CONTEXTO CADASTRO: veiculos
+-- =====================================================
+INSERT INTO veiculos (id, placa, modelo) VALUES
+('55555555-5555-4555-8555-555555555551', 'BRA2E19', 'Honda Civic EXL 2.0 2020'),
+('55555555-5555-4555-8555-555555555552', 'GHI4J52', 'Chevrolet Onix LT 1.0 Turbo 2022'),
+('55555555-5555-4555-8555-555555555553', 'QWE1A34', 'Toyota Corolla XEi 2.0 2021'),
+('55555555-5555-4555-8555-555555555554', 'MNO7K88', 'Volkswagen T-Cross Comfortline 2023'),
+('55555555-5555-4555-8555-555555555555', 'ABC1D23', 'Hyundai HB20 Vision 1.0 2021')
+ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
+-- CONTEXTO CADASTRO: cliente_veiculo
+-- 1 cliente com 2 carros + 1 historico com ativo = false
+-- =====================================================
+INSERT INTO cliente_veiculo (cliente_id, veiculo_id, ativo) VALUES
+('44444444-4444-4444-8444-444444444441', '55555555-5555-4555-8555-555555555551', true),
+('44444444-4444-4444-8444-444444444441', '55555555-5555-4555-8555-555555555552', false),
+('44444444-4444-4444-8444-444444444442', '55555555-5555-4555-8555-555555555553', true),
+('44444444-4444-4444-8444-444444444443', '55555555-5555-4555-8555-555555555554', true),
+('44444444-4444-4444-8444-444444444444', '55555555-5555-4555-8555-555555555555', true)
+ON CONFLICT (cliente_id, veiculo_id) DO NOTHING;
+
+-- =====================================================
+-- CONTEXTO ESTOQUE: peca_insumo
+-- =====================================================
+INSERT INTO peca_insumo (
+    id, nome, descricao, preco_venda, preco_compra, quantidade_por_unidade, quantidade_estoque
+) VALUES
 (
     '66666666-6666-4666-8666-666666666661',
-    'ENTRADA', 40, 'Estoque inicial - Oleo de Motor 5W30',
-    CURRENT_TIMESTAMP - INTERVAL '30 days'
+    'Oleo de Motor 5W30 Sintetico',
+    'Lubrificante sintetico API SN para motores flex, embalagem de 1 litro.',
+    59.90,
+    36.50,
+    'Litro',
+    40
 ),
 (
     '66666666-6666-4666-8666-666666666662',
-    'ENTRADA', 35, 'Estoque inicial - Filtro de Oleo',
-    CURRENT_TIMESTAMP - INTERVAL '30 days'
+    'Filtro de Oleo',
+    'Filtro de oleo spin-on para motores 1.0 a 2.0.',
+    42.00,
+    24.80,
+    'Unidade',
+    35
 ),
 (
     '66666666-6666-4666-8666-666666666663',
-    'ENTRADA', 30, 'Estoque inicial - Pastilha de Freio Dianteira',
-    CURRENT_TIMESTAMP - INTERVAL '30 days'
+    'Pastilha de Freio Dianteira',
+    'Jogo de pastilhas ceramicas para eixo dianteiro.',
+    189.00,
+    120.00,
+    'Jogo com 4',
+    28
 ),
 (
     '66666666-6666-4666-8666-666666666664',
-    'ENTRADA', 25, 'Estoque inicial - Disco de Freio Ventilado',
-    CURRENT_TIMESTAMP - INTERVAL '30 days'
+    'Disco de Freio Ventilado',
+    'Par de discos ventilados para veiculos compactos e medios.',
+    329.90,
+    220.00,
+    'Par',
+    22
 ),
 (
     '66666666-6666-4666-8666-666666666665',
-    'ENTRADA', 30, 'Estoque inicial - Fluido de Arrefecimento',
-    CURRENT_TIMESTAMP - INTERVAL '30 days'
-),
--- Saidas referentes as OS executadas (OS 3 e OS 4)
+    'Fluido de Arrefecimento',
+    'Aditivo pronto uso para sistema de arrefecimento, frasco de 1 litro.',
+    34.90,
+    18.50,
+    'Litro',
+    30
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
+-- CONTEXTO ATENDIMENTO: servico_catalogo
+-- =====================================================
+INSERT INTO servico_catalogo (id, nome, descricao, preco_mao_de_obra) VALUES
 (
-    '66666666-6666-4666-8666-666666666661',
-    'SAIDA', 4, 'Uso em OS-883 - Troca de Oleo e Filtro',
-    CURRENT_TIMESTAMP - INTERVAL '3 days 12 hours'
+    '77777777-7777-4777-8777-777777777771',
+    'Troca de Oleo e Filtro',
+    'Substituicao do oleo do motor, filtro de oleo e reset de indicador de manutencao.',
+    120.00
 ),
 (
-    '66666666-6666-4666-8666-666666666662',
-    'SAIDA', 1, 'Uso em OS-883 - Troca de Oleo e Filtro',
-    CURRENT_TIMESTAMP - INTERVAL '3 days 12 hours'
+    '77777777-7777-4777-8777-777777777772',
+    'Alinhamento e Balanceamento',
+    'Alinhamento computadorizado e balanceamento das quatro rodas.',
+    180.00
 ),
 (
+    '77777777-7777-4777-8777-777777777773',
+    'Troca de Pastilhas de Freio',
+    'Substituicao de pastilhas dianteiras com limpeza e lubrificacao de componentes.',
+    160.00
+),
+(
+    '77777777-7777-4777-8777-777777777774',
+    'Diagnostico Computadorizado',
+    'Leitura de falhas, analise de parametros e emissao de relatorio tecnico.',
+    150.00
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
+-- CONTEXTO ATENDIMENTO: ordens_servico
+-- Cenarios com status diferentes do ciclo de vida
+-- =====================================================
+INSERT INTO ordens_servico (
+    id,
+    cliente_id,
+    veiculo_id,
+    mecanico_id,
+    status,
+    valor_total,
+    data_criacao,
+    data_inicio_execucao,
+    data_finalizacao
+) VALUES
+-- OS 1: Recebida, sem mecanico e sem itens
+(
+    '88888888-8888-4888-8888-888888888881',
+    '44444444-4444-4444-8444-444444444443',
+    '55555555-5555-4555-8555-555555555554',
+    NULL,
+    'RECEBIDA',
+    0.00,
+    CURRENT_TIMESTAMP - INTERVAL '1 day',
+    NULL,
+    NULL
+),
+-- OS 2: Aguardando aprovacao, com 1 servico + 1 peca
+(
+    '88888888-8888-4888-8888-888888888882',
+    '44444444-4444-4444-8444-444444444441',
+    '55555555-5555-4555-8555-555555555551',
+    '22222222-2222-4222-8222-222222222221',
+    'AGUARDANDO_APROVACAO',
+    270.00,
+    CURRENT_TIMESTAMP - INTERVAL '12 hours',
+    NULL,
+    NULL
+),
+-- OS 3: Em execucao, com inicio preenchido
+(
+    '88888888-8888-4888-8888-888888888883',
+    '44444444-4444-4444-8444-444444444442',
+    '55555555-5555-4555-8555-555555555553',
+    '22222222-2222-4222-8222-222222222222',
+    'EM_EXECUCAO',
+    384.80,
+    CURRENT_TIMESTAMP - INTERVAL '6 hours',
+    CURRENT_TIMESTAMP - INTERVAL '3 hours',
+    NULL
+),
+-- OS 4: Entregue, com inicio e finalizacao preenchidos
+(
+    '88888888-8888-4888-8888-888888888884',
+    '44444444-4444-4444-8444-444444444444',
+    '55555555-5555-4555-8555-555555555555',
+    '22222222-2222-4222-8222-222222222221',
+    'ENTREGUE',
+    505.90,
+    CURRENT_TIMESTAMP - INTERVAL '4 days',
+    CURRENT_TIMESTAMP - INTERVAL '3 days 18 hours',
+    CURRENT_TIMESTAMP - INTERVAL '3 days 6 hours'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
+-- CONTEXTO ATENDIMENTO: os_servicos
+-- Precos historicos aplicados na data da OS
+-- =====================================================
+INSERT INTO os_servicos (id, ordem_servico_id, servico_id, preco_mao_de_obra_aplicado) VALUES
+(
+    '99999999-9999-4999-8999-999999999921',
+    '88888888-8888-4888-8888-888888888882',
+    '77777777-7777-4777-8777-777777777773',
+    160.00
+),
+(
+    '99999999-9999-4999-8999-999999999922',
+    '88888888-8888-4888-8888-888888888883',
+    '77777777-7777-4777-8777-777777777771',
+    120.00
+),
+(
+    '99999999-9999-4999-8999-999999999923',
+    '88888888-8888-4888-8888-888888888883',
+    '77777777-7777-4777-8777-777777777774',
+    150.00
+),
+(
+    '99999999-9999-4999-8999-999999999924',
+    '88888888-8888-4888-8888-888888888884',
+    '77777777-7777-4777-8777-777777777772',
+    180.00
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
+-- CONTEXTO ATENDIMENTO: os_pecas
+-- Precos historicos aplicados na data da OS
+-- =====================================================
+INSERT INTO os_pecas (id, ordem_servico_id, peca_id, quantidade, preco_venda_aplicado) VALUES
+(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1',
+    '88888888-8888-4888-8888-888888888882',
     '66666666-6666-4666-8666-666666666663',
-    'SAIDA', 2, 'Uso em OS-882 e OS-884 - Troca de Pastilhas',
-    CURRENT_TIMESTAMP - INTERVAL '3 days 6 hours'
+    1,
+    110.00
 ),
 (
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2',
+    '88888888-8888-4888-8888-888888888883',
+    '66666666-6666-4666-8666-666666666661',
+    4,
+    52.00
+),
+(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3',
+    '88888888-8888-4888-8888-888888888883',
+    '66666666-6666-4666-8666-666666666662',
+    1,
+    26.80
+),
+(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa4',
+    '88888888-8888-4888-8888-888888888884',
+    '66666666-6666-4666-8666-666666666663',
+    1,
+    175.00
+),
+(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa5',
+    '88888888-8888-4888-8888-888888888884',
     '66666666-6666-4666-8666-666666666664',
-    'SAIDA', 1, 'Uso em OS-884 - Disco de Freio',
-    CURRENT_TIMESTAMP - INTERVAL '3 days 6 hours'
-);
+    1,
+    290.90
+)
+ON CONFLICT (id) DO NOTHING;
+
