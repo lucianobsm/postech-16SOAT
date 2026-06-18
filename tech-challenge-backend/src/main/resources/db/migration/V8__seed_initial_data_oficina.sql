@@ -2,6 +2,13 @@
 -- Seed inicial do MVP da oficina mecanica
 -- Contextos: acesso, cadastro, estoque, atendimento
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- quantidade_minima precisa existir antes dos INSERTs abaixo
+ALTER TABLE peca_insumo
+    ADD COLUMN IF NOT EXISTS quantidade_minima INTEGER NOT NULL DEFAULT 0
+        CONSTRAINT ck_peca_quantidade_minima CHECK (quantidade_minima >= 0);
+
 -- =====================================================
 -- CONTEXTO ACESSO: usuarios
 -- =====================================================
@@ -101,52 +108,37 @@ ON CONFLICT (cliente_id, veiculo_id) DO NOTHING;
 -- CONTEXTO ESTOQUE: peca_insumo
 -- =====================================================
 INSERT INTO peca_insumo (
-    id, nome, descricao, preco_venda, preco_compra, quantidade_por_unidade, quantidade_estoque
+    id, nome, descricao, preco_venda, preco_compra, quantidade_por_unidade, quantidade_estoque, quantidade_minima
 ) VALUES
 (
     '66666666-6666-4666-8666-666666666661',
     'Oleo de Motor 5W30 Sintetico',
     'Lubrificante sintetico API SN para motores flex, embalagem de 1 litro.',
-    59.90,
-    36.50,
-    'Litro',
-    40
+    59.90, 36.50, 'Litro', 40, 10
 ),
 (
     '66666666-6666-4666-8666-666666666662',
     'Filtro de Oleo',
     'Filtro de oleo spin-on para motores 1.0 a 2.0.',
-    42.00,
-    24.80,
-    'Unidade',
-    35
+    42.00, 24.80, 'Unidade', 35, 10
 ),
 (
     '66666666-6666-4666-8666-666666666663',
     'Pastilha de Freio Dianteira',
     'Jogo de pastilhas ceramicas para eixo dianteiro.',
-    189.00,
-    120.00,
-    'Jogo com 4',
-    28
+    189.00, 120.00, 'Jogo com 4', 28, 5
 ),
 (
     '66666666-6666-4666-8666-666666666664',
     'Disco de Freio Ventilado',
     'Par de discos ventilados para veiculos compactos e medios.',
-    329.90,
-    220.00,
-    'Par',
-    22
+    329.90, 220.00, 'Par', 22, 5
 ),
 (
     '66666666-6666-4666-8666-666666666665',
     'Fluido de Arrefecimento',
     'Aditivo pronto uso para sistema de arrefecimento, frasco de 1 litro.',
-    34.90,
-    18.50,
-    'Litro',
-    30
+    34.90, 18.50, 'Litro', 30, 8
 )
 ON CONFLICT (id) DO NOTHING;
 
@@ -200,12 +192,8 @@ INSERT INTO ordens_servico (
     '88888888-8888-4888-8888-888888888881',
     '44444444-4444-4444-8444-444444444443',
     '55555555-5555-4555-8555-555555555554',
-    NULL,
-    'RECEBIDA',
-    0.00,
-    CURRENT_TIMESTAMP - INTERVAL '1 day',
-    NULL,
-    NULL
+    NULL, 'RECEBIDA', 0.00,
+    CURRENT_TIMESTAMP - INTERVAL '1 day', NULL, NULL
 ),
 -- OS 2: Aguardando aprovacao, com 1 servico + 1 peca
 (
@@ -213,11 +201,8 @@ INSERT INTO ordens_servico (
     '44444444-4444-4444-8444-444444444441',
     '55555555-5555-4555-8555-555555555551',
     '22222222-2222-4222-8222-222222222221',
-    'AGUARDANDO_APROVACAO',
-    270.00,
-    CURRENT_TIMESTAMP - INTERVAL '12 hours',
-    NULL,
-    NULL
+    'AGUARDANDO_APROVACAO', 270.00,
+    CURRENT_TIMESTAMP - INTERVAL '12 hours', NULL, NULL
 ),
 -- OS 3: Em execucao, com inicio preenchido
 (
@@ -225,11 +210,9 @@ INSERT INTO ordens_servico (
     '44444444-4444-4444-8444-444444444442',
     '55555555-5555-4555-8555-555555555553',
     '22222222-2222-4222-8222-222222222222',
-    'EM_EXECUCAO',
-    384.80,
+    'EM_EXECUCAO', 384.80,
     CURRENT_TIMESTAMP - INTERVAL '6 hours',
-    CURRENT_TIMESTAMP - INTERVAL '3 hours',
-    NULL
+    CURRENT_TIMESTAMP - INTERVAL '3 hours', NULL
 ),
 -- OS 4: Entregue, com inicio e finalizacao preenchidos
 (
@@ -237,8 +220,7 @@ INSERT INTO ordens_servico (
     '44444444-4444-4444-8444-444444444444',
     '55555555-5555-4555-8555-555555555555',
     '22222222-2222-4222-8222-222222222221',
-    'ENTREGUE',
-    505.90,
+    'ENTREGUE', 505.90,
     CURRENT_TIMESTAMP - INTERVAL '4 days',
     CURRENT_TIMESTAMP - INTERVAL '3 days 18 hours',
     CURRENT_TIMESTAMP - INTERVAL '3 days 6 hours'
@@ -285,36 +267,30 @@ INSERT INTO os_pecas (id, ordem_servico_id, peca_id, quantidade, preco_venda_apl
     'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1',
     '88888888-8888-4888-8888-888888888882',
     '66666666-6666-4666-8666-666666666663',
-    1,
-    110.00
+    1, 110.00
 ),
 (
     'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2',
     '88888888-8888-4888-8888-888888888883',
     '66666666-6666-4666-8666-666666666661',
-    4,
-    52.00
+    4, 52.00
 ),
 (
     'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3',
     '88888888-8888-4888-8888-888888888883',
     '66666666-6666-4666-8666-666666666662',
-    1,
-    26.80
+    1, 26.80
 ),
 (
     'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa4',
     '88888888-8888-4888-8888-888888888884',
     '66666666-6666-4666-8666-666666666663',
-    1,
-    175.00
+    1, 175.00
 ),
 (
     'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa5',
     '88888888-8888-4888-8888-888888888884',
     '66666666-6666-4666-8666-666666666664',
-    1,
-    290.90
+    1, 290.90
 )
 ON CONFLICT (id) DO NOTHING;
-
