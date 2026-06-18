@@ -1,9 +1,9 @@
-package com.fiap.tech_challenge_backend.cadastro.application.dto;
+package com.fiap.tech_challenge_backend.cadastro.application.dtos;
 
 import java.util.UUID;
 
-public record CadastroClienteResponse(
-        UUID id,
+public record BuscarClienteResponse(
+        UUID uuid,
         String nome,
         String cpfCnpj,
         String telefone,

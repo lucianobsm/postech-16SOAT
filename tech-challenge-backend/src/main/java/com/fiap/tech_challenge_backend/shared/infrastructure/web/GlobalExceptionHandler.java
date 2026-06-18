@@ -1,6 +1,5 @@
 package com.fiap.tech_challenge_backend.shared.infrastructure.web;
 
-import com.fiap.tech_challenge_backend.cadastro.application.exceptions.ClienteJaCadastradoException;
 import com.fiap.tech_challenge_backend.shared.application.exceptions.ApplicationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,7 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ClienteJaCadastradoException.class)
+    @ExceptionHandler(ApplicationException.class)
     public ResponseEntity<ApiErrorResponse> handleApplicationException(
             ApplicationException exception
     ) {
@@ -53,7 +52,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleGenericException(Exception exception) {
+    public ResponseEntity<ApiErrorResponse> handleGenericException(Exception ignoredException) {
         ApiErrorResponse response = new ApiErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

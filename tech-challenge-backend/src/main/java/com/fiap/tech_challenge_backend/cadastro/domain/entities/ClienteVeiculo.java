@@ -18,6 +18,7 @@ import java.util.UUID;
  * Contexto Delimitado: cadastro
  */
 @Entity
+@IdClass(ClienteVeiculoId.class)
 @Table(name = "cliente_veiculo", indexes = {
     @Index(name = "idx_cliente_veiculo_cliente_id", columnList = "cliente_id"),
     @Index(name = "idx_cliente_veiculo_veiculo_id", columnList = "veiculo_id"),

@@ -1,6 +1,9 @@
 package com.fiap.tech_challenge_backend.cadastro.domain.entities;
 
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
+import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Cep;
+import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
+import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Telefone;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -45,18 +48,26 @@ public class Cliente {
     @Column(name = "nome", nullable = false, length = 150)
     private String nome;
 
-    @NotBlank(message = "O CPF/CNPJ é obrigatório")
-    @Size(min = 11, max = 18, message = "O CPF/CNPJ deve ter entre 11 e 18 caracteres")
-    @Column(name = "cpf_cnpj", nullable = false, unique = true, length = 18)
-    private String cpfCnpj;
+    @Embedded
+    @AttributeOverride(
+            name = "valor",
+            column = @Column(name = "cpf_cnpj", nullable = false, unique = true, length = 14)
+    )
+    private CpfCnpj cpfCnpj;
 
-    @Size(min = 10, max = 20, message = "O telefone deve ter entre 10 e 20 caracteres")
-    @Column(name = "telefone", length = 20)
-    private String telefone;
+    @Embedded
+    @AttributeOverride(
+            name = "valor",
+            column = @Column(name = "telefone", length = 11)
+    )
+    private Telefone telefone;
 
-    @Size(min = 8, max = 10, message = "O CEP deve ter entre 8 e 10 caracteres")
-    @Column(name = "cep", length = 10)
-    private String cep;
+    @Embedded
+    @AttributeOverride(
+            name = "valor",
+            column = @Column(name = "cep", length = 8)
+    )
+    private Cep cep;
 
     @Size(max = 150, message = "A rua deve ter no máximo 150 caracteres")
     @Column(name = "rua", length = 150)
