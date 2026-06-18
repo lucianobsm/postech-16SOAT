@@ -67,9 +67,13 @@ public class PecaInsumo {
     @Column(name = "quantidade_estoque", nullable = false)
     private Integer quantidadeEstoque;
 
+    @NotNull(message = "A quantidade mínima é obrigatória")
+    @PositiveOrZero(message = "A quantidade mínima não pode ser negativa")
+    @Column(name = "quantidade_minima", nullable = false)
+    private Integer quantidadeMinima;
+
     /**
-     * Valida se o preço de compra é menor ou igual ao preço de venda
-     * e se ambos são positivos (validação de negócio)
+     * Valida se o preço de compra é menor ou igual ao preço de venda.
      */
     @PostLoad
     @PostPersist
@@ -82,6 +86,22 @@ public class PecaInsumo {
                 );
             }
         }
+    }
+
+    public void entrada(Integer quantidade) {
+        this.quantidadeEstoque += quantidade;
+    }
+
+    public void saida(Integer quantidade) {
+        if (quantidade > this.quantidadeEstoque) {
+            throw new IllegalArgumentException(
+                "Quantidade insuficiente em estoque para: " + this.nome);
+        }
+        this.quantidadeEstoque -= quantidade;
+    }
+
+    public boolean estoqueAbaixoDoMinimo() {
+        return this.quantidadeEstoque < this.quantidadeMinima;
     }
 }
 
