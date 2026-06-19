@@ -6,11 +6,11 @@
 -- CONTEXTO ACESSO: usuarios
 -- =====================================================
 INSERT INTO usuarios (id, nome, email, senha, telefone, perfil, cpf_cnpj) VALUES
-('11111111-1111-4111-8111-111111111111', 'Carlos Alberto Souza', 'admin@oficina.local', crypt('123456', gen_salt('bf')), '(11) 98888-1000', 'ADMIN', '123.456.789-09'),
-('22222222-2222-4222-8222-222222222221', 'Marcos Vinicius Lima', 'marcos.lima@oficina.local', crypt('123456', gen_salt('bf')), '(11) 98888-2001', 'FUNCIONARIO', '987.654.321-00'),
-('22222222-2222-4222-8222-222222222222', 'Fernando Rocha Alves', 'fernando.alves@oficina.local', crypt('123456', gen_salt('bf')), '(11) 98888-2002', 'FUNCIONARIO', '321.654.987-10'),
-('33333333-3333-4333-8333-333333333331', 'Ana Paula Ribeiro', 'ana.ribeiro@cliente.local', crypt('123456', gen_salt('bf')), '(11) 97777-3001', 'CLIENTE', '529.982.247-25'),
-('33333333-3333-4333-8333-333333333332', 'Ricardo Mendes Costa', 'ricardo.costa@cliente.local', crypt('123456', gen_salt('bf')), '(11) 97777-3002', 'CLIENTE', '111.444.777-35')
+('11111111-1111-4111-8111-111111111111', 'Carlos Alberto Souza', 'admin@oficina.local', crypt('123456', gen_salt('bf')), '11988881000', 'ADMIN', '12345678909'),
+('22222222-2222-4222-8222-222222222221', 'Marcos Vinicius Lima', 'marcos.lima@oficina.local', crypt('123456', gen_salt('bf')), '11988882001', 'FUNCIONARIO', '98765432100'),
+('22222222-2222-4222-8222-222222222222', 'Fernando Rocha Alves', 'fernando.alves@oficina.local', crypt('123456', gen_salt('bf')), '11988882002', 'FUNCIONARIO', '32165498710'),
+('33333333-3333-4333-8333-333333333331', 'Ana Paula Ribeiro', 'ana.ribeiro@cliente.local', crypt('123456', gen_salt('bf')), '11977773001', 'CLIENTE', '52998224725'),
+('33333333-3333-4333-8333-333333333332', 'Ricardo Mendes Costa', 'ricardo.costa@cliente.local', crypt('123456', gen_salt('bf')), '11977773002', 'CLIENTE', '11144477735')
 ON CONFLICT (id) DO NOTHING;
 
 -- =====================================================
@@ -24,9 +24,9 @@ INSERT INTO clientes (
     '44444444-4444-4444-8444-444444444441',
     '33333333-3333-4333-8333-333333333331',
     'Ana Paula Ribeiro',
-    '529.982.247-25',
-    '(11) 97777-3001',
-    '01310-100',
+    '52998224725',
+    '11977773001',
+    '01310100',
     'Avenida Paulista',
     '1578',
     'Apto 92',
@@ -37,9 +37,9 @@ INSERT INTO clientes (
     '44444444-4444-4444-8444-444444444442',
     '33333333-3333-4333-8333-333333333332',
     'Ricardo Mendes Costa',
-    '111.444.777-35',
-    '(11) 97777-3002',
-    '04003-001',
+    '11144477735',
+    '11977773002',
+    '04003001',
     'Rua Domingos de Morais',
     '2450',
     NULL,
@@ -50,9 +50,9 @@ INSERT INTO clientes (
     '44444444-4444-4444-8444-444444444443',
     NULL,
     'Patricia Gomes Nunes',
-    '390.533.447-05',
-    '(11) 96666-4003',
-    '09750-530',
+    '39053344705',
+    '11966664003',
+    '09750530',
     'Rua das Acacias',
     '312',
     'Casa 2',
@@ -63,9 +63,9 @@ INSERT INTO clientes (
     '44444444-4444-4444-8444-444444444444',
     NULL,
     'Joao Batista Ferreira',
-    '862.883.667-57',
-    '(11) 96666-4004',
-    '06020-000',
+    '86288366757',
+    '11966664004',
+    '06020000',
     'Avenida dos Autonomistas',
     '4550',
     NULL,

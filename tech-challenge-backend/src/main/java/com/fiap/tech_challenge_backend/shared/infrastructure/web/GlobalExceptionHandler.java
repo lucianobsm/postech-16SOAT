@@ -1,39 +1,67 @@
 package com.fiap.tech_challenge_backend.shared.infrastructure.web;
 
-import jakarta.persistence.EntityNotFoundException;
+import com.fiap.tech_challenge_backend.shared.application.exceptions.ApplicationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 
-/**
- * Handler global de exceções de negócio.
- * Contexto: shared (Infraestrutura compartilhada)
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, Object> handleEntityNotFound(EntityNotFoundException ex) {
-        return errorBody(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> handleIllegalArgument(IllegalArgumentException ex) {
-        return errorBody(HttpStatus.BAD_REQUEST, ex.getMessage());
-    }
-
-    private Map<String, Object> errorBody(HttpStatus status, String message) {
-        return Map.of(
-                "timestamp", LocalDateTime.now().toString(),
-                "status", status.value(),
-                "error", status.getReasonPhrase(),
-                "message", message != null ? message : ""
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<ApiErrorResponse> handleApplicationException(
+            ApplicationException exception
+    ) {
+        ApiErrorResponse response = new ApiErrorResponse(
+                LocalDateTime.now(),
+                exception.getStatus().value(),
+                exception.getStatus().getReasonPhrase(),
+                exception.getErrorCode(),
+                exception.getMessage(),
+                exception.getDetails()
         );
+
+        return ResponseEntity.status(exception.getStatus()).body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiErrorResponse> handleValidationException(
+            MethodArgumentNotValidException exception
+    ) {
+        List<String> details = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .toList();
+
+        ApiErrorResponse response = new ApiErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                "VALIDATION_ERROR",
+                "Existem campos inválidos na requisição.",
+                details
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiErrorResponse> handleGenericException(Exception ignoredException) {
+        ApiErrorResponse response = new ApiErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                "INTERNAL_SERVER_ERROR",
+                "Ocorreu um erro inesperado no servidor.",
+                List.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
