@@ -1,0 +1,17 @@
+package com.fiap.tech_challenge_backend.cadastro.application.dtos;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record CadastroVeiculoRequest(
+        @NotBlank(message = "A placa é obrigatória")
+        String placa,
+
+        @NotBlank(message = "O modelo é obrigatório")
+        @Size(min = 2, max = 100, message = "O modelo deve ter entre 2 e 100 caracteres")
+        String modelo,
+
+        @NotBlank(message = "O CPF/CNPJ é obrigatório")
+        String cpfCnpj
+) {
+}
