@@ -44,6 +44,11 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
     }
 
     @Override
+    public Optional<Usuario> buscarPorId(UUID id) {
+        return usuarioJpaRepository.findById(id);
+    }
+
+    @Override
     public void deletar(UUID id) {
         this.usuarioJpaRepository.deleteById(id);
     }

@@ -34,6 +34,11 @@ public class VeiculoRepositoryAdapter implements VeiculoRepository {
     }
 
     @Override
+    public Optional<Veiculo> buscarPorId(UUID id) {
+        return this.veiculoJpaRepository.findById(id);
+    }
+
+    @Override
     public List<Veiculo> listar() {
         return this.veiculoJpaRepository.findAll();
     }

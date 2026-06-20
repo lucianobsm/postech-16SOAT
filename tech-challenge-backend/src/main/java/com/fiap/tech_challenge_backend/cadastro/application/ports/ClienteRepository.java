@@ -15,6 +15,8 @@ public interface ClienteRepository {
 
     Optional<Cliente> buscarPorCpfCnpj(CpfCnpj cpfCnpj);
 
+    Optional<Cliente> buscarPorId(UUID id);
+
     List<Cliente> listar();
 
     void deletar(UUID id);

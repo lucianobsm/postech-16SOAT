@@ -19,5 +19,7 @@ public interface UsuarioRepository {
 
     Optional<Usuario> procuraPorCpfCnpj(CpfCnpj cpfCnpj);
 
+    Optional<Usuario> buscarPorId(UUID id);
+
     void deletar(UUID id);
 }

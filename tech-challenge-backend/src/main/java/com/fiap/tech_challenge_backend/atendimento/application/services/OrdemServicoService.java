@@ -1,7 +1,7 @@
 package com.fiap.tech_challenge_backend.atendimento.application.services;
 
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
-import com.fiap.tech_challenge_backend.acesso.infrastructure.UsuarioRepository;
+import com.fiap.tech_challenge_backend.acesso.application.ports.UsuarioRepository;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.ConcluirOrcamentoRequestDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrdemServicoAtualizarRequestDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrdemServicoRequestDTO;
@@ -23,10 +23,11 @@ import com.fiap.tech_challenge_backend.atendimento.application.ports.out.OrdemSe
 import com.fiap.tech_challenge_backend.atendimento.application.ports.out.PdfGeneratorPort;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsOrcamento;
 import com.fiap.tech_challenge_backend.atendimento.domain.services.TempoAtendimentoDomainService;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteRepository;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.VeiculoRepository;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
-import com.fiap.tech_challenge_backend.cadastro.infrastructure.ClienteRepository;
-import com.fiap.tech_challenge_backend.cadastro.infrastructure.VeiculoRepository;
+import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Email;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,17 +88,17 @@ public class OrdemServicoService
 
     @Override
     public OrdemServicoResponseDTO criar(OrdemServicoRequestDTO request) {
-        Cliente cliente = clienteRepository.findById(request.clienteId())
+        Cliente cliente = clienteRepository.buscarPorId(request.clienteId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Cliente não encontrado: " + request.clienteId()));
 
-        Veiculo veiculo = veiculoRepository.findById(request.veiculoId())
+        Veiculo veiculo = veiculoRepository.buscarPorId(request.veiculoId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Veículo não encontrado: " + request.veiculoId()));
 
         Usuario mecanico = null;
         if (request.mecanicoId() != null) {
-            mecanico = usuarioRepository.findById(request.mecanicoId())
+            mecanico = usuarioRepository.buscarPorId(request.mecanicoId())
                     .orElseThrow(() -> new EntityNotFoundException(
                             "Mecânico não encontrado: " + request.mecanicoId()));
         }
@@ -155,17 +156,17 @@ public class OrdemServicoService
     public OrdemServicoResponseDTO atualizar(UUID id, OrdemServicoAtualizarRequestDTO request) {
         OrdemServico os = buscarEntidade(id);
 
-        Cliente cliente = clienteRepository.findById(request.clienteId())
+        Cliente cliente = clienteRepository.buscarPorId(request.clienteId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Cliente não encontrado: " + request.clienteId()));
 
-        Veiculo veiculo = veiculoRepository.findById(request.veiculoId())
+        Veiculo veiculo = veiculoRepository.buscarPorId(request.veiculoId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Veículo não encontrado: " + request.veiculoId()));
 
         Usuario mecanico = null;
         if (request.mecanicoId() != null) {
-            mecanico = usuarioRepository.findById(request.mecanicoId())
+            mecanico = usuarioRepository.buscarPorId(request.mecanicoId())
                     .orElseThrow(() -> new EntityNotFoundException(
                             "Mecânico não encontrado: " + request.mecanicoId()));
         }
@@ -206,7 +207,7 @@ public class OrdemServicoService
         }
 
         Usuario usuario = usuarioEmail != null
-                ? usuarioRepository.findByEmail(usuarioEmail).orElse(null)
+                ? usuarioRepository.procuraPorEmail(new Email(usuarioEmail)).orElse(null)
                 : null;
 
         os.setStatus(novoStatus);

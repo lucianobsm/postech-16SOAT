@@ -137,7 +137,7 @@ public class PdfGeneratorAdapter implements PdfGeneratorPort {
                     .addCell(criarCelula(veiculo.getModelo(), fontRegular, fontRegular));
 
             table.addCell(criarCelula("Placa:", fontBold, fontRegular))
-                    .addCell(criarCelula(veiculo.getPlaca(), fontRegular, fontRegular));
+                    .addCell(criarCelula(veiculo.getPlaca().toString(), fontRegular, fontRegular));
 
             doc.add(table);
         }
