@@ -6,6 +6,7 @@ import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,15 +21,11 @@ import java.util.Map;
  * Camada: Presentation
  */
 @RestController
+@AllArgsConstructor
 public class AuthController {
 
     private final JwtService jwtService;
     private final AuthService authService;
-
-    public AuthController(JwtService jwtService, AuthService authService) {
-        this.jwtService = jwtService;
-        this.authService = authService;
-    }
 
     @PostMapping("/auth/login")
     public Map<String, String> login(@Valid @RequestBody LoginRequest request) {
