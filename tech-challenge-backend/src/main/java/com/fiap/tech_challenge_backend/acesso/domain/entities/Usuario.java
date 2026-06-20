@@ -2,8 +2,10 @@ package com.fiap.tech_challenge_backend.acesso.domain.entities;
 
 import com.fiap.tech_challenge_backend.acesso.domain.enums.PerfilUsuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
+import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Email;
+import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Telefone;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -40,30 +42,36 @@ public class Usuario {
     @Column(name = "nome", nullable = false, length = 150)
     private String nome;
 
-    @NotBlank(message = "O email é obrigatório")
-    @Email(message = "Email deve ser válido")
-    @Size(max = 150, message = "O email deve ter no máximo 150 caracteres")
-    @Column(name = "email", nullable = false, unique = true, length = 150)
-    private String email;
+    @Embedded
+    @AttributeOverride(
+            name = "valor",
+            column = @Column(name = "email", nullable = false, unique = true, length = 150)
+    )
+    private Email email;
 
     @NotBlank(message = "A senha é obrigatória")
     @Size(min = 60, max = 255, message = "A senha deve conter um hash válido")
     @JsonIgnore
-    @Column(name = "senha", nullable = false, length = 255)
+    @Column(name = "senha", nullable = false)
     private String senha;
 
-    @Size(min = 10, max = 20, message = "O telefone deve ter entre 10 e 20 caracteres")
-    @Column(name = "telefone", length = 20)
-    private String telefone;
+    @Embedded
+    @AttributeOverride(
+            name = "valor",
+            column = @Column(name = "telefone", length = 11)
+    )
+    private Telefone telefone;
 
     @NotNull(message = "O perfil é obrigatório")
     @Enumerated(EnumType.STRING)
     @Column(name = "perfil", nullable = false, length = 20)
     private PerfilUsuario perfil;
 
-    @NotBlank(message = "O CPF/CNPJ é obrigatório")
-    @Size(min = 11, max = 18, message = "O CPF/CNPJ deve ter entre 11 e 18 caracteres")
-    @Column(name = "cpf_cnpj", nullable = false, unique = true, length = 18)
-    private String cpfCnpj;
+    @Embedded
+    @AttributeOverride(
+            name = "valor",
+            column = @Column(name = "cpf_cnpj", nullable = false, unique = true, length = 14)
+    )
+    private CpfCnpj cpfCnpj;
 }
 

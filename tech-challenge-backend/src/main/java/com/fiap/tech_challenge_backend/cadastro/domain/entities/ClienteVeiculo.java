@@ -14,10 +14,10 @@ import java.util.UUID;
  * Entidade que representa a associação entre Cliente e Veículo.
  * Permite relacionamento N:M (muitos para muitos) entre clientes e veículos.
  * Mantém histórico de veículos que já pertenceram ao cliente através do campo 'ativo'.
- * 
  * Contexto Delimitado: cadastro
  */
 @Entity
+@IdClass(ClienteVeiculoId.class)
 @Table(name = "cliente_veiculo", indexes = {
     @Index(name = "idx_cliente_veiculo_cliente_id", columnList = "cliente_id"),
     @Index(name = "idx_cliente_veiculo_veiculo_id", columnList = "veiculo_id"),
