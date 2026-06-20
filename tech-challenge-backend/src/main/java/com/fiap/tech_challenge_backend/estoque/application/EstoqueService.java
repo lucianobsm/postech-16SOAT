@@ -9,7 +9,6 @@ import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoMovimentacao;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.MovimentacaoRepository;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoRepository;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +21,17 @@ import java.util.UUID;
  * Camada: Application
  */
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class EstoqueService {
 
     private final PecaInsumoRepository pecaInsumoRepository;
     private final MovimentacaoRepository movimentacaoRepository;
+
+    public EstoqueService(PecaInsumoRepository pecaInsumoRepository,
+                          MovimentacaoRepository movimentacaoRepository) {
+        this.pecaInsumoRepository = pecaInsumoRepository;
+        this.movimentacaoRepository = movimentacaoRepository;
+    }
 
     public PecaInsumoResponseDTO cadastrar(PecaInsumoRequestDTO request) {
         var peca = PecaInsumo.builder()
@@ -81,24 +85,24 @@ public class EstoqueService {
         var peca = buscarEntidade(id);
         peca.entrada(quantidade);
         pecaInsumoRepository.save(peca);
-        movimentacaoRepository.save(MovimentacaoEstoque.builder()
-                .pecaInsumo(peca)
-                .tipoMovimentacao(TipoMovimentacao.ENTRADA)
-                .quantidade(quantidade)
-                .observacao(observacao)
-                .build());
+        var movimentacao = new MovimentacaoEstoque();
+        movimentacao.setPecaInsumo(peca);
+        movimentacao.setTipoMovimentacao(TipoMovimentacao.ENTRADA);
+        movimentacao.setQuantidade(quantidade);
+        movimentacao.setObservacao(observacao);
+        movimentacaoRepository.save(movimentacao);
     }
 
     public void registrarSaida(UUID id, Integer quantidade, String observacao) {
         var peca = buscarEntidade(id);
         peca.saida(quantidade);
         pecaInsumoRepository.save(peca);
-        movimentacaoRepository.save(MovimentacaoEstoque.builder()
-                .pecaInsumo(peca)
-                .tipoMovimentacao(TipoMovimentacao.SAIDA)
-                .quantidade(quantidade)
-                .observacao(observacao)
-                .build());
+        var movimentacao = new MovimentacaoEstoque();
+        movimentacao.setPecaInsumo(peca);
+        movimentacao.setTipoMovimentacao(TipoMovimentacao.SAIDA);
+        movimentacao.setQuantidade(quantidade);
+        movimentacao.setObservacao(observacao);
+        movimentacaoRepository.save(movimentacao);
     }
 
     @Transactional(readOnly = true)

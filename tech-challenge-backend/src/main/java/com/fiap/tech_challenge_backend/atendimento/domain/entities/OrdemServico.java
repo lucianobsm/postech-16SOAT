@@ -17,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -28,7 +29,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
+import lombok.AccessLevel;
+
+import com.fiap.tech_challenge_backend.atendimento.domain.exceptions.OrdemServicoStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -72,9 +77,14 @@ public class OrdemServico {
     @Builder.Default
     private StatusOrdemServico status = StatusOrdemServico.RECEBIDA;
 
-    @NotNull(message = "O valor total e obrigatorio")
+    @NotNull(message = "O valor total acumulado e obrigatorio")
+    @PositiveOrZero(message = "O valor total acumulado nao pode ser negativo")
+    @Column(name = "valor_total_acumulado", nullable = false, precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal valorTotalAcumulado = BigDecimal.ZERO;
+
     @PositiveOrZero(message = "O valor total nao pode ser negativo")
-    @Column(name = "valor_total", nullable = false, precision = 10, scale = 2)
+    @Column(name = "valor_total", nullable = true, precision = 10, scale = 2)
     @Builder.Default
     private BigDecimal valorTotal = BigDecimal.ZERO;
 
@@ -88,19 +98,25 @@ public class OrdemServico {
     @Column(name = "data_finalizacao")
     private LocalDateTime dataFinalizacao;
 
-    @Valid
-    @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true)
+    @NotNull(message = "A flag de urgência é obrigatória")
+    @Column(name = "urgente", nullable = false)
     @Builder.Default
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<OsServico> servicos = new ArrayList<>();
+    @Setter(AccessLevel.NONE)
+    private Boolean urgente = false;
 
     @Valid
     @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private List<OsPeca> pecas = new ArrayList<>();
+    private List<OsOrcamento> orcamentos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("dataMudanca ASC")
+    @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<OsHistoricoStatus> historicoStatus = new ArrayList<>();
 
     @PrePersist
     void prePersist() {
@@ -122,6 +138,47 @@ public class OrdemServico {
         if (status == StatusOrdemServico.FINALIZADA && dataFinalizacao == null) {
             dataFinalizacao = LocalDateTime.now();
         }
+    }
+
+    public void concluirDiagnostico(UUID orcamentoId, LocalDateTime prazoEstipulado) {
+        if (this.status != StatusOrdemServico.EM_DIAGNOSTICO) {
+            throw new OrdemServicoStatusException(
+                    "A OS deve estar no status EM_DIAGNOSTICO para concluir o diagnóstico. Status atual: " + this.status);
+        }
+
+        OsOrcamento orcamento = this.orcamentos.stream()
+                .filter(o -> o.getId().equals(orcamentoId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Orçamento não encontrado na OS: " + orcamentoId));
+
+        orcamento.setPrazoEstipulado(prazoEstipulado);
+        orcamento.calcularTotal();
+
+        this.status = StatusOrdemServico.AGUARDANDO_APROVACAO;
+    }
+
+    public void autorizarPeloCliente() {
+        if (this.status != StatusOrdemServico.AGUARDANDO_APROVACAO) {
+            throw new OrdemServicoStatusException(
+                    "Apenas orçamentos no status AGUARDANDO_APROVACAO podem ser autorizados. Status atual: " + this.status);
+        }
+
+        this.status = StatusOrdemServico.EM_EXECUCAO;
+        this.dataInicioExecucao = LocalDateTime.now();
+    }
+
+    public void definirUrgente(Boolean urgente) {
+        if (urgente == null) {
+            return;
+        }
+
+        if (Boolean.TRUE.equals(urgente)
+                && (status == StatusOrdemServico.FINALIZADA || status == StatusOrdemServico.ENTREGUE)) {
+            throw new IllegalArgumentException("Não é permitido marcar como urgente uma OS finalizada ou entregue");
+        }
+
+        this.urgente = urgente;
     }
 }
 
