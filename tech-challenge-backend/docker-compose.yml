@@ -23,10 +23,12 @@ services:
     env_file: .env
     ports:
       - "8080:8080"
+      - "5005:5005"   # porta de debug
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     depends_on:
       postgres:
         condition: service_healthy
