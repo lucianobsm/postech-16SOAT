@@ -52,14 +52,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleGenericException(Exception ignoredException) {
+    public ResponseEntity<ApiErrorResponse> handleGenericException(Exception exception) {
         ApiErrorResponse response = new ApiErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                 "INTERNAL_SERVER_ERROR",
                 "Ocorreu um erro inesperado no servidor.",
-                List.of()
+                List.of(exception.getMessage())
         );
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
