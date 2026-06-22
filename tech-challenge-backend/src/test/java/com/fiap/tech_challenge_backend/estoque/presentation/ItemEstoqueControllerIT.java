@@ -1,7 +1,10 @@
 package com.fiap.tech_challenge_backend.estoque.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fiap.tech_challenge_backend.estoque.application.dto.EntradaEstoqueRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoRequestDTO;
+import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
+import com.fiap.tech_challenge_backend.estoque.infrastructure.MovimentacaoRepository;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -19,6 +23,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -41,48 +46,51 @@ class ItemEstoqueControllerIT {
         registry.add("spring.flyway.enabled", () -> "true");
     }
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private PecaInsumoRepository repository;
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private PecaInsumoRepository pecaRepository;
+    @Autowired private MovimentacaoRepository movimentacaoRepository;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
     void limparBase() {
-        repository.deleteAll();
+        jdbcTemplate.execute("DELETE FROM os_pecas");
+        movimentacaoRepository.deleteAll();
+        pecaRepository.deleteAll();
     }
 
-    private PecaInsumoRequestDTO requestFiltroOleo() {
-        return new PecaInsumoRequestDTO(
-                "Filtro de óleo", "Filtro para motor 1.0",
-                new BigDecimal("35.00"), new BigDecimal("25.00"),
-                "Unidade", 10, 3
-        );
+    private PecaInsumo salvarPeca(int estoque, int minimo) {
+        return pecaRepository.save(PecaInsumo.builder()
+                .nome("Filtro de óleo")
+                .precoVenda(new BigDecimal("35.00"))
+                .precoCompra(new BigDecimal("25.00"))
+                .quantidadeEstoque(estoque)
+                .quantidadeMinima(minimo)
+                .build());
     }
 
-    @Test
-    @WithMockUser
-    @DisplayName("POST /estoque/itens - deve cadastrar e retornar 201")
-    void deveCadastrarItem() throws Exception {
-        mockMvc.perform(post("/estoque/itens")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestFiltroOleo())))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nome").value("Filtro de óleo"))
-                .andExpect(jsonPath("$.quantidadeEstoque").value(10))
-                .andExpect(jsonPath("$.abaixoDoMinimo").value(false));
+    private PecaInsumoRequestDTO requestAtualizar(String nome, int estoque, int minimo) {
+        return new PecaInsumoRequestDTO(nome, null,
+                new BigDecimal("35.00"), new BigDecimal("25.00"), null, estoque, minimo);
     }
 
+    private EntradaEstoqueRequestDTO entradaNova(String nome, int quantidade, int minimo) {
+        return new EntradaEstoqueRequestDTO(null, nome, "Insumo novo",
+                new BigDecimal("35.00"), new BigDecimal("25.00"), "Unidade", quantidade, minimo, "Compra inicial");
+    }
+
+    private EntradaEstoqueRequestDTO entradaReposicao(UUID id, int quantidade, String observacao) {
+        return new EntradaEstoqueRequestDTO(id, null, null, null, null, null, quantidade, null, observacao);
+    }
+
+    // ─────────────────────────────────────────────
+    // GET /estoque/itens
+    // ─────────────────────────────────────────────
     @Test
     @WithMockUser
     @DisplayName("GET /estoque/itens - deve listar todos os itens")
-    void deveListarItens() throws Exception {
-        mockMvc.perform(post("/estoque/itens")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requestFiltroOleo())));
+    void deveListarTodos() throws Exception {
+        salvarPeca(10, 3);
 
         mockMvc.perform(get("/estoque/itens"))
                 .andExpect(status().isOk())
@@ -92,75 +100,278 @@ class ItemEstoqueControllerIT {
 
     @Test
     @WithMockUser
-    @DisplayName("Fluxo completo: cadastrar → entrada → saída → verificar abaixo do mínimo")
-    void deveExecutarFluxoCompleto() throws Exception {
-        // Cadastrar com estoque 5 e mínimo 8
-        var requestEstoqueBaixo = new PecaInsumoRequestDTO(
-                "Vela de ignição", null,
-                new BigDecimal("20.00"), new BigDecimal("12.00"),
-                "Jogo c/4", 5, 8
-        );
+    @DisplayName("GET /estoque/itens - deve retornar lista vazia")
+    void deveRetornarListaVazia() throws Exception {
+        mockMvc.perform(get("/estoque/itens"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
 
-        String body = mockMvc.perform(post("/estoque/itens")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestEstoqueBaixo)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.abaixoDoMinimo").value(true))
-                .andReturn().getResponse().getContentAsString();
+    // ─────────────────────────────────────────────
+    // GET /estoque/itens/{id}
+    // ─────────────────────────────────────────────
+    @Test
+    @WithMockUser
+    @DisplayName("GET /estoque/itens/{id} - deve retornar item")
+    void deveBuscarPorId() throws Exception {
+        var peca = salvarPeca(10, 3);
 
-        String itemId = objectMapper.readTree(body).get("id").asText();
-
-        // Entrada de 10 → estoque = 15 (acima do mínimo 8)
-        mockMvc.perform(patch("/estoque/itens/{id}/entrada", itemId)
-                        .param("quantidade", "10")
-                        .param("observacao", "Compra mensal"))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(get("/estoque/itens/{id}", itemId))
-                .andExpect(jsonPath("$.quantidadeEstoque").value(15))
+        mockMvc.perform(get("/estoque/itens/{id}", peca.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(peca.getId().toString()))
+                .andExpect(jsonPath("$.quantidadeEstoque").value(10))
                 .andExpect(jsonPath("$.abaixoDoMinimo").value(false));
-
-        // Saída de 9 → estoque = 6 (abaixo do mínimo 8)
-        mockMvc.perform(patch("/estoque/itens/{id}/saida", itemId)
-                        .param("quantidade", "9")
-                        .param("observacao", "Uso em OSs"))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(get("/estoque/itens/{id}", itemId))
-                .andExpect(jsonPath("$.quantidadeEstoque").value(6))
-                .andExpect(jsonPath("$.abaixoDoMinimo").value(true));
-
-        // Verificar alerta de estoque baixo
-        mockMvc.perform(get("/estoque/itens/abaixo-do-minimo"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
-
-        // Verificar movimentações (2 registros: 1 entrada + 1 saída)
-        mockMvc.perform(get("/estoque/movimentacoes/item/{id}", itemId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
     }
 
     @Test
     @WithMockUser
-    @DisplayName("PATCH /estoque/itens/{id}/saida - deve retornar 400 quando estoque insuficiente")
-    void deveRejeitarSaidaComEstoqueInsuficiente() throws Exception {
-        String body = mockMvc.perform(post("/estoque/itens")
+    @DisplayName("GET /estoque/itens/{id} - deve retornar 404 quando não encontrado")
+    void deveRetornar404QuandoNaoEncontrado() throws Exception {
+        mockMvc.perform(get("/estoque/itens/{id}", UUID.randomUUID()))
+                .andExpect(status().isNotFound());
+    }
+
+    // ─────────────────────────────────────────────
+    // GET /estoque/itens/abaixo-do-minimo
+    // ─────────────────────────────────────────────
+    @Test
+    @WithMockUser
+    @DisplayName("GET /estoque/itens/abaixo-do-minimo - deve retornar itens com estoque baixo")
+    void deveListarAbaixoDoMinimo() throws Exception {
+        salvarPeca(2, 10);
+
+        mockMvc.perform(get("/estoque/itens/abaixo-do-minimo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].abaixoDoMinimo").value(true));
+    }
+
+    // ─────────────────────────────────────────────
+    // PUT /estoque/itens/{id}
+    // ─────────────────────────────────────────────
+    @Test
+    @WithMockUser
+    @DisplayName("PUT /estoque/itens/{id} - deve atualizar e gerar movimentação de AJUSTE")
+    void deveAtualizarEGerarAjuste() throws Exception {
+        var peca = salvarPeca(10, 3);
+
+        mockMvc.perform(put("/estoque/itens/{id}", peca.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestFiltroOleo())))
-                .andReturn().getResponse().getContentAsString();
+                        .content(objectMapper.writeValueAsString(requestAtualizar("Filtro Premium", 20, 5))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome").value("Filtro Premium"))
+                .andExpect(jsonPath("$.quantidadeEstoque").value(20));
 
-        String itemId = objectMapper.readTree(body).get("id").asText();
+        mockMvc.perform(get("/estoque/movimentacoes/item/{id}", peca.getId()))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].tipoMovimentacao").value("AJUSTE"));
+    }
 
-        mockMvc.perform(patch("/estoque/itens/{id}/saida", itemId)
+    @Test
+    @WithMockUser
+    @DisplayName("PUT /estoque/itens/{id} - não deve gerar movimentação quando estoque não muda")
+    void naoDeveGerarAjusteQuandoEstoqueIgual() throws Exception {
+        var peca = salvarPeca(10, 3);
+
+        mockMvc.perform(put("/estoque/itens/{id}", peca.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestAtualizar("Filtro Premium", 10, 3))))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/estoque/movimentacoes/item/{id}", peca.getId()))
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("PUT /estoque/itens/{id} - deve retornar 404 quando não encontrado")
+    void deveRetornar404AoAtualizarNaoEncontrado() throws Exception {
+        mockMvc.perform(put("/estoque/itens/{id}", UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestAtualizar("X", 5, 1))))
+                .andExpect(status().isNotFound());
+    }
+
+    // ─────────────────────────────────────────────
+    // POST /estoque/itens/entrada
+    // ─────────────────────────────────────────────
+    @Test
+    @WithMockUser
+    @DisplayName("POST /entrada - deve cadastrar peça nova e registrar ENTRADA")
+    void deveCadastrarPecaNovaViaEntrada() throws Exception {
+        mockMvc.perform(post("/estoque/itens/entrada")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(entradaNova("Vela de ignição", 40, 5))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").isNotEmpty())
+                .andExpect(jsonPath("$.nome").value("Vela de ignição"))
+                .andExpect(jsonPath("$.quantidadeEstoque").value(40));
+
+        mockMvc.perform(get("/estoque/itens"))
+                .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /entrada - deve repor estoque de peça existente e registrar ENTRADA")
+    void deveReporEstoqueViaEntrada() throws Exception {
+        var peca = salvarPeca(10, 3);
+
+        mockMvc.perform(post("/estoque/itens/entrada")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(entradaReposicao(peca.getId(), 5, "Compra NF-001"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.quantidadeEstoque").value(15));
+
+        mockMvc.perform(get("/estoque/movimentacoes/item/{id}", peca.getId()))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].tipoMovimentacao").value("ENTRADA"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /entrada - deve retornar 400 quando peça nova sem nome")
+    void deveRetornar400EntradaNovaSemNome() throws Exception {
+        var semNome = new EntradaEstoqueRequestDTO(null, null, null,
+                new BigDecimal("35.00"), new BigDecimal("25.00"), null, 10, 0, null);
+
+        mockMvc.perform(post("/estoque/itens/entrada")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(semNome)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /entrada - deve retornar 400 quando quantidade ausente")
+    void deveRetornar400EntradaSemQuantidade() throws Exception {
+        var semQtd = new EntradaEstoqueRequestDTO(null, "Vela", null,
+                new BigDecimal("35.00"), new BigDecimal("25.00"), null, null, 0, null);
+
+        mockMvc.perform(post("/estoque/itens/entrada")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(semQtd)))
+                .andExpect(status().isBadRequest());
+    }
+
+    // ─────────────────────────────────────────────
+    // PATCH /estoque/itens/{id}/venda
+    // ─────────────────────────────────────────────
+    @Test
+    @WithMockUser
+    @DisplayName("PATCH /venda - deve diminuir estoque e registrar VENDA")
+    void deveRegistrarVenda() throws Exception {
+        var peca = salvarPeca(10, 3);
+
+        mockMvc.perform(patch("/estoque/itens/{id}/venda", peca.getId())
+                        .param("quantidade", "4")
+                        .param("observacao", "Venda OS-001"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/estoque/itens/{id}", peca.getId()))
+                .andExpect(jsonPath("$.quantidadeEstoque").value(6));
+
+        mockMvc.perform(get("/estoque/movimentacoes/item/{id}", peca.getId()))
+                .andExpect(jsonPath("$[0].tipoMovimentacao").value("VENDA"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("PATCH /venda - deve retornar 400 quando estoque insuficiente")
+    void deveRetornar400VendaInsuficiente() throws Exception {
+        var peca = salvarPeca(5, 1);
+
+        mockMvc.perform(patch("/estoque/itens/{id}/venda", peca.getId())
                         .param("quantidade", "999"))
                 .andExpect(status().isBadRequest());
     }
 
+    // ─────────────────────────────────────────────
+    // PATCH /estoque/itens/{id}/reserva
+    // ─────────────────────────────────────────────
+    @Test
+    @WithMockUser
+    @DisplayName("PATCH /reserva - deve diminuir estoque e registrar RESERVA")
+    void deveRegistrarReserva() throws Exception {
+        var peca = salvarPeca(10, 3);
+
+        mockMvc.perform(patch("/estoque/itens/{id}/reserva", peca.getId())
+                        .param("quantidade", "3")
+                        .param("observacao", "Reserva OS-010"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/estoque/itens/{id}", peca.getId()))
+                .andExpect(jsonPath("$.quantidadeEstoque").value(7));
+
+        mockMvc.perform(get("/estoque/movimentacoes/item/{id}", peca.getId()))
+                .andExpect(jsonPath("$[0].tipoMovimentacao").value("RESERVA"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("PATCH /reserva - deve retornar 400 quando estoque insuficiente")
+    void deveRetornar400ReservaInsuficiente() throws Exception {
+        var peca = salvarPeca(2, 1);
+
+        mockMvc.perform(patch("/estoque/itens/{id}/reserva", peca.getId())
+                        .param("quantidade", "999"))
+                .andExpect(status().isBadRequest());
+    }
+
+    // ─────────────────────────────────────────────
+    // Autenticação
+    // ─────────────────────────────────────────────
     @Test
     @DisplayName("GET /estoque/itens - deve retornar 401 sem autenticação")
     void deveExigirAutenticacao() throws Exception {
         mockMvc.perform(get("/estoque/itens"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // ─────────────────────────────────────────────
+    // Fluxo completo
+    // ─────────────────────────────────────────────
+    @Test
+    @WithMockUser
+    @DisplayName("Fluxo completo: entrada → reserva → venda → abaixo do mínimo → movimentações")
+    void deveExecutarFluxoCompleto() throws Exception {
+        var peca = salvarPeca(5, 8);
+        String id = peca.getId().toString();
+
+        // estoque inicial (5) já está abaixo do mínimo (8)
+        mockMvc.perform(get("/estoque/itens/{id}", id))
+                .andExpect(jsonPath("$.abaixoDoMinimo").value(true));
+
+        // entrada de 10 → estoque = 15
+        mockMvc.perform(post("/estoque/itens/entrada")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(entradaReposicao(peca.getId(), 10, "Reposição"))))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/estoque/itens/{id}", id))
+                .andExpect(jsonPath("$.quantidadeEstoque").value(15))
+                .andExpect(jsonPath("$.abaixoDoMinimo").value(false));
+
+        // reserva de 5 → estoque = 10
+        mockMvc.perform(patch("/estoque/itens/{id}/reserva", id)
+                        .param("quantidade", "5").param("observacao", "Reserva OS-001"))
+                .andExpect(status().isOk());
+
+        // venda de 4 → estoque = 6 (abaixo do mínimo 8)
+        mockMvc.perform(patch("/estoque/itens/{id}/venda", id)
+                        .param("quantidade", "4").param("observacao", "Venda OS-001"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/estoque/itens/{id}", id))
+                .andExpect(jsonPath("$.quantidadeEstoque").value(6))
+                .andExpect(jsonPath("$.abaixoDoMinimo").value(true));
+
+        // verificar alerta
+        mockMvc.perform(get("/estoque/itens/abaixo-do-minimo"))
+                .andExpect(jsonPath("$", hasSize(1)));
+
+        // verificar 3 movimentações: ENTRADA + RESERVA + VENDA
+        mockMvc.perform(get("/estoque/movimentacoes/item/{id}", id))
+                .andExpect(jsonPath("$", hasSize(3)));
     }
 }
