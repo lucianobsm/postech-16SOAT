@@ -3,6 +3,7 @@ package com.fiap.tech_challenge_backend.estoque.presentation;
 import com.fiap.tech_challenge_backend.estoque.domain.entities.MovimentacaoEstoque;
 import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoMovimentacao;
+import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.MovimentacaoRepository;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,6 +64,7 @@ class MovimentacaoControllerIT {
                 .precoCompra(new BigDecimal("25.00"))
                 .quantidadeEstoque(20)
                 .quantidadeMinima(5)
+                .tipo(TipoPecaInsumo.PECA)
                 .build());
     }
 
@@ -157,6 +159,7 @@ class MovimentacaoControllerIT {
                 .precoCompra(new BigDecimal("50.00"))
                 .quantidadeEstoque(10)
                 .quantidadeMinima(3)
+                .tipo(TipoPecaInsumo.PECA)
                 .build());
 
         salvarMovimentacao(peca1, TipoMovimentacao.ENTRADA, 10, "Peca 1");

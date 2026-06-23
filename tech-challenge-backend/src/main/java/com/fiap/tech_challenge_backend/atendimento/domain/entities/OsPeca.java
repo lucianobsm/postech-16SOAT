@@ -16,8 +16,10 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
@@ -25,12 +27,16 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "os_pecas")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = "ordemServico")
 public class OsPeca {
 
+    @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
@@ -40,7 +46,6 @@ public class OsPeca {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ordem_servico_id", nullable = false,
         foreignKey = @ForeignKey(name = "fk_os_peca_ordem_servico"))
-    @ToString.Exclude
     private OrdemServico ordemServico;
 
     @NotNull(message = "A peca/insumo e obrigatoria")

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fiap.tech_challenge_backend.estoque.application.dto.EntradaEstoqueRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
+import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.MovimentacaoRepository;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,27 +61,32 @@ class ItemEstoqueControllerIT {
     }
 
     private PecaInsumo salvarPeca(int estoque, int minimo) {
+        return salvarPeca("Filtro de óleo", estoque, minimo, TipoPecaInsumo.PECA);
+    }
+
+    private PecaInsumo salvarPeca(String nome, int estoque, int minimo, TipoPecaInsumo tipo) {
         return pecaRepository.save(PecaInsumo.builder()
-                .nome("Filtro de óleo")
+                .nome(nome)
                 .precoVenda(new BigDecimal("35.00"))
                 .precoCompra(new BigDecimal("25.00"))
                 .quantidadeEstoque(estoque)
                 .quantidadeMinima(minimo)
+                .tipo(tipo)
                 .build());
     }
 
     private PecaInsumoRequestDTO requestAtualizar(String nome, int estoque, int minimo) {
         return new PecaInsumoRequestDTO(nome, null,
-                new BigDecimal("35.00"), new BigDecimal("25.00"), null, estoque, minimo);
+                new BigDecimal("35.00"), new BigDecimal("25.00"), null, estoque, minimo, TipoPecaInsumo.PECA);
     }
 
     private EntradaEstoqueRequestDTO entradaNova(String nome, int quantidade, int minimo) {
         return new EntradaEstoqueRequestDTO(null, nome, "Insumo novo",
-                new BigDecimal("35.00"), new BigDecimal("25.00"), "Unidade", quantidade, minimo, "Compra inicial");
+                new BigDecimal("35.00"), new BigDecimal("25.00"), "Unidade", quantidade, minimo, "Compra inicial", TipoPecaInsumo.INSUMO);
     }
 
     private EntradaEstoqueRequestDTO entradaReposicao(UUID id, int quantidade, String observacao) {
-        return new EntradaEstoqueRequestDTO(id, null, null, null, null, null, quantidade, null, observacao);
+        return new EntradaEstoqueRequestDTO(id, null, null, null, null, null, quantidade, null, observacao, null);
     }
 
     // ─────────────────────────────────────────────
@@ -105,6 +111,32 @@ class ItemEstoqueControllerIT {
         mockMvc.perform(get("/estoque/itens"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /estoque/itens?tipo=PECA - deve retornar apenas peças")
+    void deveListarFiltrandoPorTipoPeca() throws Exception {
+        salvarPeca("Filtro de óleo", 10, 3, TipoPecaInsumo.PECA);
+        salvarPeca("Óleo 5W30", 20, 5, TipoPecaInsumo.INSUMO);
+
+        mockMvc.perform(get("/estoque/itens").param("tipo", "PECA"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].tipo").value("PECA"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /estoque/itens?tipo=INSUMO - deve retornar apenas insumos")
+    void deveListarFiltrandoPorTipoInsumo() throws Exception {
+        salvarPeca("Filtro de óleo", 10, 3, TipoPecaInsumo.PECA);
+        salvarPeca("Óleo 5W30", 20, 5, TipoPecaInsumo.INSUMO);
+
+        mockMvc.perform(get("/estoque/itens").param("tipo", "INSUMO"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].tipo").value("INSUMO"));
     }
 
     // ─────────────────────────────────────────────
@@ -233,7 +265,7 @@ class ItemEstoqueControllerIT {
     @DisplayName("POST /entrada - deve retornar 400 quando peça nova sem nome")
     void deveRetornar400EntradaNovaSemNome() throws Exception {
         var semNome = new EntradaEstoqueRequestDTO(null, null, null,
-                new BigDecimal("35.00"), new BigDecimal("25.00"), null, 10, 0, null);
+                new BigDecimal("35.00"), new BigDecimal("25.00"), null, 10, 0, null, TipoPecaInsumo.PECA);
 
         mockMvc.perform(post("/estoque/itens/entrada")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -243,10 +275,23 @@ class ItemEstoqueControllerIT {
 
     @Test
     @WithMockUser
+    @DisplayName("POST /entrada - deve retornar 400 quando tipo ausente em peça nova")
+    void deveRetornar400EntradaNovaSemTipo() throws Exception {
+        var semTipo = new EntradaEstoqueRequestDTO(null, "Vela", null,
+                new BigDecimal("35.00"), new BigDecimal("25.00"), null, 10, 0, null, null);
+
+        mockMvc.perform(post("/estoque/itens/entrada")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(semTipo)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
     @DisplayName("POST /entrada - deve retornar 400 quando quantidade ausente")
     void deveRetornar400EntradaSemQuantidade() throws Exception {
         var semQtd = new EntradaEstoqueRequestDTO(null, "Vela", null,
-                new BigDecimal("35.00"), new BigDecimal("25.00"), null, null, 0, null);
+                new BigDecimal("35.00"), new BigDecimal("25.00"), null, null, 0, null, TipoPecaInsumo.PECA);
 
         mockMvc.perform(post("/estoque/itens/entrada")
                         .contentType(MediaType.APPLICATION_JSON)

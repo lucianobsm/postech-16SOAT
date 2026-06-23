@@ -7,6 +7,7 @@ import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoRespons
 import com.fiap.tech_challenge_backend.estoque.domain.entities.MovimentacaoEstoque;
 import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoMovimentacao;
+import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.MovimentacaoRepository;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -50,6 +51,9 @@ public class EstoqueService {
             if (request.precoVenda() == null || request.precoCompra() == null) {
                 throw new IllegalArgumentException("Preço de venda e de compra são obrigatórios para cadastrar uma nova peça/insumo");
             }
+            if (request.tipo() == null) {
+                throw new IllegalArgumentException("O tipo (PECA ou INSUMO) é obrigatório para cadastrar uma nova peça/insumo");
+            }
             peca = PecaInsumo.builder()
                     .nome(request.nome())
                     .descricao(request.descricao())
@@ -58,6 +62,7 @@ public class EstoqueService {
                     .quantidadePorUnidade(request.quantidadePorUnidade())
                     .quantidadeEstoque(request.quantidade())
                     .quantidadeMinima(request.quantidadeMinima() != null ? request.quantidadeMinima() : 0)
+                    .tipo(request.tipo())
                     .build();
         }
 
@@ -81,6 +86,7 @@ public class EstoqueService {
         peca.setQuantidadePorUnidade(request.quantidadePorUnidade());
         peca.setQuantidadeEstoque(request.quantidadeEstoque());
         peca.setQuantidadeMinima(request.quantidadeMinima());
+        peca.setTipo(request.tipo());
         var salva = pecaInsumoRepository.save(peca);
         int diferenca = Math.abs(request.quantidadeEstoque() - estoqueAnterior);
         if (diferenca > 0) {
@@ -100,10 +106,11 @@ public class EstoqueService {
     }
 
     @Transactional(readOnly = true)
-    public List<PecaInsumoResponseDTO> listarTodos() {
-        return pecaInsumoRepository.findAll().stream()
-                .map(PecaInsumoResponseDTO::from)
-                .toList();
+    public List<PecaInsumoResponseDTO> listarTodos(TipoPecaInsumo tipo) {
+        List<PecaInsumo> itens = tipo != null
+                ? pecaInsumoRepository.findByTipo(tipo)
+                : pecaInsumoRepository.findAll();
+        return itens.stream().map(PecaInsumoResponseDTO::from).toList();
     }
 
     @Transactional(readOnly = true)
@@ -160,6 +167,18 @@ public class EstoqueService {
         return movimentacaoRepository.findByPecaInsumoOrderByCriadoEmDesc(peca).stream()
                 .map(MovimentacaoResponseDTO::from)
                 .toList();
+    }
+
+    public void cancelarReserva(UUID id, Integer quantidade, String observacao) {
+        var peca = buscarEntidade(id);
+        peca.entrada(quantidade);
+        pecaInsumoRepository.save(peca);
+        movimentacaoRepository.save(MovimentacaoEstoque.builder()
+                .pecaInsumo(peca)
+                .tipoMovimentacao(TipoMovimentacao.AJUSTE)
+                .quantidade(quantidade)
+                .observacao(observacao)
+                .build());
     }
 
     private PecaInsumo buscarEntidade(UUID id) {

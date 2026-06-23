@@ -1,5 +1,6 @@
 package com.fiap.tech_challenge_backend.estoque.application.dto;
 
+import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -15,7 +16,7 @@ import java.util.UUID;
  * peça/insumo é cadastrada com {@code quantidade} como estoque inicial. Em ambos
  * os casos é gerada uma movimentação do tipo ENTRADA.</p>
  *
- * <p>Os campos cadastrais (nome, preços) são obrigatórios apenas no cadastro de
+ * <p>Os campos cadastrais (nome, preços, tipo) são obrigatórios apenas no cadastro de
  * uma peça nova; na reposição de uma peça existente podem ser omitidos.</p>
  */
 public record EntradaEstoqueRequestDTO(
@@ -29,6 +30,7 @@ public record EntradaEstoqueRequestDTO(
         @Positive(message = "A quantidade de entrada deve ser maior que zero")
         Integer quantidade,
         @PositiveOrZero Integer quantidadeMinima,
-        String observacao
+        String observacao,
+        TipoPecaInsumo tipo
 ) {
 }

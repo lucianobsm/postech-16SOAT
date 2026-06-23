@@ -5,6 +5,7 @@ import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoRequest
 import com.fiap.tech_challenge_backend.estoque.domain.entities.MovimentacaoEstoque;
 import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoMovimentacao;
+import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.MovimentacaoRepository;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -48,6 +49,7 @@ class EstoqueServiceTest {
                 .precoCompra(new BigDecimal("25.00"))
                 .quantidadeEstoque(10)
                 .quantidadeMinima(3)
+                .tipo(TipoPecaInsumo.PECA)
                 .build();
     }
 
@@ -55,7 +57,7 @@ class EstoqueServiceTest {
         return new PecaInsumoRequestDTO(
                 "Filtro de óleo", null,
                 new BigDecimal("35.00"), new BigDecimal("25.00"),
-                null, 10, 3
+                null, 10, 3, TipoPecaInsumo.PECA
         );
     }
 
@@ -70,7 +72,7 @@ class EstoqueServiceTest {
             return new EntradaEstoqueRequestDTO(
                     null, "Vela de ignição", "NGK",
                     new BigDecimal("18.00"), new BigDecimal("9.00"),
-                    "Jogo c/4", quantidade, 5, "Compra inicial"
+                    "Jogo c/4", quantidade, 5, "Compra inicial", TipoPecaInsumo.PECA
             );
         }
 
@@ -87,6 +89,7 @@ class EstoqueServiceTest {
             verify(pecaInsumoRepository).save(captorPeca.capture());
             assertThat(captorPeca.getValue().getNome()).isEqualTo("Vela de ignição");
             assertThat(captorPeca.getValue().getQuantidadeEstoque()).isEqualTo(40);
+            assertThat(captorPeca.getValue().getTipo()).isEqualTo(TipoPecaInsumo.PECA);
             assertThat(response.nome()).isEqualTo("Vela de ignição");
 
             var captorMov = ArgumentCaptor.forClass(MovimentacaoEstoque.class);
@@ -106,7 +109,7 @@ class EstoqueServiceTest {
             var request = new EntradaEstoqueRequestDTO(
                     inexistente, "Vela de ignição", null,
                     new BigDecimal("18.00"), new BigDecimal("9.00"),
-                    null, 10, null, null
+                    null, 10, null, null, TipoPecaInsumo.INSUMO
             );
 
             service.darEntrada(request);
@@ -125,7 +128,7 @@ class EstoqueServiceTest {
             var request = new EntradaEstoqueRequestDTO(
                     null, "Vela", null,
                     new BigDecimal("18.00"), new BigDecimal("9.00"),
-                    null, 10, null, null
+                    null, 10, null, null, TipoPecaInsumo.PECA
             );
 
             var response = service.darEntrada(request);
@@ -141,7 +144,7 @@ class EstoqueServiceTest {
             when(movimentacaoRepository.save(any())).thenReturn(new MovimentacaoEstoque());
 
             var request = new EntradaEstoqueRequestDTO(
-                    pecaId, null, null, null, null, null, 5, null, "Reposição NF-002"
+                    pecaId, null, null, null, null, null, 5, null, "Reposição NF-002", null
             );
 
             service.darEntrada(request);
@@ -160,7 +163,7 @@ class EstoqueServiceTest {
             var request = new EntradaEstoqueRequestDTO(
                     null, "  ", null,
                     new BigDecimal("18.00"), new BigDecimal("9.00"),
-                    null, 10, null, null
+                    null, 10, null, null, TipoPecaInsumo.PECA
             );
 
             assertThatThrownBy(() -> service.darEntrada(request))
@@ -173,12 +176,27 @@ class EstoqueServiceTest {
         @DisplayName("deve lançar exceção quando preços ausentes no cadastro de peça nova")
         void deveLancarExcecaoQuandoPrecosAusentes() {
             var request = new EntradaEstoqueRequestDTO(
-                    null, "Vela", null, null, null, null, 10, null, null
+                    null, "Vela", null, null, null, null, 10, null, null, TipoPecaInsumo.PECA
             );
 
             assertThatThrownBy(() -> service.darEntrada(request))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Preço");
+            verify(movimentacaoRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("deve lançar exceção quando tipo ausente no cadastro de peça nova")
+        void deveLancarExcecaoQuandoTipoAusente() {
+            var request = new EntradaEstoqueRequestDTO(
+                    null, "Vela", null,
+                    new BigDecimal("18.00"), new BigDecimal("9.00"),
+                    null, 10, null, null, null
+            );
+
+            assertThatThrownBy(() -> service.darEntrada(request))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("tipo");
             verify(movimentacaoRepository, never()).save(any());
         }
     }
@@ -198,7 +216,7 @@ class EstoqueServiceTest {
             when(movimentacaoRepository.save(any())).thenReturn(new MovimentacaoEstoque());
 
             var request = new PecaInsumoRequestDTO("Filtro de óleo", null,
-                    new BigDecimal("35.00"), new BigDecimal("25.00"), null, 15, 3);
+                    new BigDecimal("35.00"), new BigDecimal("25.00"), null, 15, 3, TipoPecaInsumo.PECA);
 
             service.atualizar(pecaId, request);
 
@@ -217,6 +235,22 @@ class EstoqueServiceTest {
             service.atualizar(pecaId, requestPadrao());
 
             verify(movimentacaoRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("deve atualizar o tipo da peça")
+        void deveAtualizarTipo() {
+            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+            var request = new PecaInsumoRequestDTO("Filtro de óleo", null,
+                    new BigDecimal("35.00"), new BigDecimal("25.00"), null, 10, 3, TipoPecaInsumo.INSUMO);
+
+            var captor = ArgumentCaptor.forClass(PecaInsumo.class);
+            service.atualizar(pecaId, request);
+            verify(pecaInsumoRepository).save(captor.capture());
+
+            assertThat(captor.getValue().getTipo()).isEqualTo(TipoPecaInsumo.INSUMO);
         }
 
         @Test
@@ -264,11 +298,13 @@ class EstoqueServiceTest {
     class Listar {
 
         @Test
-        @DisplayName("deve retornar todos os itens")
+        @DisplayName("deve retornar todos os itens quando tipo é nulo")
         void deveListarTodos() {
             when(pecaInsumoRepository.findAll()).thenReturn(List.of(peca));
 
-            assertThat(service.listarTodos()).hasSize(1);
+            assertThat(service.listarTodos(null)).hasSize(1);
+            verify(pecaInsumoRepository).findAll();
+            verify(pecaInsumoRepository, never()).findByTipo(any());
         }
 
         @Test
@@ -276,7 +312,34 @@ class EstoqueServiceTest {
         void deveRetornarListaVazia() {
             when(pecaInsumoRepository.findAll()).thenReturn(List.of());
 
-            assertThat(service.listarTodos()).isEmpty();
+            assertThat(service.listarTodos(null)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("deve filtrar por tipo PECA")
+        void deveFiltrarPorTipoPeca() {
+            when(pecaInsumoRepository.findByTipo(TipoPecaInsumo.PECA)).thenReturn(List.of(peca));
+
+            var lista = service.listarTodos(TipoPecaInsumo.PECA);
+
+            assertThat(lista).hasSize(1);
+            assertThat(lista.get(0).tipo()).isEqualTo(TipoPecaInsumo.PECA);
+            verify(pecaInsumoRepository, never()).findAll();
+        }
+
+        @Test
+        @DisplayName("deve filtrar por tipo INSUMO")
+        void deveFiltrarPorTipoInsumo() {
+            var insumo = PecaInsumo.builder()
+                    .id(UUID.randomUUID()).nome("Óleo 5W30")
+                    .precoVenda(new BigDecimal("60.00")).precoCompra(new BigDecimal("40.00"))
+                    .quantidadeEstoque(20).quantidadeMinima(5).tipo(TipoPecaInsumo.INSUMO).build();
+            when(pecaInsumoRepository.findByTipo(TipoPecaInsumo.INSUMO)).thenReturn(List.of(insumo));
+
+            var lista = service.listarTodos(TipoPecaInsumo.INSUMO);
+
+            assertThat(lista).hasSize(1);
+            assertThat(lista.get(0).tipo()).isEqualTo(TipoPecaInsumo.INSUMO);
         }
 
         @Test

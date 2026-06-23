@@ -1,6 +1,7 @@
 package com.fiap.tech_challenge_backend.estoque.application.dto;
 
 import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
+import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +37,7 @@ class PecaInsumoDTOTest {
             var dto = new PecaInsumoRequestDTO(
                     "Filtro de óleo", "Filtro original",
                     new BigDecimal("35.00"), new BigDecimal("20.00"),
-                    "Unidade", 10, 3
+                    "Unidade", 10, 3, TipoPecaInsumo.PECA
             );
 
             assertThat(dto.nome()).isEqualTo("Filtro de óleo");
@@ -46,6 +47,7 @@ class PecaInsumoDTOTest {
             assertThat(dto.quantidadePorUnidade()).isEqualTo("Unidade");
             assertThat(dto.quantidadeEstoque()).isEqualTo(10);
             assertThat(dto.quantidadeMinima()).isEqualTo(3);
+            assertThat(dto.tipo()).isEqualTo(TipoPecaInsumo.PECA);
         }
 
         @Test
@@ -54,7 +56,7 @@ class PecaInsumoDTOTest {
             var dto = new PecaInsumoRequestDTO(
                     "Vela", null,
                     new BigDecimal("10.00"), new BigDecimal("6.00"),
-                    null, 0, 0
+                    null, 0, 0, TipoPecaInsumo.PECA
             );
 
             assertThat(dto.descricao()).isNull();
@@ -68,10 +70,36 @@ class PecaInsumoDTOTest {
             var dto = new PecaInsumoRequestDTO(
                     "Pastilha de freio", null,
                     new BigDecimal("80.00"), new BigDecimal("50.00"),
-                    null, 5, 2
+                    null, 5, 2, TipoPecaInsumo.PECA
             );
 
             assertThat(validator.validate(dto)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("deve aceitar tipo INSUMO")
+        void deveAceitarTipoInsumo() {
+            var dto = new PecaInsumoRequestDTO(
+                    "Óleo 5W30", null,
+                    new BigDecimal("50.00"), new BigDecimal("30.00"),
+                    "Litro", 20, 5, TipoPecaInsumo.INSUMO
+            );
+
+            assertThat(dto.tipo()).isEqualTo(TipoPecaInsumo.INSUMO);
+            assertThat(validator.validate(dto)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("deve falhar quando tipo é nulo")
+        void deveFalharQuandoTipoNulo() {
+            var dto = new PecaInsumoRequestDTO(
+                    "Filtro", null,
+                    new BigDecimal("10.00"), new BigDecimal("6.00"),
+                    null, 0, 0, null
+            );
+
+            var violacoes = validator.validate(dto);
+            assertThat(violacoes).anyMatch(v -> v.getPropertyPath().toString().equals("tipo"));
         }
 
         @Test
@@ -80,7 +108,7 @@ class PecaInsumoDTOTest {
             var dto = new PecaInsumoRequestDTO(
                     "  ", null,
                     new BigDecimal("10.00"), new BigDecimal("6.00"),
-                    null, 0, 0
+                    null, 0, 0, TipoPecaInsumo.PECA
             );
 
             var violacoes = validator.validate(dto);
@@ -93,7 +121,7 @@ class PecaInsumoDTOTest {
             var dto = new PecaInsumoRequestDTO(
                     null, null,
                     new BigDecimal("10.00"), new BigDecimal("6.00"),
-                    null, 0, 0
+                    null, 0, 0, TipoPecaInsumo.PECA
             );
 
             var violacoes = validator.validate(dto);
@@ -103,7 +131,7 @@ class PecaInsumoDTOTest {
         @Test
         @DisplayName("deve falhar quando precoVenda é nulo")
         void deveFalharQuandoPrecoVendaNulo() {
-            var dto = new PecaInsumoRequestDTO("Filtro", null, null, new BigDecimal("6.00"), null, 0, 0);
+            var dto = new PecaInsumoRequestDTO("Filtro", null, null, new BigDecimal("6.00"), null, 0, 0, TipoPecaInsumo.PECA);
 
             var violacoes = validator.validate(dto);
             assertThat(violacoes).anyMatch(v -> v.getPropertyPath().toString().equals("precoVenda"));
@@ -112,7 +140,7 @@ class PecaInsumoDTOTest {
         @Test
         @DisplayName("deve falhar quando precoVenda é zero ou negativo")
         void deveFalharQuandoPrecoVendaNaoPositivo() {
-            var dto = new PecaInsumoRequestDTO("Filtro", null, BigDecimal.ZERO, new BigDecimal("6.00"), null, 0, 0);
+            var dto = new PecaInsumoRequestDTO("Filtro", null, BigDecimal.ZERO, new BigDecimal("6.00"), null, 0, 0, TipoPecaInsumo.PECA);
 
             var violacoes = validator.validate(dto);
             assertThat(violacoes).anyMatch(v -> v.getPropertyPath().toString().equals("precoVenda"));
@@ -121,7 +149,7 @@ class PecaInsumoDTOTest {
         @Test
         @DisplayName("deve falhar quando precoCompra é nulo")
         void deveFalharQuandoPrecoCompraNulo() {
-            var dto = new PecaInsumoRequestDTO("Filtro", null, new BigDecimal("10.00"), null, null, 0, 0);
+            var dto = new PecaInsumoRequestDTO("Filtro", null, new BigDecimal("10.00"), null, null, 0, 0, TipoPecaInsumo.PECA);
 
             var violacoes = validator.validate(dto);
             assertThat(violacoes).anyMatch(v -> v.getPropertyPath().toString().equals("precoCompra"));
@@ -131,7 +159,7 @@ class PecaInsumoDTOTest {
         @DisplayName("deve falhar quando quantidadeEstoque é nulo")
         void deveFalharQuandoQuantidadeEstoqueNula() {
             var dto = new PecaInsumoRequestDTO("Filtro", null,
-                    new BigDecimal("10.00"), new BigDecimal("6.00"), null, null, 0);
+                    new BigDecimal("10.00"), new BigDecimal("6.00"), null, null, 0, TipoPecaInsumo.PECA);
 
             var violacoes = validator.validate(dto);
             assertThat(violacoes).anyMatch(v -> v.getPropertyPath().toString().equals("quantidadeEstoque"));
@@ -141,7 +169,7 @@ class PecaInsumoDTOTest {
         @DisplayName("deve falhar quando quantidadeEstoque é negativo")
         void deveFalharQuandoQuantidadeEstoqueNegativa() {
             var dto = new PecaInsumoRequestDTO("Filtro", null,
-                    new BigDecimal("10.00"), new BigDecimal("6.00"), null, -1, 0);
+                    new BigDecimal("10.00"), new BigDecimal("6.00"), null, -1, 0, TipoPecaInsumo.PECA);
 
             var violacoes = validator.validate(dto);
             assertThat(violacoes).anyMatch(v -> v.getPropertyPath().toString().equals("quantidadeEstoque"));
@@ -151,7 +179,7 @@ class PecaInsumoDTOTest {
         @DisplayName("deve falhar quando quantidadeMinima é nula")
         void deveFalharQuandoQuantidadeMiNimaNula() {
             var dto = new PecaInsumoRequestDTO("Filtro", null,
-                    new BigDecimal("10.00"), new BigDecimal("6.00"), null, 0, null);
+                    new BigDecimal("10.00"), new BigDecimal("6.00"), null, 0, null, TipoPecaInsumo.PECA);
 
             var violacoes = validator.validate(dto);
             assertThat(violacoes).anyMatch(v -> v.getPropertyPath().toString().equals("quantidadeMinima"));
@@ -161,7 +189,7 @@ class PecaInsumoDTOTest {
         @DisplayName("deve falhar quando quantidadeMinima é negativa")
         void deveFalharQuandoQuantidadeMinimaaNegativa() {
             var dto = new PecaInsumoRequestDTO("Filtro", null,
-                    new BigDecimal("10.00"), new BigDecimal("6.00"), null, 0, -1);
+                    new BigDecimal("10.00"), new BigDecimal("6.00"), null, 0, -1, TipoPecaInsumo.PECA);
 
             var violacoes = validator.validate(dto);
             assertThat(violacoes).anyMatch(v -> v.getPropertyPath().toString().equals("quantidadeMinima"));
@@ -185,6 +213,7 @@ class PecaInsumoDTOTest {
                     .quantidadePorUnidade("Unidade")
                     .quantidadeEstoque(10)
                     .quantidadeMinima(3)
+                    .tipo(TipoPecaInsumo.PECA)
                     .build();
         }
 
@@ -202,6 +231,25 @@ class PecaInsumoDTOTest {
             assertThat(dto.quantidadePorUnidade()).isEqualTo("Unidade");
             assertThat(dto.quantidadeEstoque()).isEqualTo(10);
             assertThat(dto.quantidadeMinima()).isEqualTo(3);
+            assertThat(dto.tipo()).isEqualTo(TipoPecaInsumo.PECA);
+        }
+
+        @Test
+        @DisplayName("from() deve mapear tipo INSUMO")
+        void deveMapearTipoInsumo() {
+            var peca = PecaInsumo.builder()
+                    .id(UUID.randomUUID())
+                    .nome("Óleo 5W30")
+                    .precoVenda(new BigDecimal("60.00"))
+                    .precoCompra(new BigDecimal("40.00"))
+                    .quantidadeEstoque(20)
+                    .quantidadeMinima(5)
+                    .tipo(TipoPecaInsumo.INSUMO)
+                    .build();
+
+            var dto = PecaInsumoResponseDTO.from(peca);
+
+            assertThat(dto.tipo()).isEqualTo(TipoPecaInsumo.INSUMO);
         }
 
         @Test
@@ -223,6 +271,7 @@ class PecaInsumoDTOTest {
                     .precoCompra(new BigDecimal("6.00"))
                     .quantidadeEstoque(1)
                     .quantidadeMinima(5)
+                    .tipo(TipoPecaInsumo.PECA)
                     .build();
 
             var dto = PecaInsumoResponseDTO.from(peca);
@@ -240,6 +289,7 @@ class PecaInsumoDTOTest {
                     .precoCompra(new BigDecimal("6.00"))
                     .quantidadeEstoque(5)
                     .quantidadeMinima(2)
+                    .tipo(TipoPecaInsumo.PECA)
                     .build();
 
             var dto = PecaInsumoResponseDTO.from(peca);
@@ -257,6 +307,7 @@ class PecaInsumoDTOTest {
                     .precoCompra(new BigDecimal("6.00"))
                     .quantidadeEstoque(0)
                     .quantidadeMinima(0)
+                    .tipo(TipoPecaInsumo.PECA)
                     .build();
 
             var dto = PecaInsumoResponseDTO.from(peca);
