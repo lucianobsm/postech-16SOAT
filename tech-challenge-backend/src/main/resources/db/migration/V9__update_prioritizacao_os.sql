@@ -72,7 +72,7 @@ WHERE id IN (
 
 UPDATE ordens_servico
 SET urgente = TRUE
-WHERE id = '88888888-8888-4888-8888-888888888881';
+WHERE id = 20260001;
 
 -- =====================================================
 -- BÔNUS: consulta de validação para o painel administrativo

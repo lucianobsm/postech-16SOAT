@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS os_historico_status (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    ordem_servico_id UUID NOT NULL,
+    ordem_servico_id BIGINT NOT NULL,
     status_origem VARCHAR(30) NULL,
     status_destino VARCHAR(30) NOT NULL,
     data_mudanca TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
