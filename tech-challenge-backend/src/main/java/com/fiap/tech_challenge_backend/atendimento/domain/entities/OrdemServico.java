@@ -22,6 +22,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
@@ -104,6 +105,13 @@ public class OrdemServico {
     @Setter(AccessLevel.NONE)
     private Boolean urgente = false;
 
+    @NotBlank(message = "A queixa do cliente é obrigatória")
+    @Column(name = "queixa_cliente", nullable = false, columnDefinition = "TEXT")
+    private String queixaCliente;
+
+    @Column(name = "observacoes", columnDefinition = "TEXT")
+    private String observacoes;
+
     @Valid
     @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -179,6 +187,13 @@ public class OrdemServico {
         }
 
         this.urgente = urgente;
+    }
+
+    public void alterarStatus(StatusOrdemServico novoStatus, Usuario novoMecanico) {
+        this.status = novoStatus;
+        if (novoMecanico != null) {
+            this.mecanico = novoMecanico;
+        }
     }
 }
 

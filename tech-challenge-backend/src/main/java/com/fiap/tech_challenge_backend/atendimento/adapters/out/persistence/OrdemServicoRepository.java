@@ -62,6 +62,19 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, UUID
 			)
 			""")
 	Optional<OrdemServico> findByOrcamentoId(@Param("orcamentoId") UUID orcamentoId);
+
+	@Query("""
+			SELECT DISTINCT os
+			FROM OrdemServico os
+			JOIN FETCH os.cliente
+			LEFT JOIN FETCH os.veiculo
+			LEFT JOIN FETCH os.mecanico
+			LEFT JOIN FETCH os.orcamentos orc
+			LEFT JOIN FETCH orc.servicos
+			LEFT JOIN FETCH orc.pecas
+			WHERE os.id = :id
+			""")
+	Optional<OrdemServico> findByIdWithOrcamentos(@Param("id") UUID id);
 }
 
 

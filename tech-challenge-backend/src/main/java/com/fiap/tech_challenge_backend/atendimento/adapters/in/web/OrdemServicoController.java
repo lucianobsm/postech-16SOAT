@@ -2,12 +2,14 @@ package com.fiap.tech_challenge_backend.atendimento.adapters.in.web;
 
 import com.fiap.tech_challenge_backend.atendimento.adapters.in.web.constants.AtendimentoApiPaths;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.AlterarStatusRequestDTO;
+import com.fiap.tech_challenge_backend.atendimento.application.dto.CriarOrdemServicoClienteRequestDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrdemServicoAtualizarRequestDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrdemServicoRequestDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrdemServicoResponseDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.AlterarStatusOrdemServicoUseCase;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.AtualizarOrdemServicoUseCase;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.BuscarOrdemServicoUseCase;
+import com.fiap.tech_challenge_backend.atendimento.application.ports.in.CriarOrdemServicoClienteUseCase;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.CriarOrdemServicoUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -39,15 +41,18 @@ import java.util.UUID;
 public class OrdemServicoController {
 
     private final CriarOrdemServicoUseCase criarUseCase;
+    private final CriarOrdemServicoClienteUseCase criarClienteUseCase;
     private final BuscarOrdemServicoUseCase buscarUseCase;
     private final AtualizarOrdemServicoUseCase atualizarUseCase;
     private final AlterarStatusOrdemServicoUseCase alterarStatusUseCase;
 
     public OrdemServicoController(CriarOrdemServicoUseCase criarUseCase,
+                                  CriarOrdemServicoClienteUseCase criarClienteUseCase,
                                   BuscarOrdemServicoUseCase buscarUseCase,
                                   AtualizarOrdemServicoUseCase atualizarUseCase,
                                   AlterarStatusOrdemServicoUseCase alterarStatusUseCase) {
         this.criarUseCase = criarUseCase;
+        this.criarClienteUseCase = criarClienteUseCase;
         this.buscarUseCase = buscarUseCase;
         this.atualizarUseCase = atualizarUseCase;
         this.alterarStatusUseCase = alterarStatusUseCase;
@@ -59,6 +64,14 @@ public class OrdemServicoController {
     @Operation(summary = "Abrir nova Ordem de Serviço")
     public OrdemServicoResponseDTO criar(@Valid @RequestBody OrdemServicoRequestDTO request) {
         return criarUseCase.criar(request);
+    }
+
+    @PostMapping("")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('ADMIN', 'FUNCIONARIO', 'CLIENTE')")
+    @Operation(summary = "Abrir nova Ordem de Serviço (Cliente) - Identifica cliente por CPF/CNPJ e veículo por placa")
+    public OrdemServicoResponseDTO criarPorCliente(@Valid @RequestBody CriarOrdemServicoClienteRequestDTO request) {
+        return criarClienteUseCase.criar(request);
     }
 
     @GetMapping(AtendimentoApiPaths.LISTAR_OS)
@@ -97,7 +110,7 @@ public class OrdemServicoController {
     public OrdemServicoResponseDTO alterarStatus(@PathVariable UUID id,
                                                  @Valid @RequestBody AlterarStatusRequestDTO request,
                                                  @AuthenticationPrincipal Jwt jwt) {
-        return alterarStatusUseCase.alterarStatus(id, request.novoStatus(), jwt.getSubject());
+        return alterarStatusUseCase.alterarStatus(id, request.novoStatus(), request.mecanicoId(), jwt.getSubject());
     }
 }
 

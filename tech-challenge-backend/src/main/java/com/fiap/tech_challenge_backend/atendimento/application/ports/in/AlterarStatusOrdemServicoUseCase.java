@@ -9,15 +9,17 @@ import java.util.UUID;
 public interface AlterarStatusOrdemServicoUseCase {
 
     /**
-     * Altera o status de uma OS, registrando o evento no histórico.
+     * Altera o status de uma OS, com opcional associação de mecânico.
      *
      * @param ordemServicoId ID da OS a ser atualizada
      * @param novoStatus     novo status desejado
+     * @param mecanicoId     ID do mecânico responsável (opcional)
      * @param usuarioEmail   e-mail do usuário autenticado (extraído do JWT)
      * @return OS atualizada como DTO
      */
     OrdemServicoResponseDTO alterarStatus(UUID ordemServicoId,
                                           StatusOrdemServico novoStatus,
+                                          UUID mecanicoId,
                                           String usuarioEmail);
 }
 

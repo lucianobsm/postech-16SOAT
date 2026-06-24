@@ -27,7 +27,7 @@ public class OrdemServicoRepositoryAdapter implements OrdemServicoRepositoryPort
 
     @Override
     public Optional<OrdemServico> buscarPorId(UUID id) {
-        return repository.findById(id);
+        return repository.findByIdWithOrcamentos(id);
     }
 
     @Override

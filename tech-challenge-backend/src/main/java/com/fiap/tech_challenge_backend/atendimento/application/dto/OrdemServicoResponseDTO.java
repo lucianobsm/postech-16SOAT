@@ -5,6 +5,7 @@ import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServi
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -18,10 +19,13 @@ public record OrdemServicoResponseDTO(
         String mecanicoNome,
         StatusOrdemServico status,
         BigDecimal valorTotal,
+        String queixaCliente,
+        String observacoes,
         LocalDateTime dataCriacao,
         LocalDateTime dataInicioExecucao,
         LocalDateTime dataFinalizacao,
-        Boolean urgente
+        Boolean urgente,
+        List<OrcamentoDTO> orcamentos
 ) {
     public static OrdemServicoResponseDTO from(OrdemServico os) {
         return new OrdemServicoResponseDTO(
@@ -34,10 +38,17 @@ public record OrdemServicoResponseDTO(
                 os.getMecanico() != null ? os.getMecanico().getNome() : null,
                 os.getStatus(),
                 os.getValorTotal(),
+                os.getQueixaCliente(),
+                os.getObservacoes(),
                 os.getDataCriacao(),
                 os.getDataInicioExecucao(),
                 os.getDataFinalizacao(),
-                os.getUrgente()
+                os.getUrgente(),
+                os.getOrcamentos() != null
+                        ? os.getOrcamentos().stream()
+                        .map(OrcamentoDTO::from)
+                        .toList()
+                        : List.of()
         );
     }
 }
