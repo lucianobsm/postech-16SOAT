@@ -17,7 +17,7 @@ public interface AlterarStatusOrdemServicoUseCase {
      * @param usuarioEmail   e-mail do usuário autenticado (extraído do JWT)
      * @return OS atualizada como DTO
      */
-    OrdemServicoResponseDTO alterarStatus(UUID ordemServicoId,
+    OrdemServicoResponseDTO alterarStatus(Long ordemServicoId,
                                           StatusOrdemServico novoStatus,
                                           UUID mecanicoId,
                                           String usuarioEmail);

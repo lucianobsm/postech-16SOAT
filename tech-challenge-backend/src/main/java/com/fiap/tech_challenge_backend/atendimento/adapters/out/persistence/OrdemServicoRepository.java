@@ -5,12 +5,13 @@ import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServi
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface OrdemServicoRepository extends JpaRepository<OrdemServico, UUID> {
+public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long> {
 
 	@Query("""
 			SELECT os
@@ -61,20 +62,32 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, UUID
 				SELECT 1 FROM OsOrcamento orc WHERE orc.ordemServico = os AND orc.id = :orcamentoId
 			)
 			""")
-	Optional<OrdemServico> findByOrcamentoId(@Param("orcamentoId") UUID orcamentoId);
+	Optional<OrdemServico> findByOrcamentoId(@Param("orcamentoId") Long orcamentoId);
+
+	@EntityGraph(attributePaths = {
+			"cliente",
+			"veiculo",
+			"mecanico",
+			"orcamentos",
+			"orcamentos.servicos",
+			"orcamentos.servicos.servico",
+			"orcamentos.pecas",
+			"orcamentos.pecas.peca"
+	})
+	@Override
+	Optional<OrdemServico> findById(Long id);
 
 	@Query("""
-			SELECT DISTINCT os
+			SELECT MAX(os.id)
 			FROM OrdemServico os
-			JOIN FETCH os.cliente
-			LEFT JOIN FETCH os.veiculo
-			LEFT JOIN FETCH os.mecanico
-			LEFT JOIN FETCH os.orcamentos orc
-			LEFT JOIN FETCH orc.servicos
-			LEFT JOIN FETCH orc.pecas
-			WHERE os.id = :id
 			""")
-	Optional<OrdemServico> findByIdWithOrcamentos(@Param("id") UUID id);
+	Long findMaxId();
+
+	@Query("""
+			SELECT MAX(orc.id)
+			FROM OsOrcamento orc
+			""")
+	Long findMaxOrcamentoId();
 }
 
 

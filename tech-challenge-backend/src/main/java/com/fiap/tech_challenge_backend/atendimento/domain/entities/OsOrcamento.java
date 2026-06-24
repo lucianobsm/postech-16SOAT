@@ -1,8 +1,12 @@
 package com.fiap.tech_challenge_backend.atendimento.domain.entities;
 
+import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrcamento;
+import com.fiap.tech_challenge_backend.atendimento.domain.enums.TipoOrcamento;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
@@ -14,7 +18,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
@@ -39,9 +42,8 @@ import java.util.UUID;
 public class OsOrcamento {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    private Long id;
 
     @NotNull(message = "A ordem de servico do orcamento e obrigatoria")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -50,13 +52,16 @@ public class OsOrcamento {
     @ToString.Exclude
     private OrdemServico ordemServico;
 
-    @NotBlank(message = "O tipo do orcamento e obrigatorio")
+    @NotNull(message = "O tipo do orcamento e obrigatorio")
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo", nullable = false, length = 20)
-    private String tipo;
+    private TipoOrcamento tipo;
 
-    @NotBlank(message = "O status do orcamento e obrigatorio")
+    @NotNull(message = "O status do orcamento e obrigatorio")
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    @Builder.Default
+    private StatusOrcamento status = StatusOrcamento.PENDENTE;
 
     @NotNull(message = "O valor total do orcamento e obrigatorio")
     @PositiveOrZero(message = "O valor total do orcamento nao pode ser negativo")
@@ -102,7 +107,24 @@ public class OsOrcamento {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         this.valorTotal = totalServicos.add(totalPecas);
-        this.status = "PENDENTE";
+    }
+
+    public void aprovar() {
+        this.status = StatusOrcamento.APROVADO;
+    }
+
+    public void rejeitar() {
+        this.status = StatusOrcamento.REJEITADO;
+    }
+
+    public void adicionarServico(OsServico servico) {
+        servico.setOrcamento(this);
+        this.servicos.add(servico);
+    }
+
+    public void adicionarPeca(OsPeca peca) {
+        peca.setOrcamento(this);
+        this.pecas.add(peca);
     }
 }
 

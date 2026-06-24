@@ -46,8 +46,11 @@ public class CadastroVeiculoUseCase {
         Cliente cliente = buscarClientePeloCpfCnpj(cpfCnpj);
 
         Veiculo veiculo = Veiculo.builder()
-                .modelo(request.modelo())
                 .placa(placa)
+                .marca(request.marca())
+                .modelo(request.modelo())
+                .ano(request.ano())
+                .cor(request.cor())
                 .build();
 
         Veiculo veiculoCadastrado = veiculoRepository.salvar(veiculo);
@@ -63,7 +66,10 @@ public class CadastroVeiculoUseCase {
         return new CadastroVeiculoResponse(
                 veiculoCadastrado.getId(),
                 veiculoCadastrado.getPlaca().valor(),
+                veiculoCadastrado.getMarca(),
                 veiculoCadastrado.getModelo(),
+                veiculoCadastrado.getAno(),
+                veiculoCadastrado.getCor(),
                 cliente.getCpfCnpj().valor()
         );
     }

@@ -16,6 +16,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
@@ -34,6 +36,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.AccessLevel;
 
+import com.fiap.tech_challenge_backend.atendimento.domain.enums.TipoOrcamento;
 import com.fiap.tech_challenge_backend.atendimento.domain.exceptions.OrdemServicoStatusException;
 
 import java.math.BigDecimal;
@@ -41,9 +44,19 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.time.Year;
 
 @Entity
 @Table(name = "ordens_servico")
+@NamedEntityGraph(
+        name = "OrdemServico.withOrcamentosAndDetails",
+        attributeNodes = {
+                @NamedAttributeNode("cliente"),
+                @NamedAttributeNode("veiculo"),
+                @NamedAttributeNode("mecanico"),
+                @NamedAttributeNode("orcamentos")
+        }
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -51,9 +64,8 @@ import java.util.UUID;
 public class OrdemServico {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    private Long id;
 
     @NotNull(message = "O cliente da ordem de servico e obrigatorio")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -148,7 +160,7 @@ public class OrdemServico {
         }
     }
 
-    public void concluirDiagnostico(UUID orcamentoId, LocalDateTime prazoEstipulado) {
+    public void concluirDiagnostico(Long orcamentoId, LocalDateTime prazoEstipulado) {
         if (this.status != StatusOrdemServico.EM_DIAGNOSTICO) {
             throw new OrdemServicoStatusException(
                     "A OS deve estar no status EM_DIAGNOSTICO para concluir o diagnóstico. Status atual: " + this.status);
@@ -194,6 +206,58 @@ public class OrdemServico {
         if (novoMecanico != null) {
             this.mecanico = novoMecanico;
         }
+    }
+
+    public void adicionarOrcamento(OsOrcamento novoOrcamento) {
+        if (novoOrcamento.getTipo() == TipoOrcamento.INICIAL) {
+            boolean jaPossuiOrcamentoInicial = this.orcamentos.stream()
+                    .anyMatch(orc -> orc.getTipo() == TipoOrcamento.INICIAL);
+
+            if (jaPossuiOrcamentoInicial) {
+                throw new IllegalArgumentException(
+                        "Ordem de Serviço já possui um orçamento INICIAL. Não é permitido adicionar outro do mesmo tipo.");
+            }
+
+            novoOrcamento.calcularTotal();
+            this.orcamentos.add(novoOrcamento);
+            this.status = StatusOrdemServico.AGUARDANDO_APROVACAO;
+        } else {
+            novoOrcamento.calcularTotal();
+            this.orcamentos.add(novoOrcamento);
+        }
+    }
+
+    public void aprovarOrcamento(Long orcamentoId) {
+        OsOrcamento orcamento = this.orcamentos.stream()
+                .filter(orc -> orc.getId().equals(orcamentoId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Orçamento não encontrado nesta Ordem de Serviço: " + orcamentoId));
+
+        if (this.status != StatusOrdemServico.AGUARDANDO_APROVACAO) {
+            throw new OrdemServicoStatusException(
+                    "A OS deve estar no status AGUARDANDO_APROVACAO para aprovar um orçamento. Status atual: " + this.status);
+        }
+
+        orcamento.aprovar();
+        this.valorTotalAcumulado = this.valorTotalAcumulado.add(orcamento.getValorTotal());
+        this.status = StatusOrdemServico.EM_EXECUCAO;
+        this.dataInicioExecucao = LocalDateTime.now();
+    }
+
+    public void rejeitarOrcamento(Long orcamentoId) {
+        OsOrcamento orcamento = this.orcamentos.stream()
+                .filter(orc -> orc.getId().equals(orcamentoId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Orçamento não encontrado nesta Ordem de Serviço: " + orcamentoId));
+
+        if (orcamento.getTipo() == TipoOrcamento.INICIAL) {
+            throw new IllegalArgumentException(
+                    "Não é permitido rejeitar um orçamento INICIAL. Solicite a criação de um novo orçamento.");
+        }
+
+        orcamento.rejeitar();
     }
 }
 

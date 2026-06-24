@@ -6,10 +6,15 @@ import com.fiap.tech_challenge_backend.cadastro.application.usecases.*;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroClienteRequest;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroClienteResponse;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller responsável por cadastrar e atualizar dados do cliente.
@@ -19,6 +24,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/clientes")
 public class ClienteController {
+
+    private static final Logger log = LoggerFactory.getLogger(ClienteController.class);
 
     private final CadastroClienteUseCase cadastroClienteUseCase;
     private final BuscarClienteUseCase buscarClienteUseCase;
@@ -48,7 +55,15 @@ public class ClienteController {
 
     @GetMapping
     public List<BuscarClienteResponse> listar() {
-        return listarClientesUseCase.execute();
+        log.debug("Requisição recebida: Listar clientes");
+        try {
+            List<BuscarClienteResponse> clientes = listarClientesUseCase.execute();
+            log.info("Clientes listados com sucesso | Total: {}", clientes.size());
+            return clientes;
+        } catch (Exception e) {
+            log.error("Erro ao listar clientes", e);
+            throw e;
+        }
     }
 
     @GetMapping("/{cpfCnpj}")
@@ -62,8 +77,26 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{cpfCnpj}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletar(@PathVariable String cpfCnpj) {
-        deletarClienteUseCase.execute(cpfCnpj);
+    @ResponseStatus(HttpStatus.OK)
+    public Map<String, Object> deletar(@PathVariable String cpfCnpj) {
+        log.debug("Requisição recebida: Deletar cliente | CPF/CNPJ: {}", cpfCnpj);
+
+        try {
+            deletarClienteUseCase.execute(cpfCnpj);
+
+            log.info("Cliente deletado com sucesso | CPF/CNPJ: {}", cpfCnpj);
+
+            Map<String, Object> resposta = new LinkedHashMap<>();
+            resposta.put("sucesso", true);
+            resposta.put("mensagem", "Cliente deletado com sucesso");
+            resposta.put("cpfCnpj", cpfCnpj);
+            resposta.put("timestamp", LocalDateTime.now());
+
+            return resposta;
+
+        } catch (Exception e) {
+            log.error("Erro ao deletar cliente | CPF/CNPJ: {} | Erro: {}", cpfCnpj, e.getMessage(), e);
+            throw e;
+        }
     }
 }

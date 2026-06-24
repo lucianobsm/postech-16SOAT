@@ -5,7 +5,10 @@ import java.util.UUID;
 public record CadastroVeiculoResponse(
         UUID id,
         String placa,
+        String marca,
         String modelo,
+        Integer ano,
+        String cor,
         String cpfCnpj
 ) {
 }

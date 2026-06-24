@@ -12,7 +12,7 @@ public interface OrdemServicoRepositoryPort {
 
     OrdemServico salvar(OrdemServico ordemServico);
 
-    Optional<OrdemServico> buscarPorId(UUID id);
+    Optional<OrdemServico> buscarPorId(Long id);
 
     List<OrdemServico> listarTodos();
 
@@ -20,11 +20,11 @@ public interface OrdemServicoRepositoryPort {
 
     List<OrdemServico> listarPorStatus(StatusOrdemServico status);
 
-    Optional<OrdemServico> buscarPorOrcamentoId(UUID orcamentoId);
+    Optional<OrdemServico> buscarPorOrcamentoId(Long orcamentoId);
 
-    void remover(UUID id);
+    void remover(Long id);
 
-    boolean existePorId(UUID id);
+    boolean existePorId(Long id);
 }
 
 

@@ -44,7 +44,7 @@ public class OsPeca {
     private OsOrcamento orcamento;
 
     @Column(name = "ordem_servico_id")
-    private UUID ordemServicoId;
+    private Long ordemServicoId;
 
     @NotNull(message = "A peca/insumo e obrigatoria")
     @ManyToOne(fetch = FetchType.LAZY)

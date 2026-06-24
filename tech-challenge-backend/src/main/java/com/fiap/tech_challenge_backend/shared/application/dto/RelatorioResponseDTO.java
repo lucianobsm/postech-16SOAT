@@ -62,4 +62,12 @@ public record RelatorioResponseDTO<T>(
                 dados
         );
     }
+
+    public static <T> RelatorioResponseDTO<T> alterarSucesso(List<T> dados) {
+        return new RelatorioResponseDTO<>(
+                "Ordem de serviço alterada com sucesso",
+                dados.size(),
+                dados
+        );
+    }
 }

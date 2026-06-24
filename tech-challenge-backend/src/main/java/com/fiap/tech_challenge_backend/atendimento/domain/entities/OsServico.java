@@ -42,7 +42,7 @@ public class OsServico {
     private OsOrcamento orcamento;
 
     @Column(name = "ordem_servico_id")
-    private UUID ordemServicoId;
+    private Long ordemServicoId;
 
     @NotNull(message = "O servico do catalogo e obrigatorio")
     @ManyToOne(fetch = FetchType.LAZY)

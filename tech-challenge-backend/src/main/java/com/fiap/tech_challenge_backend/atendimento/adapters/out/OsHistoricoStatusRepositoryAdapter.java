@@ -6,7 +6,6 @@ import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsHistoricoSt
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 
 
 @Component
@@ -24,7 +23,7 @@ public class OsHistoricoStatusRepositoryAdapter implements OsHistoricoStatusRepo
     }
 
     @Override
-    public List<OsHistoricoStatus> buscarPorOrdensServicoOrdenado(List<UUID> ordemIds) {
+    public List<OsHistoricoStatus> buscarPorOrdensServicoOrdenado(List<Long> ordemIds) {
         if (ordemIds == null || ordemIds.isEmpty()) {
             return List.of();
         }

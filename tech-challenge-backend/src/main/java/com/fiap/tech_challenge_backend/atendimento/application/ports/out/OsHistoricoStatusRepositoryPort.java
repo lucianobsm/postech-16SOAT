@@ -9,6 +9,6 @@ public interface OsHistoricoStatusRepositoryPort {
 
     OsHistoricoStatus salvar(OsHistoricoStatus historicoStatus);
 
-    List<OsHistoricoStatus> buscarPorOrdensServicoOrdenado(List<UUID> ordemIds);
+    List<OsHistoricoStatus> buscarPorOrdensServicoOrdenado(List<Long> ordemIds);
 }
 

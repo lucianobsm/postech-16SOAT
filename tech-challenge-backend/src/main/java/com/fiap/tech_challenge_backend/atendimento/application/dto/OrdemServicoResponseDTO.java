@@ -10,11 +10,9 @@ import java.util.UUID;
 
 
 public record OrdemServicoResponseDTO(
-        UUID id,
-        UUID clienteId,
-        String clienteNome,
-        UUID veiculoId,
-        String veiculoModelo,
+        Long id,
+        ClienteInfoDTO cliente,
+        VeiculoInfoDTO veiculo,
         UUID mecanicoId,
         String mecanicoNome,
         StatusOrdemServico status,
@@ -28,16 +26,21 @@ public record OrdemServicoResponseDTO(
         List<OrcamentoDTO> orcamentos
 ) {
     public static OrdemServicoResponseDTO from(OrdemServico os) {
+        // Calcula valorTotal a partir da soma de todos os orçamentos
+        BigDecimal valorTotalCalculado = os.getOrcamentos() != null && !os.getOrcamentos().isEmpty()
+                ? os.getOrcamentos().stream()
+                    .map(orc -> orc.getValorTotal() != null ? orc.getValorTotal() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+                : BigDecimal.ZERO;
+
         return new OrdemServicoResponseDTO(
                 os.getId(),
-                os.getCliente().getId(),
-                os.getCliente().getNome(),
-                os.getVeiculo().getId(),
-                os.getVeiculo().getModelo(),
+                ClienteInfoDTO.from(os.getCliente()),
+                VeiculoInfoDTO.from(os.getVeiculo()),
                 os.getMecanico() != null ? os.getMecanico().getId() : null,
                 os.getMecanico() != null ? os.getMecanico().getNome() : null,
                 os.getStatus(),
-                os.getValorTotal(),
+                valorTotalCalculado,
                 os.getQueixaCliente(),
                 os.getObservacoes(),
                 os.getDataCriacao(),

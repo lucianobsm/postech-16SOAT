@@ -38,8 +38,13 @@ public class EmailSenderAdapter implements EmailSenderPort {
             log.info("E-mail enviado com sucesso para: {} | Assunto: {} | Anexo: {}",
                     para, assunto, nomeAnexo);
         } catch (MessagingException e) {
-            log.error("Erro ao enviar e-mail para: {} | Assunto: {}", para, assunto, e);
-            throw new RuntimeException("Falha ao enviar e-mail de notificação de orçamento", e);
+            log.error("Erro ao enviar e-mail para: {} | Assunto: {} | Erro: {}",
+                    para, assunto, e.getMessage());
+            log.warn("E-mail não pôde ser enviado, mas a operação continua. Verifique as credenciais de email no application.yml");
+        } catch (Exception e) {
+            log.error("Erro inesperado ao enviar e-mail para: {} | Erro: {}",
+                    para, e.getMessage());
+            log.warn("E-mail não pôde ser enviado, mas a operação continua.");
         }
     }
 }

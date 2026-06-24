@@ -11,6 +11,8 @@ import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoReposito
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -77,7 +79,17 @@ public class EstoqueService {
     }
 
     public void remover(UUID id) {
-        buscarEntidade(id);
+        var peca = buscarEntidade(id);
+
+        long referenciaCount = pecaInsumoRepository.countByPecaInUso(id);
+        if (referenciaCount > 0) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Não é possível deletar a peça/insumo '" + peca.getNome() +
+                "' pois está sendo utilizada em " + referenciaCount + " ordem(ns) de serviço(s)"
+            );
+        }
+
         pecaInsumoRepository.deleteById(id);
     }
 

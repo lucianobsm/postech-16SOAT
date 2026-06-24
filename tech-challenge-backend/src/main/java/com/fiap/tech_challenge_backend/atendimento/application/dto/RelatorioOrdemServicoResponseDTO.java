@@ -5,7 +5,7 @@ import java.util.UUID;
 
 
 public record RelatorioOrdemServicoResponseDTO(
-        UUID id,
+        Long id,
         String clienteNome,
         String statusAtual,
         Boolean urgente,

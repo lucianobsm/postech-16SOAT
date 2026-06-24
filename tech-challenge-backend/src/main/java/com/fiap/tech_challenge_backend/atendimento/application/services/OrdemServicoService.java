@@ -12,6 +12,7 @@ import com.fiap.tech_challenge_backend.atendimento.application.dto.OrdemServicoR
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrcamentoResponseDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.PecaOrcamentoRequestDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.RelatorioOrdemServicoResponseDTO;
+import com.fiap.tech_challenge_backend.atendimento.application.dto.RelatorioOsEnriquecidoResponseDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.ServicoOrcamentoRequestDTO;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsHistoricoStatus;
@@ -94,6 +95,7 @@ public class OrdemServicoService
     private final ServicoCatalogoRepositoryPort servicoCatalogoRepository;
     private final PecaInsumoCatalogoRepositoryPort pecaInsumoRepository;
     private final IdGeneratorService idGeneratorService;
+    private final RelatorioEnriquecimentoService relatorioEnriquecimentoService;
 
     public OrdemServicoService(OrdemServicoRepositoryPort ordemServicoRepository,
                                OsHistoricoStatusRepositoryPort osHistoricoStatusRepository,
@@ -104,7 +106,8 @@ public class OrdemServicoService
                                EmailSenderPort emailSenderPort,
                                ServicoCatalogoRepositoryPort servicoCatalogoRepository,
                                PecaInsumoCatalogoRepositoryPort pecaInsumoRepository,
-                               IdGeneratorService idGeneratorService) {
+                               IdGeneratorService idGeneratorService,
+                               RelatorioEnriquecimentoService relatorioEnriquecimentoService) {
         this.ordemServicoRepository = ordemServicoRepository;
         this.osHistoricoStatusRepository = osHistoricoStatusRepository;
         this.clienteRepository = clienteRepository;
@@ -115,6 +118,7 @@ public class OrdemServicoService
         this.servicoCatalogoRepository = servicoCatalogoRepository;
         this.pecaInsumoRepository = pecaInsumoRepository;
         this.idGeneratorService = idGeneratorService;
+        this.relatorioEnriquecimentoService = relatorioEnriquecimentoService;
     }
 
     // ─────────────────────────────────────────────
@@ -296,7 +300,6 @@ public class OrdemServicoService
         os.setVeiculo(veiculo);
         os.setMecanico(mecanico);
         os.setStatus(request.status());
-        os.setValorTotal(request.valorTotal());
         os.setDataInicioExecucao(request.dataInicioExecucao());
         os.setDataFinalizacao(request.dataFinalizacao());
         os.definirUrgente(request.urgente());
@@ -375,17 +378,17 @@ public class OrdemServicoService
 
     @Override
     @Transactional(readOnly = true)
-    public List<RelatorioOrdemServicoResponseDTO> listarRelatorio(String expand) {
-        return montarRelatorio(ordemServicoRepository.listarPriorizadas(), expand);
+    public List<RelatorioOsEnriquecidoResponseDTO> listarRelatorio(String[] expands) {
+        return montarRelatorio(ordemServicoRepository.listarPriorizadas(), expands);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<RelatorioOrdemServicoResponseDTO> listarRelatorioPorStatus(StatusOrdemServico status, String expand) {
-        return montarRelatorio(ordemServicoRepository.listarPorStatus(status), expand);
+    public List<RelatorioOsEnriquecidoResponseDTO> listarRelatorioPorStatus(StatusOrdemServico status, String[] expands) {
+        return montarRelatorio(ordemServicoRepository.listarPorStatus(status), expands);
     }
 
-    private List<RelatorioOrdemServicoResponseDTO> montarRelatorio(List<OrdemServico> ordens, String expand) {
+    private List<RelatorioOsEnriquecidoResponseDTO> montarRelatorio(List<OrdemServico> ordens, String[] expands) {
         if (ordens.isEmpty()) {
             return List.of();
         }
@@ -407,7 +410,7 @@ public class OrdemServicoService
                     String tempoTotalAtendimento = TempoAtendimentoDomainService.calcularTempoTotalFormatado(os, referencia);
                     Map<String, String> tempoPorStatus = TempoAtendimentoDomainService.calcularTempoPorStatusFormatado(os, historico, referencia);
 
-                    return new RelatorioOrdemServicoResponseDTO(
+                    RelatorioOrdemServicoResponseDTO base = new RelatorioOrdemServicoResponseDTO(
                             os.getId(),
                             os.getCliente().getNome(),
                             os.getStatus().name(),
@@ -415,6 +418,8 @@ public class OrdemServicoService
                             tempoTotalAtendimento,
                             tempoPorStatus
                     );
+
+                    return relatorioEnriquecimentoService.enriquecer(base, os, expands);
                 })
                 .toList();
     }
@@ -672,8 +677,8 @@ public class OrdemServicoService
 
         String emailCliente = os.getCliente().getUsuario().getEmail().toString();
 
-        log.info("Enviando email de orçamento | OS: {} | Orcamento: {} | Cliente: {}",
-                os.getId(), orcamento.getId(), emailCliente);
+        log.info("Enviando email de orçamento | OS: {} | Orcamento: {} | Tipo: {} | Cliente: {}",
+                os.getId(), orcamento.getId(), orcamento.getTipo(), emailCliente);
 
         try {
             String linkAprovacao = String.format(
@@ -683,18 +688,24 @@ public class OrdemServicoService
 
             byte[] documento = pdfGeneratorPort.gerarDocumentoTexto(orcamento);
 
-            String corpoHtml = montarTemplateEmailOrcamento(os, orcamento, linkAprovacao);
+            String corpoHtml = orcamento.getTipo() == TipoOrcamento.ADICIONAL
+                    ? montarTemplateEmailOrcamentoAdicional(os, orcamento, linkAprovacao)
+                    : montarTemplateEmailOrcamento(os, orcamento, linkAprovacao);
+
+            String assunto = orcamento.getTipo() == TipoOrcamento.ADICIONAL
+                    ? String.format("Orçamento Adicional Necessário - OS #%s | Novos Problemas Identificados", os.getId())
+                    : String.format("Seu orçamento está pronto para análise - OS #%s", os.getId());
 
             emailSenderPort.enviarEmailComAnexo(
                     emailCliente,
-                    String.format("Seu orçamento está pronto para análise - OS #%s", os.getId()),
+                    assunto,
                     corpoHtml,
                     documento,
                     String.format("orcamento_os_%s.pdf", os.getId())
             );
 
-            log.info("Email de orçamento enviado com sucesso | OS: {} | Destinatário: {}",
-                    os.getId(), emailCliente);
+            log.info("Email de orçamento enviado com sucesso | OS: {} | Tipo: {} | Destinatário: {}",
+                    os.getId(), orcamento.getTipo(), emailCliente);
 
         } catch (Exception e) {
             log.error("Erro ao enviar email de orçamento | OS: {} | Email: {} | Erro: {}",
@@ -720,6 +731,123 @@ public class OrdemServicoService
                     "Cliente '" + os.getCliente().getNome() + "' não possui email cadastrado. " +
                     "Impossível enviar orçamento por email.");
         }
+    }
+
+    private String montarTemplateEmailOrcamentoAdicional(OrdemServico os, OsOrcamento orcamento, String linkAprovacao) {
+        return "<!DOCTYPE html>" +
+                "<html lang=\"pt-BR\">" +
+                "<head>" +
+                "  <meta charset=\"UTF-8\">" +
+                "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                "  <style>" +
+                "    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
+                "    .container { max-width: 600px; margin: 0 auto; padding: 20px; }" +
+                "    .header { background-color: #2c3e50; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }" +
+                "    .alert-box { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; }" +
+                "    .alert-box strong { color: #856404; }" +
+                "    .content { background-color: #ecf0f1; padding: 20px; border-radius: 0 0 5px 5px; }" +
+                "    .content p { margin: 10px 0; }" +
+                "    .info-box { background-color: #fff; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0; }" +
+                "    .info-box strong { color: #2c3e50; }" +
+                "    .problem-box { background-color: #fff; padding: 15px; border-left: 4px solid #e74c3c; margin: 15px 0; }" +
+                "    .problem-box strong { color: #c0392b; }" +
+                "    .action-box { background-color: #e8f5e9; border-left: 4px solid #27ae60; padding: 15px; margin: 15px 0; }" +
+                "    .action-box strong { color: #27ae60; }" +
+                "    .contact-box { background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 15px 0; }" +
+                "    .contact-box strong { color: #1565c0; }" +
+                "    .cta-button { display: inline-block; padding: 15px 40px; background-color: #27ae60; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }" +
+                "    .cta-button:hover { background-color: #229954; }" +
+                "    .footer { font-size: 12px; color: #7f8c8d; text-align: center; margin-top: 20px; }" +
+                "    .warning-icon { font-size: 24px; margin-right: 10px; }" +
+                "  </style>" +
+                "</head>" +
+                "<body>" +
+                "  <div class=\"container\">" +
+                "    <div class=\"header\">" +
+                "      <h1>⚠️ Orçamento Adicional Necessário</h1>" +
+                "      <p style=\"margin: 10px 0; font-size: 14px;\">Novos Problemas Identificados no Seu Veículo</p>" +
+                "    </div>" +
+                "    <div class=\"content\">" +
+                "      <p>Olá <strong>" + os.getCliente().getNome() + "</strong>,</p>" +
+                "" +
+                "      <div class=\"alert-box\">" +
+                "        <strong>ℹ️ Informação Importante:</strong>" +
+                "        <p>Durante o diagnóstico técnico de seu veículo, nossos especialistas identificaram <strong>problemas adicionais</strong> que precisam de atenção. " +
+                "        Para garantir a segurança e o bom funcionamento do seu veículo, preparamos um <strong>orçamento complementar</strong>.</p>" +
+                "      </div>" +
+                "" +
+                "      <p>Entendemos que descobrir novos problemas pode ser inesperado. Por esse motivo, queremos ser <strong>transparente</strong> e oferecer todas as " +
+                "      informações que você precisa para tomar a melhor decisão.</p>" +
+                "" +
+                "      <div class=\"info-box\">" +
+                "        <p><strong>📋 Informações da Ordem de Serviço</strong></p>" +
+                "        <p><strong>Número da OS:</strong> #" + os.getId() + "</p>" +
+                "        <p><strong>Veículo:</strong> " + os.getVeiculo().getModelo() + " - Placa: " + os.getVeiculo().getPlaca() + "</p>" +
+                "        <p><strong>Status Atual:</strong> Em Diagnóstico Avançado</p>" +
+                "      </div>" +
+                "" +
+                "      <div class=\"problem-box\">" +
+                "        <p><strong>🔧 Por Que um Orçamento Adicional?</strong></p>" +
+                "        <p>Ao decorrer da execução inicial dos serviços, nossos mecânicos identificaram problemas adicionais que não eram visíveis na inspeção " +
+                "        preliminar. Estes problemas, se não resolvidos, podem:</p>" +
+                "        <ul style=\"margin: 10px 0; padding-left: 20px;\">" +
+                "          <li>Afetar a segurança do veículo</li>" +
+                "          <li>Causar maiores danos a longo prazo</li>" +
+                "          <li>Impedir o funcionamento adequado de sistemas importantes</li>" +
+                "        </ul>" +
+                "        <p><em>É uma situação comum em diagnósticos completos - quanto mais detalhado, mais problemas podem aparecer.</em></p>" +
+                "      </div>" +
+                "" +
+                "      <div class=\"action-box\">" +
+                "        <p><strong>✓ O Que Fazer Agora?</strong></p>" +
+                "        <p>Um novo orçamento foi preparado para resolver estes problemas. Este documento está em <strong>anexo</strong> para sua análise.</p>" +
+                "        <ul style=\"margin: 10px 0; padding-left: 20px;\">" +
+                "          <li>✓ Descrição completa dos serviços necessários</li>" +
+                "          <li>✓ Peças e insumos que serão utilizados</li>" +
+                "          <li>✓ Prazo estimado para conclusão</li>" +
+                "          <li>✓ Valor total dos serviços adicionais</li>" +
+                "        </ul>" +
+                "        <p style=\"margin-top: 15px; margin-bottom: 0;\"><strong>Validade:</strong> 30 dias</p>" +
+                "      </div>" +
+                "" +
+                "      <div class=\"contact-box\">" +
+                "        <p><strong>📞 Dúvidas? Converse com Nosso Mecânico</strong></p>" +
+                "        <p>Recomendamos <strong>entrar em contato com o mecânico responsável</strong> para:</p>" +
+                "        <ul style=\"margin: 10px 0; padding-left: 20px;\">" +
+                "          <li>Esclarecer detalhes sobre os problemas encontrados</li>" +
+                "          <li>Entender a importância de cada serviço</li>" +
+                "          <li>Discutir opções e alternativas</li>" +
+                "          <li>Responder qualquer dúvida técnica</li>" +
+                "        </ul>" +
+                "        <p style=\"margin-top: 15px; margin-bottom: 0;\"><strong>Equipe responsável está disponível:</strong></p>" +
+                "        <p style=\"margin: 5px 0;\">📞 (11) 3000-0000 | 📧 mecanico@oficina.com.br</p>" +
+                "      </div>" +
+                "" +
+                "      <p style=\"text-align: center; margin: 30px 0;\">" +
+                "        <a href=\"" + linkAprovacao + "?status=APROVADO\" class=\"cta-button\">✓ APROVAR ORÇAMENTO ADICIONAL</a>" +
+                "      </p>" +
+                "" +
+                "      <p style=\"text-align: center;\">" +
+                "        <a href=\"" + linkAprovacao + "?status=REJEITADO\" style=\"color: #e74c3c; text-decoration: none; font-weight: bold;\">✗ Rejeitar e Conversar com o Mecânico</a>" +
+                "      </p>" +
+                "" +
+                "      <p style=\"font-size: 12px; color: #7f8c8d; text-align: center;\">" +
+                "        <small>Ou copie e cole este link no seu navegador:<br>" + linkAprovacao + "</small>" +
+                "      </p>" +
+                "    </div>" +
+                "    <div class=\"footer\">" +
+                "      <p><strong>Oficina Mecânica Premium</strong></p>" +
+                "      <p>Telefone: (11) 3000-0000 | Email: contato@oficina.com.br</p>" +
+                "      <p style=\"margin-top: 15px; color: #95a5a6;\">" +
+                "        ✓ Garantia de qualidade em todos os serviços<br>" +
+                "        ✓ Transparência total sobre custos e prazos<br>" +
+                "        ✓ Atendimento especializado" +
+                "      </p>" +
+                "      <p style=\"margin-top: 15px; color: #95a5a6;\">Este é um e-mail automático. Para dúvidas, contate o mecânico responsável.</p>" +
+                "    </div>" +
+                "  </div>" +
+                "</body>" +
+                "</html>";
     }
 
     private String montarTemplateEmailOrcamento(OrdemServico os, OsOrcamento orcamento, String linkAprovacao) {

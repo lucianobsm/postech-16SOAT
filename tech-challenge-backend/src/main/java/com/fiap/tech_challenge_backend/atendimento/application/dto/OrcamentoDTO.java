@@ -1,16 +1,17 @@
 package com.fiap.tech_challenge_backend.atendimento.application.dto;
 
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsOrcamento;
+import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrcamento;
+import com.fiap.tech_challenge_backend.atendimento.domain.enums.TipoOrcamento;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 public record OrcamentoDTO(
-        UUID id,
-        String tipo,
-        String status,
+        Long id,
+        TipoOrcamento tipo,
+        StatusOrcamento status,
         BigDecimal valorTotal,
         LocalDateTime prazoEstipulado,
         LocalDateTime dataCriacao,

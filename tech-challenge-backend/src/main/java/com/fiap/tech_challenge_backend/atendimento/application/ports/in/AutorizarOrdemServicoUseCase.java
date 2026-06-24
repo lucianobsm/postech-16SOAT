@@ -1,7 +1,5 @@
 package com.fiap.tech_challenge_backend.atendimento.application.ports.in;
 
-import java.util.UUID;
-
 
 public interface AutorizarOrdemServicoUseCase {
 
@@ -14,5 +12,5 @@ public interface AutorizarOrdemServicoUseCase {
      * @throws com.fiap.tech_challenge_backend.atendimento.domain.exceptions.OrdemServicoStatusException
      *         se o status atual não for AGUARDANDO_APROVACAO
      */
-    void autorizar(UUID id);
+    void autorizar(Long id);
 }

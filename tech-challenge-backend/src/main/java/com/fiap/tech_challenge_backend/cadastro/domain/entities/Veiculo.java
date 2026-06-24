@@ -38,9 +38,22 @@ public class Veiculo {
     )
     private Placa placa;
 
+    @NotBlank(message = "A marca é obrigatória")
+    @Size(min = 2, max = 100, message = "A marca deve ter entre 2 e 100 caracteres")
+    @Column(name = "marca", nullable = false, length = 100)
+    private String marca;
+
     @NotBlank(message = "O modelo é obrigatório")
     @Size(min = 2, max = 100, message = "O modelo deve ter entre 2 e 100 caracteres")
     @Column(name = "modelo", nullable = false, length = 100)
     private String modelo;
+
+    @Column(name = "ano", nullable = false)
+    private Integer ano;
+
+    @NotBlank(message = "A cor é obrigatória")
+    @Size(min = 2, max = 50, message = "A cor deve ter entre 2 e 50 caracteres")
+    @Column(name = "cor", nullable = false, length = 50)
+    private String cor;
 }
 

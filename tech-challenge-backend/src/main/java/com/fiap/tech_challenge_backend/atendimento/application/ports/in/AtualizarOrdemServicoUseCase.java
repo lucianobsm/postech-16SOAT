@@ -1,9 +1,8 @@
 package com.fiap.tech_challenge_backend.atendimento.application.ports.in;
 
+import com.fiap.tech_challenge_backend.atendimento.application.dto.DeletarOrdemServicoResponseDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrdemServicoAtualizarRequestDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrdemServicoResponseDTO;
-
-import java.util.UUID;
 
 /**
  * Porta de entrada (Use Case) para atualização e remoção de Ordem de Serviço.
@@ -11,9 +10,9 @@ import java.util.UUID;
  */
 public interface AtualizarOrdemServicoUseCase {
 
-    OrdemServicoResponseDTO atualizar(UUID id, OrdemServicoAtualizarRequestDTO request);
+    OrdemServicoResponseDTO atualizar(Long id, OrdemServicoAtualizarRequestDTO request);
 
-    void remover(UUID id);
+    DeletarOrdemServicoResponseDTO remover(Long id);
 }
 
 

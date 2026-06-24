@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public record ConcluirOrcamentoRequestDTO(
         @NotNull(message = "O ID do orçamento é obrigatório")
-        UUID orcamentoId,
+        Long orcamentoId,
 
         @NotNull(message = "O e-mail do cliente é obrigatório")
         String emailCliente,

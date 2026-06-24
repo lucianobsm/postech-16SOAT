@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface OsHistoricoStatusRepository extends JpaRepository<OsHistoricoStatus, UUID> {
 
-    List<OsHistoricoStatus> findByOrdemServicoIdOrderByDataMudancaAsc(UUID ordemServicoId);
+    List<OsHistoricoStatus> findByOrdemServicoIdOrderByDataMudancaAsc(Long ordemServicoId);
 
     @Query("""
             SELECT h
@@ -20,7 +20,7 @@ public interface OsHistoricoStatusRepository extends JpaRepository<OsHistoricoSt
             WHERE h.ordemServico.id IN :ordemIds
             ORDER BY h.ordemServico.id ASC, h.dataMudanca ASC
             """)
-    List<OsHistoricoStatus> findByOrdemServicoIdsOrderedWithUsuario(@Param("ordemIds") Collection<UUID> ordemIds);
+    List<OsHistoricoStatus> findByOrdemServicoIdsOrderedWithUsuario(@Param("ordemIds") Collection<Long> ordemIds);
 }
 
 

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 
 @Component
@@ -26,8 +25,8 @@ public class OrdemServicoRepositoryAdapter implements OrdemServicoRepositoryPort
     }
 
     @Override
-    public Optional<OrdemServico> buscarPorId(UUID id) {
-        return repository.findByIdWithOrcamentos(id);
+    public Optional<OrdemServico> buscarPorId(Long id) {
+        return repository.findById(id);
     }
 
     @Override
@@ -46,17 +45,17 @@ public class OrdemServicoRepositoryAdapter implements OrdemServicoRepositoryPort
     }
 
     @Override
-    public void remover(UUID id) {
+    public void remover(Long id) {
         repository.deleteById(id);
     }
 
     @Override
-    public Optional<OrdemServico> buscarPorOrcamentoId(UUID orcamentoId) {
+    public Optional<OrdemServico> buscarPorOrcamentoId(Long orcamentoId) {
         return repository.findByOrcamentoId(orcamentoId);
     }
 
     @Override
-    public boolean existePorId(UUID id) {
+    public boolean existePorId(Long id) {
         return repository.existsById(id);
     }
 }
