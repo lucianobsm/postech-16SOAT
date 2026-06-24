@@ -1,6 +1,7 @@
 package com.fiap.tech_challenge_backend.estoque.application.dto;
 
 import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
+import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -14,6 +15,7 @@ public record PecaInsumoResponseDTO(
         String quantidadePorUnidade,
         Integer quantidadeEstoque,
         Integer quantidadeMinima,
+        TipoPecaInsumo tipo,
         boolean abaixoDoMinimo
 ) {
     public static PecaInsumoResponseDTO from(PecaInsumo p) {
@@ -26,6 +28,7 @@ public record PecaInsumoResponseDTO(
                 p.getQuantidadePorUnidade(),
                 p.getQuantidadeEstoque(),
                 p.getQuantidadeMinima(),
+                p.getTipo(),
                 p.estoqueAbaixoDoMinimo()
         );
     }

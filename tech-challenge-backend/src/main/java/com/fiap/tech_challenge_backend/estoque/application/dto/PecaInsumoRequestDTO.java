@@ -1,5 +1,6 @@
 package com.fiap.tech_challenge_backend.estoque.application.dto;
 
+import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
@@ -11,6 +12,7 @@ public record PecaInsumoRequestDTO(
         @NotNull @Positive BigDecimal precoCompra,
         String quantidadePorUnidade,
         @NotNull @PositiveOrZero Integer quantidadeEstoque,
-        @NotNull @PositiveOrZero Integer quantidadeMinima
+        @NotNull @PositiveOrZero Integer quantidadeMinima,
+        @NotNull(message = "O tipo é obrigatório") TipoPecaInsumo tipo
 ) {
 }

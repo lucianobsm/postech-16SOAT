@@ -1,24 +1,20 @@
 package com.fiap.tech_challenge_backend.estoque.presentation;
 
 import com.fiap.tech_challenge_backend.estoque.application.EstoqueService;
+import com.fiap.tech_challenge_backend.estoque.application.dto.EntradaEstoqueRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoResponseDTO;
+import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Controller responsável pelo gerenciamento de peças e insumos do estoque.
- * Contexto Delimitado: estoque
- * Camada: Presentation
- */
 @RestController
 @RequestMapping("/estoque/itens")
 @RequiredArgsConstructor
@@ -26,13 +22,6 @@ import java.util.UUID;
 public class ItemEstoqueController {
 
     private final EstoqueService service;
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Cadastrar peça ou insumo")
-    public PecaInsumoResponseDTO cadastrar(@Valid @RequestBody PecaInsumoRequestDTO request) {
-        return service.cadastrar(request);
-    }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar peça ou insumo")
@@ -47,9 +36,9 @@ public class ItemEstoqueController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar todos os itens do estoque")
-    public List<PecaInsumoResponseDTO> listar() {
-        return service.listarTodos();
+    @Operation(summary = "Listar itens do estoque. Filtra por tipo (PECA ou INSUMO) quando informado.")
+    public List<PecaInsumoResponseDTO> listar(@RequestParam(required = false) TipoPecaInsumo tipo) {
+        return service.listarTodos(tipo);
     }
 
     @GetMapping("/abaixo-do-minimo")
@@ -58,28 +47,27 @@ public class ItemEstoqueController {
         return service.listarAbaixoDoMinimo();
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Remover item")
-    public void remover(@PathVariable UUID id) {
-        service.remover(id);
+    @PostMapping("/entrada")
+    @Operation(summary = "Dar entrada no estoque: cadastra a peça/insumo se não existir ou repõe o estoque se já existir")
+    public PecaInsumoResponseDTO darEntrada(@Valid @RequestBody EntradaEstoqueRequestDTO request) {
+        return service.darEntrada(request);
     }
 
-    @PatchMapping("/{id}/entrada")
-    @Operation(summary = "Registrar entrada de estoque")
-    public void registrarEntrada(
+    @PatchMapping("/{id}/venda")
+    @Operation(summary = "Registrar venda de peça/insumo")
+    public void registrarVenda(
             @PathVariable UUID id,
             @RequestParam @Positive Integer quantidade,
             @RequestParam(required = false) String observacao) {
-        service.registrarEntrada(id, quantidade, observacao);
+        service.registrarVenda(id, quantidade, observacao);
     }
 
-    @PatchMapping("/{id}/saida")
-    @Operation(summary = "Registrar saída de estoque")
-    public void registrarSaida(
+    @PatchMapping("/{id}/reserva")
+    @Operation(summary = "Registrar reserva de peça/insumo para ordem de serviço")
+    public void reservar(
             @PathVariable UUID id,
             @RequestParam @Positive Integer quantidade,
             @RequestParam(required = false) String observacao) {
-        service.registrarSaida(id, quantidade, observacao);
+        service.reservar(id, quantidade, observacao);
     }
 }

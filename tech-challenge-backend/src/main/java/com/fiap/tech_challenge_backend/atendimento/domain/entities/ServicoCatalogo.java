@@ -52,5 +52,3 @@ public class ServicoCatalogo {
     @Column(name = "preco_mao_de_obra", nullable = false, precision = 10, scale = 2)
     private BigDecimal precoMaoDeObra;
 }
-
-
