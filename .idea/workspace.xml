@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BackgroundAgentGlobalSettings">
+    <option name="selectedModelId" value="auto" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d29e88ca-fa2b-4106-b4d8-b17cd5967ba3" name="Changes" comment="feat: add DTOs and use cases for managing orçamento and ordem de serviço" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_E:/Documentos/Programação/Pós Arquitetura de software - FiAP/postech-16SOAT" value="3FHu6lzJkbwRQav7vLH7EdN2NME" />
+      <entry key="_E:/Documentos/Programação/Pós Arquitetura de software - FiAP/postech-16SOAT/tech-challenge-backend" value="3FNJVDrnjixLZmg4vGObMejAaQX" />
+    </persistenceIdMap>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;NicoleMattes&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:lucianobsm/postech-16SOAT.git&quot;,
+    &quot;accountId&quot;: &quot;c0652f15-00d8-4d30-a985-d5cd063375fd&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="3FHu6lzJkbwRQav7vLH7EdN2NME" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.TechChallengeBackendApplication.executor": "Run",
+    "Maven.tech-challenge-backend [install].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "copilot.chat.legacySessionMetadata.migrated": "true",
+    "git-widget-placeholder": "feature/atendimento-",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
+  }
+}]]></component>
+  <component name="RunAnythingCache">
+    <option name="myCommands">
+      <command value="mvn install" />
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="TechChallengeBackendApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.fiap.tech_challenge_backend.TechChallengeBackendApplication" />
+      <module name="tech-challenge-backend" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.fiap.tech_challenge_backend.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.TechChallengeBackendApplication" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-37e91769500f-intellij.indexing.shared.core-IU-261.25134.95" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-IU-261.25134.95" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d29e88ca-fa2b-4106-b4d8-b17cd5967ba3" name="Changes" comment="" />
+      <created>1781744143819</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1781744143819</updated>
+    </task>
+    <task id="LOCAL-00001" summary="feat: ajustes e atualziação do banco de dados">
+      <option name="closed" value="true" />
+      <created>1781936665486</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1781936665486</updated>
+    </task>
+    <task id="LOCAL-00002" summary="feat: criar serviço de relatorio de atendimento">
+      <option name="closed" value="true" />
+      <created>1781937108526</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1781937108526</updated>
+    </task>
+    <task id="LOCAL-00003" summary="feat: fluxo de orçamento">
+      <option name="closed" value="true" />
+      <created>1781937183801</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1781937183801</updated>
+    </task>
+    <task id="LOCAL-00004" summary="feat: fluxo envio de email">
+      <option name="closed" value="true" />
+      <created>1781937339481</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1781937339481</updated>
+    </task>
+    <task id="LOCAL-00005" summary="feat: fluxo da ordem de serviço">
+      <option name="closed" value="true" />
+      <created>1781937611895</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1781937611895</updated>
+    </task>
+    <task id="LOCAL-00006" summary="feat: atualização de imports">
+      <option name="closed" value="true" />
+      <created>1781937640972</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1781937640972</updated>
+    </task>
+    <task id="LOCAL-00007" summary="feat: fluxo do historico">
+      <option name="closed" value="true" />
+      <created>1781937744223</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1781937744223</updated>
+    </task>
+    <task id="LOCAL-00008" summary="feat: add environment variables and API paths for atendimento">
+      <option name="closed" value="true" />
+      <created>1781937766389</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1781937766389</updated>
+    </task>
+    <task id="LOCAL-00009" summary="feat: implement use cases for Ordem de Serviço management">
+      <option name="closed" value="true" />
+      <created>1781938168391</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1781938168391</updated>
+    </task>
+    <task id="LOCAL-00010" summary="merge com a main">
+      <option name="closed" value="true" />
+      <created>1781938994073</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1781938994073</updated>
+    </task>
+    <task id="LOCAL-00011" summary="merge com a main">
+      <option name="closed" value="true" />
+      <created>1781940996535</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1781940996535</updated>
+    </task>
+    <task id="LOCAL-00012" summary="ajustes nas migrations">
+      <option name="closed" value="true" />
+      <created>1782274644873</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1782274644873</updated>
+    </task>
+    <task id="LOCAL-00013" summary="feat: update data types and add new fields for Ordem de Serviço and related entities">
+      <option name="closed" value="true" />
+      <created>1782274668236</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1782274668236</updated>
+    </task>
+    <task id="LOCAL-00014" summary="feat: add DTOs and use cases for managing orçamento and ordem de serviço">
+      <option name="closed" value="true" />
+      <created>1782274898694</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1782274898694</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="feat: ajustes e atualziação do banco de dados" />
+    <MESSAGE value="feat: criar serviço de relatorio de atendimento" />
+    <MESSAGE value="feat: fluxo de orçamento" />
+    <MESSAGE value="feat: fluxo envio de email" />
+    <MESSAGE value="feat: fluxo da ordem de serviço" />
+    <MESSAGE value="feat: atualização de imports" />
+    <MESSAGE value="feat: fluxo do historico" />
+    <MESSAGE value="feat: add environment variables and API paths for atendimento" />
+    <MESSAGE value="feat: implement use cases for Ordem de Serviço management" />
+    <MESSAGE value="merge com a main" />
+    <MESSAGE value="ajustes nas migrations" />
+    <MESSAGE value="feat: update data types and add new fields for Ordem de Serviço and related entities" />
+    <MESSAGE value="feat: add DTOs and use cases for managing orçamento and ordem de serviço" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add DTOs and use cases for managing orçamento and ordem de serviço" />
+  </component>
+</project>

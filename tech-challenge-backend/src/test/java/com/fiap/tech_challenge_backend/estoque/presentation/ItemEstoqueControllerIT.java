@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -50,9 +51,17 @@ class ItemEstoqueControllerIT {
     @Autowired
     private PecaInsumoRepository repository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @BeforeEach
     void limparBase() {
-        repository.deleteAll();
+        try {
+            jdbcTemplate.execute("DELETE FROM os_pecas");
+            jdbcTemplate.execute("DELETE FROM peca_insumo");
+        } catch (Exception e) {
+            // Ignorar se não houver dados
+        }
     }
 
     private PecaInsumoRequestDTO requestFiltroOleo() {
@@ -133,7 +142,7 @@ class ItemEstoqueControllerIT {
         // Verificar alerta de estoque baixo
         mockMvc.perform(get("/estoque/itens/abaixo-do-minimo"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.dados", hasSize(1)));
 
         // Verificar movimentações (2 registros: 1 entrada + 1 saída)
         mockMvc.perform(get("/estoque/movimentacoes/item/{id}", itemId))

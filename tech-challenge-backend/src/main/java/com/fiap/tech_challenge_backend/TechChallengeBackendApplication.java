@@ -4,7 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TechChallengeBackendApplication {
+public class
+TechChallengeBackendApplication {
 
 	// Swagger UI: http://localhost:8080/swagger-ui/index.html
 
