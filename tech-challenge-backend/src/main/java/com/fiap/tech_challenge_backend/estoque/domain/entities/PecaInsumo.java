@@ -1,5 +1,6 @@
 package com.fiap.tech_challenge_backend.estoque.domain.entities;
 
+import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -36,6 +37,11 @@ public class PecaInsumo {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
+
+    @NotNull(message = "O tipo é obrigatório")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo", nullable = false, length = 10)
+    private TipoPecaInsumo tipo;
 
     @NotBlank(message = "O nome da peça/insumo é obrigatório")
     @Size(min = 2, max = 150, message = "O nome deve ter entre 2 e 150 caracteres")

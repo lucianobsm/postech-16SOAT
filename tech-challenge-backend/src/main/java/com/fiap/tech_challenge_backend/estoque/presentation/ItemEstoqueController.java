@@ -2,8 +2,10 @@ package com.fiap.tech_challenge_backend.estoque.presentation;
 
 import com.fiap.tech_challenge_backend.shared.application.dto.RelatorioResponseDTO;
 import com.fiap.tech_challenge_backend.estoque.application.EstoqueService;
+import com.fiap.tech_challenge_backend.estoque.application.dto.EntradaEstoqueRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoResponseDTO;
+import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -17,11 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Controller responsável pelo gerenciamento de peças e insumos do estoque.
- * Contexto Delimitado: estoque
- * Camada: Presentation
- */
 @RestController
 @RequestMapping("/estoque/itens")
 @RequiredArgsConstructor
@@ -74,9 +71,15 @@ public class ItemEstoqueController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar todos os itens do estoque")
-    public List<PecaInsumoResponseDTO> listar() {
-        return service.listarTodos();
+    @Operation(summary = "Listar itens do estoque. Filtra por tipo (PECA ou INSUMO) quando informado.")
+    public List<PecaInsumoResponseDTO> listar(@RequestParam(required = false) TipoPecaInsumo tipo) {
+        return service.listarTodos(tipo);
+    }
+
+    @PostMapping("/entrada")
+    @Operation(summary = "Dar entrada no estoque: cadastra a peça/insumo se não existir ou repõe o estoque se já existir")
+    public PecaInsumoResponseDTO darEntrada(@Valid @RequestBody EntradaEstoqueRequestDTO request) {
+        return service.darEntrada(request);
     }
 
     @PatchMapping("/{id}/entrada")

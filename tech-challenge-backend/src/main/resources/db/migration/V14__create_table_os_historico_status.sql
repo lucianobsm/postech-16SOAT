@@ -1,4 +1,4 @@
--- V12__create_table_os_historico_status.sql
+-- V14__create_table_os_historico_status.sql
 -- Cria a tabela de histórico de movimentação de status das ordens de serviço
 -- Contexto: atendimento
 

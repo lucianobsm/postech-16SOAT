@@ -49,10 +49,12 @@ services:
     env_file: .env
     ports:
       - "8080:8080"
+      - "5005:5005"   # porta de debug
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-tech_challenge}
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASS:-postgres}
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     networks:
       - tech-network
     depends_on:
@@ -67,4 +69,3 @@ networks:
 
 volumes:
   postgres_data:
-    driver: local

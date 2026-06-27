@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.*;
 
-@DisplayName("PecaInsumo - Lógica de Estoque")
+@DisplayName("PecaInsumo")
 class PecaInsumoTest {
 
     private PecaInsumo peca;
@@ -23,6 +23,92 @@ class PecaInsumoTest {
                 .quantidadeEstoque(10)
                 .quantidadeMinima(3)
                 .build();
+    }
+
+    @Nested
+    @DisplayName("construção")
+    class Construcao {
+
+        @Test
+        @DisplayName("deve construir via builder com todos os campos")
+        void deveConstruirViaBuilder() {
+            assertThat(peca.getNome()).isEqualTo("Filtro de óleo");
+            assertThat(peca.getPrecoVenda()).isEqualByComparingTo("35.00");
+            assertThat(peca.getPrecoCompra()).isEqualByComparingTo("25.00");
+            assertThat(peca.getQuantidadeEstoque()).isEqualTo(10);
+            assertThat(peca.getQuantidadeMinima()).isEqualTo(3);
+            assertThat(peca.getId()).isNull();
+        }
+
+        @Test
+        @DisplayName("deve construir via construtor vazio")
+        void deveConstruirViaConstrutorVazio() {
+            var p = new PecaInsumo();
+            assertThat(p).isNotNull();
+            assertThat(p.getNome()).isNull();
+        }
+
+        @Test
+        @DisplayName("deve aceitar campo descricao e quantidadePorUnidade opcionais")
+        void deveAceitarCamposOpcionais() {
+            var p = PecaInsumo.builder()
+                    .nome("Vela")
+                    .precoVenda(new BigDecimal("10.00"))
+                    .precoCompra(new BigDecimal("6.00"))
+                    .quantidadeEstoque(0)
+                    .quantidadeMinima(0)
+                    .descricao("Vela de ignição NGK")
+                    .quantidadePorUnidade("Jogo c/4")
+                    .build();
+
+            assertThat(p.getDescricao()).isEqualTo("Vela de ignição NGK");
+            assertThat(p.getQuantidadePorUnidade()).isEqualTo("Jogo c/4");
+        }
+    }
+
+    @Nested
+    @DisplayName("validarPrecos")
+    class ValidarPrecos {
+
+        @Test
+        @DisplayName("não deve lançar exceção quando precoCompra < precoVenda")
+        void naoDeveLancarQuandoCompraMenuorQueVenda() {
+            assertThatCode(() -> peca.validarPrecos()).doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("não deve lançar exceção quando precoCompra == precoVenda")
+        void naoDeveLancarQuandoCompraIgualVenda() {
+            peca.setPrecoCompra(new BigDecimal("35.00"));
+
+            assertThatCode(() -> peca.validarPrecos()).doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("deve lançar IllegalArgumentException quando precoCompra > precoVenda")
+        void deveLancarQuandoCompraMaiorQueVenda() {
+            peca.setPrecoCompra(new BigDecimal("40.00"));
+
+            assertThatThrownBy(() -> peca.validarPrecos())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("preço de compra não pode ser maior");
+        }
+
+        @Test
+        @DisplayName("não deve lançar exceção quando precoCompra é nulo")
+        void naoDeveLancarQuandoCompraNull() {
+            peca.setPrecoCompra(null);
+
+            assertThatCode(() -> peca.validarPrecos()).doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("não deve lançar exceção quando precoVenda é nulo")
+        void naoDeveLancarQuandoVendaNull() {
+            peca.setPrecoVenda(null);
+
+            assertThatCode(() -> peca.validarPrecos()).doesNotThrowAnyException();
+        }
     }
 
     @Nested
@@ -43,6 +129,15 @@ class PecaInsumoTest {
             peca.entrada(1);
 
             assertThat(peca.getQuantidadeEstoque()).isEqualTo(11);
+        }
+
+        @Test
+        @DisplayName("deve acumular múltiplas entradas")
+        void deveAcumularMultiplasEntradas() {
+            peca.entrada(5);
+            peca.entrada(3);
+
+            assertThat(peca.getQuantidadeEstoque()).isEqualTo(18);
         }
     }
 
@@ -73,6 +168,13 @@ class PecaInsumoTest {
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Quantidade insuficiente");
         }
+
+        @Test
+        @DisplayName("mensagem de erro deve conter o nome da peça")
+        void mensagemDeveConterNomeDaPeca() {
+            assertThatThrownBy(() -> peca.saida(99))
+                    .hasMessageContaining("Filtro de óleo");
+        }
     }
 
     @Nested
@@ -98,6 +200,23 @@ class PecaInsumoTest {
         @Test
         @DisplayName("deve retornar false quando estoque > mínimo")
         void deveRetornarFalseQuandoAcima() {
+            assertThat(peca.estoqueAbaixoDoMinimo()).isFalse();
+        }
+
+        @Test
+        @DisplayName("deve retornar true após saída que leva abaixo do mínimo")
+        void deveRetornarTrueAposSaida() {
+            peca.saida(8);
+
+            assertThat(peca.estoqueAbaixoDoMinimo()).isTrue();
+        }
+
+        @Test
+        @DisplayName("deve retornar false após entrada que supera o mínimo")
+        void deveRetornarFalseAposEntrada() {
+            peca.setQuantidadeEstoque(1);
+            peca.entrada(5);
+
             assertThat(peca.estoqueAbaixoDoMinimo()).isFalse();
         }
     }

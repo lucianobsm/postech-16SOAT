@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Serviço de autenticação e geração de tokens JWT.
@@ -46,5 +47,10 @@ public class AuthService {
 
         String token = jwtTokenProvider.gerarToken(usuario);
         return Map.of("accessToken", token);
+    }
+
+    public Optional<Usuario> authenticate(Email email, String password) {
+        return usuarioRepository.procuraPorEmail(email)
+                .filter(usuario -> passwordEncoder.matches(password, usuario.getSenha()));
     }
 }

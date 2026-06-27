@@ -61,5 +61,3 @@ public class ServicoCatalogo {
     @Builder.Default
     private String categoria = "PREVENTIVA";
 }
-
-

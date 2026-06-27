@@ -1,4 +1,4 @@
--- V9__update_prioritizacao_os.sql
+-- V10__update_prioritizacao_os.sql
 -- Atualiza a priorização de ordens de serviço com categoria de serviço e flag de urgência
 -- Contexto: atendimento
 
