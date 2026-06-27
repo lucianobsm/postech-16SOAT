@@ -2,8 +2,6 @@ package com.fiap.tech_challenge_backend.acesso.application.services;
 
 import com.fiap.tech_challenge_backend.acesso.application.ports.UsuarioRepository;
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
-import com.fiap.tech_challenge_backend.acesso.domain.enums.PerfilUsuario;
-import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Email;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,14 +13,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("AuthService")
+@DisplayName("AuthService - Testes Unitários")
 class AuthServiceTest {
 
     @Mock
@@ -31,61 +32,80 @@ class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
+
     @InjectMocks
     private AuthService authService;
 
-    private Usuario usuario;
-    private Email email;
+    private Usuario usuarioMock;
+    private String email;
+    private String senha;
+    private String tokenGerado;
 
     @BeforeEach
     void setUp() {
-        email = new Email("joao@email.com");
-        usuario = Usuario.builder()
+        email = "mecanico@oficina.com.br";
+        senha = "senha123";
+        tokenGerado = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+
+        usuarioMock = Usuario.builder()
                 .id(UUID.randomUUID())
-                .nome("João Silva")
-                .email(email)
-                .senha("$2a$10$hashedSenha")
-                .perfil(PerfilUsuario.CLIENTE)
-                .cpfCnpj(new CpfCnpj("12345678901"))
+                .nome("João Mecânico")
+                .email(new Email(email))
+                .senha("hash_da_senha")
                 .build();
     }
 
-    @Nested
-    @DisplayName("authenticate")
-    class Authenticate {
+    @Test
+    @DisplayName("Deve autenticar usuário com sucesso")
+    void testAutenticarSucesso() {
+        when(usuarioRepository.procuraPorEmail(new Email(email)))
+                .thenReturn(Optional.of(usuarioMock));
+        when(passwordEncoder.matches(senha, usuarioMock.getSenha()))
+                .thenReturn(true);
+        when(jwtTokenProvider.gerarToken(usuarioMock))
+                .thenReturn(tokenGerado);
 
-        @Test
-        @DisplayName("deve retornar usuário quando credenciais são válidas")
-        void deveRetornarUsuarioComCredenciaisValidas() {
-            when(usuarioRepository.procuraPorEmail(email)).thenReturn(Optional.of(usuario));
-            when(passwordEncoder.matches("senha123", usuario.getSenha())).thenReturn(true);
+        Map<String, String> resultado = authService.autenticar(email, senha);
 
-            Optional<Usuario> resultado = authService.authenticate(email, "senha123");
+        assertNotNull(resultado);
+        assertTrue(resultado.containsKey("accessToken"));
+        assertEquals(tokenGerado, resultado.get("accessToken"));
+        verify(usuarioRepository, times(1)).procuraPorEmail(new Email(email));
+        verify(passwordEncoder, times(1)).matches(senha, usuarioMock.getSenha());
+        verify(jwtTokenProvider, times(1)).gerarToken(usuarioMock);
+    }
 
-            assertThat(resultado).isPresent();
-            assertThat(resultado.get().getNome()).isEqualTo("João Silva");
-            assertThat(resultado.get().getPerfil()).isEqualTo(PerfilUsuario.CLIENTE);
-        }
+    @Test
+    @DisplayName("Deve lançar exceção quando usuário não encontrado")
+    void testAutenticarUsuarioNaoEncontrado() {
+        when(usuarioRepository.procuraPorEmail(new Email(email)))
+                .thenReturn(Optional.empty());
 
-        @Test
-        @DisplayName("deve retornar Optional vazio quando e-mail não encontrado")
-        void deveRetornarVazioQuandoEmailNaoEncontrado() {
-            when(usuarioRepository.procuraPorEmail(email)).thenReturn(Optional.empty());
+        IllegalArgumentException excepcao = assertThrows(IllegalArgumentException.class,
+            () -> authService.autenticar(email, senha));
 
-            Optional<Usuario> resultado = authService.authenticate(email, "senha123");
+        assertEquals("Usuário não encontrado: " + email, excepcao.getMessage());
+        verify(usuarioRepository, times(1)).procuraPorEmail(new Email(email));
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(jwtTokenProvider, never()).gerarToken(any());
+    }
 
-            assertThat(resultado).isEmpty();
-        }
+    @Test
+    @DisplayName("Deve lançar exceção quando senha inválida")
+    void testAutenticarSenhaInvalida() {
+        when(usuarioRepository.procuraPorEmail(new Email(email)))
+                .thenReturn(Optional.of(usuarioMock));
+        when(passwordEncoder.matches(senha, usuarioMock.getSenha()))
+                .thenReturn(false);
 
-        @Test
-        @DisplayName("deve retornar Optional vazio quando senha não confere")
-        void deveRetornarVazioQuandoSenhaErrada() {
-            when(usuarioRepository.procuraPorEmail(email)).thenReturn(Optional.of(usuario));
-            when(passwordEncoder.matches("senhaErrada", usuario.getSenha())).thenReturn(false);
+        IllegalArgumentException excepcao = assertThrows(IllegalArgumentException.class,
+            () -> authService.autenticar(email, senha));
 
-            Optional<Usuario> resultado = authService.authenticate(email, "senhaErrada");
-
-            assertThat(resultado).isEmpty();
-        }
+        assertEquals("Senha inválida", excepcao.getMessage());
+        verify(usuarioRepository, times(1)).procuraPorEmail(new Email(email));
+        verify(passwordEncoder, times(1)).matches(senha, usuarioMock.getSenha());
+        verify(jwtTokenProvider, never()).gerarToken(any());
     }
 }

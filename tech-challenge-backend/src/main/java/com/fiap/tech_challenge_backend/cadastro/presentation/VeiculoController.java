@@ -1,5 +1,27 @@
 package com.fiap.tech_challenge_backend.cadastro.presentation;
 
+/*
+ * NOTA: Este controller está temporariamente comentado porque as use cases
+ * do contexto de cadastro ainda não foram implementadas no merge.
+ *
+ * Use cases que precisam ser criadas:
+ * - CadastroVeiculoUseCase
+ * - ListarVeiculosUseCase
+ * - BuscarVeiculoUseCase
+ * - AtualizarVeiculoUseCase
+ * - DeletarVeiculoUseCase
+ *
+ * DTOs necessários:
+ * - AtualizarVeiculoRequest
+ * - CadastroVeiculoRequest
+ * - CadastroVeiculoResponse
+ * - BuscarVeiculoResponse
+ *
+ * Contexto Delimitado: cadastro
+ * Camada: Presentation
+ */
+
+/*
 import com.fiap.tech_challenge_backend.cadastro.application.usecases.AtualizarVeiculoUseCase;
 import com.fiap.tech_challenge_backend.cadastro.application.usecases.BuscarVeiculoUseCase;
 import com.fiap.tech_challenge_backend.cadastro.application.usecases.CadastroVeiculoUseCase;
@@ -15,11 +37,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controller responsável por cadastrar e atualizar dados do veículo.
- * Contexto Delimitado: cadastro
- * Camada: Presentation
- */
 @RestController
 @RequestMapping("/veiculos")
 public class VeiculoController {
@@ -35,8 +52,7 @@ public class VeiculoController {
             ListarVeiculosUseCase listarVeiculosUseCase,
             BuscarVeiculoUseCase buscarVeiculoUseCase,
             AtualizarVeiculoUseCase atualizarVeiculoUseCase,
-            DeletarVeiculoUseCase deletarVeiculoUseCase
-    ) {
+            DeletarVeiculoUseCase deletarVeiculoUseCase) {
         this.cadastroVeiculoUseCase = cadastroVeiculoUseCase;
         this.listarVeiculosUseCase = listarVeiculosUseCase;
         this.buscarVeiculoUseCase = buscarVeiculoUseCase;
@@ -46,28 +62,29 @@ public class VeiculoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CadastroVeiculoResponse cadastrar(@Valid @RequestBody CadastroVeiculoRequest request) {
-        return cadastroVeiculoUseCase.execute(request);
+    public CadastroVeiculoResponse create(@Valid @RequestBody CadastroVeiculoRequest request) {
+        return cadastroVeiculoUseCase.create(request);
     }
 
     @GetMapping
-    public List<BuscarVeiculoResponse> listar() {
-        return listarVeiculosUseCase.execute();
+    public List<BuscarVeiculoResponse> list() {
+        return listarVeiculosUseCase.list();
     }
 
-    @GetMapping("/{placa}")
-    public BuscarVeiculoResponse buscar(@PathVariable String placa) {
-        return buscarVeiculoUseCase.execute(placa);
+    @GetMapping("/{id}")
+    public BuscarVeiculoResponse getById(@PathVariable String id) {
+        return buscarVeiculoUseCase.get(id);
     }
 
-    @PutMapping("/{placa}")
-    public BuscarVeiculoResponse atualizar(@PathVariable String placa, @Valid @RequestBody AtualizarVeiculoRequest request) {
-        return atualizarVeiculoUseCase.execute(placa, request);
+    @PutMapping("/{id}")
+    public CadastroVeiculoResponse update(@PathVariable String id, @Valid @RequestBody AtualizarVeiculoRequest request) {
+        return atualizarVeiculoUseCase.update(id, request);
     }
 
-    @DeleteMapping("/{placa}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletar(@PathVariable String placa) {
-        deletarVeiculoUseCase.execute(placa);
+    public void delete(@PathVariable String id) {
+        deletarVeiculoUseCase.delete(id);
     }
 }
+*/

@@ -5,6 +5,9 @@ import java.util.UUID;
 public record BuscarVeiculoResponse(
         UUID id,
         String placa,
-        String modelo
+        String marca,
+        String modelo,
+        Integer ano,
+        String cor
 ) {
 }

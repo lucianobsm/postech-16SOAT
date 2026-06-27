@@ -17,7 +17,13 @@ public class BuscarVeiculoUseCase {
 
     public BuscarVeiculoResponse execute(String placa) {
         return veiculoRepository.buscarPorPlaca(new Placa(placa))
-                .map(v -> new BuscarVeiculoResponse(v.getId(), v.getPlaca().valor(), v.getModelo()))
+                .map(v -> new BuscarVeiculoResponse(
+                        v.getId(),
+                        v.getPlaca().valor(),
+                        v.getMarca(),
+                        v.getModelo(),
+                        v.getAno(),
+                        v.getCor()))
                 .orElseThrow(() -> new VeiculoNaoEncontradoException(placa));
     }
 }

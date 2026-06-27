@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record AcompanhamentoOsResponseDTO(
-        UUID id,
+        Long id,
         StatusOrdemServico status,
         String descricaoStatus,
         String veiculoPlaca,
@@ -28,13 +28,15 @@ public record AcompanhamentoOsResponseDTO(
     public record ItemPecaDTO(String nome, int quantidade, BigDecimal subtotal) {}
 
     public static AcompanhamentoOsResponseDTO from(OrdemServico os) {
-        var servicos = os.getServicos().stream()
+        var servicos = os.getOrcamentos().stream()
+                .flatMap(orc -> orc.getServicos().stream())
                 .map(s -> new ItemServicoDTO(
                         s.getServico().getNome(),
                         s.getPrecoMaoDeObraAplicado()))
                 .toList();
 
-        var pecas = os.getPecas().stream()
+        var pecas = os.getOrcamentos().stream()
+                .flatMap(orc -> orc.getPecas().stream())
                 .map(p -> new ItemPecaDTO(
                         p.getPeca().getNome(),
                         p.getQuantidade(),

@@ -57,7 +57,7 @@ class CadastroVeiculoUseCaseTest {
         clienteId = UUID.randomUUID();
         veiculoId = UUID.randomUUID();
 
-        request = new CadastroVeiculoRequest("ABC1234", "Fiat Uno", "12345678901");
+        request = new CadastroVeiculoRequest("ABC1234", "Fiat", "Uno", 2020, "Branco", "12345678901");
 
         cliente = Cliente.builder()
                 .id(clienteId)

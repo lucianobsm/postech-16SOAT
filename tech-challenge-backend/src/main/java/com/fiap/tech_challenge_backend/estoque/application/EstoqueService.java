@@ -11,9 +11,10 @@ import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.MovimentacaoRepository;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoRepository;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +25,6 @@ import java.util.UUID;
  * Camada: Application
  */
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class EstoqueService {
 
@@ -76,6 +76,25 @@ public class EstoqueService {
         return PecaInsumoResponseDTO.from(salva);
     }
 
+    public EstoqueService(PecaInsumoRepository pecaInsumoRepository,
+                          MovimentacaoRepository movimentacaoRepository) {
+        this.pecaInsumoRepository = pecaInsumoRepository;
+        this.movimentacaoRepository = movimentacaoRepository;
+    }
+
+    public PecaInsumoResponseDTO cadastrar(PecaInsumoRequestDTO request) {
+        var peca = PecaInsumo.builder()
+                .nome(request.nome())
+                .descricao(request.descricao())
+                .precoVenda(request.precoVenda())
+                .precoCompra(request.precoCompra())
+                .quantidadePorUnidade(request.quantidadePorUnidade())
+                .quantidadeEstoque(request.quantidadeEstoque())
+                .quantidadeMinima(request.quantidadeMinima())
+                .build();
+        return PecaInsumoResponseDTO.from(pecaInsumoRepository.save(peca));
+    }
+
     public PecaInsumoResponseDTO atualizar(UUID id, PecaInsumoRequestDTO request) {
         var peca = buscarEntidade(id);
         int estoqueAnterior = peca.getQuantidadeEstoque();
@@ -121,20 +140,42 @@ public class EstoqueService {
     }
 
     public void remover(UUID id) {
-        buscarEntidade(id);
+        var peca = buscarEntidade(id);
+
+        long referenciaCount = pecaInsumoRepository.countByPecaInUso(id);
+        if (referenciaCount > 0) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Não é possível deletar a peça/insumo '" + peca.getNome() +
+                "' pois está sendo utilizada em " + referenciaCount + " ordem(ns) de serviço(s)"
+            );
+        }
+
         pecaInsumoRepository.deleteById(id);
+    }
+
+    public void registrarEntrada(UUID id, Integer quantidade, String observacao) {
+        var peca = buscarEntidade(id);
+        peca.entrada(quantidade);
+        pecaInsumoRepository.save(peca);
+        var movimentacao = new MovimentacaoEstoque();
+        movimentacao.setPecaInsumo(peca);
+        movimentacao.setTipoMovimentacao(TipoMovimentacao.ENTRADA);
+        movimentacao.setQuantidade(quantidade);
+        movimentacao.setObservacao(observacao);
+        movimentacaoRepository.save(movimentacao);
     }
 
     public void registrarSaida(UUID id, Integer quantidade, String observacao) {
         var peca = buscarEntidade(id);
         peca.saida(quantidade);
         pecaInsumoRepository.save(peca);
-        movimentacaoRepository.save(MovimentacaoEstoque.builder()
-                .pecaInsumo(peca)
-                .tipoMovimentacao(TipoMovimentacao.SAIDA)
-                .quantidade(quantidade)
-                .observacao(observacao)
-                .build());
+        var movimentacao = new MovimentacaoEstoque();
+        movimentacao.setPecaInsumo(peca);
+        movimentacao.setTipoMovimentacao(TipoMovimentacao.SAIDA);
+        movimentacao.setQuantidade(quantidade);
+        movimentacao.setObservacao(observacao);
+        movimentacaoRepository.save(movimentacao);
     }
 
     public void registrarVenda(UUID id, Integer quantidade, String observacao) {
@@ -144,18 +185,6 @@ public class EstoqueService {
         movimentacaoRepository.save(MovimentacaoEstoque.builder()
                 .pecaInsumo(peca)
                 .tipoMovimentacao(TipoMovimentacao.VENDA)
-                .quantidade(quantidade)
-                .observacao(observacao)
-                .build());
-    }
-
-    public void reservar(UUID id, Integer quantidade, String observacao) {
-        var peca = buscarEntidade(id);
-        peca.saida(quantidade);
-        pecaInsumoRepository.save(peca);
-        movimentacaoRepository.save(MovimentacaoEstoque.builder()
-                .pecaInsumo(peca)
-                .tipoMovimentacao(TipoMovimentacao.RESERVA)
                 .quantidade(quantidade)
                 .observacao(observacao)
                 .build());

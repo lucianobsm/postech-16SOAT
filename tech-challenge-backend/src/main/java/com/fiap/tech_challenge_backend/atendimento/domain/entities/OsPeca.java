@@ -16,6 +16,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,13 +28,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "os_pecas")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = "ordemServico")
 public class OsPeca {
 
     @EqualsAndHashCode.Include
@@ -42,11 +40,15 @@ public class OsPeca {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    @NotNull(message = "A ordem de servico e obrigatoria")
+    @NotNull(message = "O orcamento da ordem de servico e obrigatorio")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ordem_servico_id", nullable = false,
-        foreignKey = @ForeignKey(name = "fk_os_peca_ordem_servico"))
-    private OrdemServico ordemServico;
+    @JoinColumn(name = "orcamento_id", nullable = false,
+        foreignKey = @ForeignKey(name = "fk_os_peca_orcamento"))
+    @ToString.Exclude
+    private OsOrcamento orcamento;
+
+    @Column(name = "ordem_servico_id")
+    private Long ordemServicoId;
 
     @NotNull(message = "A peca/insumo e obrigatoria")
     @ManyToOne(fetch = FetchType.LAZY)

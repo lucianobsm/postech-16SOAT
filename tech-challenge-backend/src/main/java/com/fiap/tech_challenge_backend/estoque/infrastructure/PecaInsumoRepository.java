@@ -14,4 +14,7 @@ public interface PecaInsumoRepository extends JpaRepository<PecaInsumo, UUID> {
     List<PecaInsumo> findAbaixoDoMinimo();
 
     List<PecaInsumo> findByTipo(TipoPecaInsumo tipo);
+
+    @Query("SELECT COUNT(op) FROM OsPeca op WHERE op.peca.id = ?1")
+    long countByPecaInUso(UUID pecaId);
 }

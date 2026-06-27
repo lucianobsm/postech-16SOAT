@@ -17,7 +17,13 @@ public class ListarVeiculosUseCase {
 
     public List<BuscarVeiculoResponse> execute() {
         return veiculoRepository.listar().stream()
-                .map(v -> new BuscarVeiculoResponse(v.getId(), v.getPlaca().valor(), v.getModelo()))
+                .map(v -> new BuscarVeiculoResponse(
+                        v.getId(),
+                        v.getPlaca().valor(),
+                        v.getMarca(),
+                        v.getModelo(),
+                        v.getAno(),
+                        v.getCor()))
                 .toList();
     }
 }

@@ -38,7 +38,7 @@ DB_PASS=postgres
 ### Apenas o banco (app rodando pela IDE/Maven)
 
 ```bash
-docker compose up -d postgres
+ 
 ./mvnw spring-boot:run
 ```
 

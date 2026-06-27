@@ -15,6 +15,8 @@ public interface VeiculoRepository {
 
     Optional<Veiculo> buscarPorPlaca(Placa placa);
 
+    Optional<Veiculo> buscarPorId(UUID id);
+
     List<Veiculo> listar();
 
     void deletar(UUID id);

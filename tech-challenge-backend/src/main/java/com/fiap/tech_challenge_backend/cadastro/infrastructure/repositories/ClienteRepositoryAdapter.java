@@ -36,6 +36,11 @@ public class ClienteRepositoryAdapter implements ClienteRepository {
     }
 
     @Override
+    public Optional<Cliente> buscarPorId(UUID id) {
+        return clienteJpaRepository.findById(id);
+    }
+
+    @Override
     public List<Cliente> listar() {
         return this.clienteJpaRepository.findAll();
     }

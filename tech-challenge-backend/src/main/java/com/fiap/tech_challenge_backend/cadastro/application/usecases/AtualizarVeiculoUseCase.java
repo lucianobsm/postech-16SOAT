@@ -30,7 +30,10 @@ public class AtualizarVeiculoUseCase {
         return new BuscarVeiculoResponse(
                 veiculoAtualizado.getId(),
                 veiculoAtualizado.getPlaca().valor(),
-                veiculoAtualizado.getModelo()
+                veiculoAtualizado.getMarca(),
+                veiculoAtualizado.getModelo(),
+                veiculoAtualizado.getAno(),
+                veiculoAtualizado.getCor()
         );
     }
 }

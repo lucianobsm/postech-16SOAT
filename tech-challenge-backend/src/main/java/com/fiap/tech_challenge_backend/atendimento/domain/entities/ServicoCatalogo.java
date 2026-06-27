@@ -51,4 +51,13 @@ public class ServicoCatalogo {
     @Digits(integer = 8, fraction = 2, message = "O preço deve ter no máximo 8 dígitos inteiros e 2 decimais")
     @Column(name = "preco_mao_de_obra", nullable = false, precision = 10, scale = 2)
     private BigDecimal precoMaoDeObra;
+
+    @NotBlank(message = "A categoria do serviço é obrigatória")
+    @Pattern(
+        regexp = "DIAGNOSTICO|CORRETIVA|PREVENTIVA|GARANTIA",
+        message = "A categoria deve ser DIAGNOSTICO, CORRETIVA, PREVENTIVA ou GARANTIA"
+    )
+    @Column(name = "categoria", nullable = false, length = 30)
+    @Builder.Default
+    private String categoria = "PREVENTIVA";
 }

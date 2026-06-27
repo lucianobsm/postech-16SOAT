@@ -92,7 +92,7 @@ class VeiculoControllerIT {
     }
 
     private CadastroVeiculoRequest requestUno() {
-        return new CadastroVeiculoRequest("ABC1234", "Fiat Uno", "12345678901");
+        return new CadastroVeiculoRequest("ABC1234", "Fiat", "Uno", 2020, "Branco", "12345678901");
     }
 
     @Test
@@ -126,7 +126,7 @@ class VeiculoControllerIT {
     @WithMockUser
     @DisplayName("POST /veiculos - deve retornar 404 quando cliente não existe")
     void deveRetornar404QuandoClienteNaoExiste() throws Exception {
-        var request = new CadastroVeiculoRequest("XYZ9999", "Honda Civic", "99999999999");
+        var request = new CadastroVeiculoRequest("XYZ9999", "Honda", "Civic", 2021, "Preto", "99999999999");
 
         mockMvc.perform(post("/veiculos")
                         .contentType(MediaType.APPLICATION_JSON)
