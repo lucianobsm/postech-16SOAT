@@ -70,4 +70,20 @@ public record RelatorioResponseDTO<T>(
                 dados
         );
     }
+
+    public static <T> RelatorioResponseDTO<T> acompanhamentoSucesso(List<T> dados) {
+        return new RelatorioResponseDTO<>(
+                "Ordens de serviço do cliente carregadas com sucesso",
+                dados.size(),
+                dados
+        );
+    }
+
+    public static <T> RelatorioResponseDTO<T> acompanhamentoVazio() {
+        return new RelatorioResponseDTO<>(
+                "Cliente ainda não possui nenhuma ordem de serviço registrada.",
+                0,
+                List.of()
+        );
+    }
 }

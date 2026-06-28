@@ -88,6 +88,17 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
 			FROM OsOrcamento orc
 			""")
 	Long findMaxOrcamentoId();
+
+	@Query("""
+			SELECT os
+			FROM OrdemServico os
+			JOIN FETCH os.cliente
+			LEFT JOIN FETCH os.veiculo
+			LEFT JOIN FETCH os.mecanico
+			WHERE os.cliente.id = :clienteId
+			ORDER BY os.dataCriacao DESC
+			""")
+	List<OrdemServico> findByClienteIdWithDetails(@Param("clienteId") UUID clienteId);
 }
 
 

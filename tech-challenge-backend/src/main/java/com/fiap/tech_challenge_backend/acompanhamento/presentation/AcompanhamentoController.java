@@ -2,6 +2,7 @@ package com.fiap.tech_challenge_backend.acompanhamento.presentation;
 
 import com.fiap.tech_challenge_backend.acompanhamento.application.AcompanhamentoService;
 import com.fiap.tech_challenge_backend.acompanhamento.application.dto.AcompanhamentoOsResponseDTO;
+import com.fiap.tech_challenge_backend.shared.application.dto.RelatorioResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -26,15 +27,22 @@ public class AcompanhamentoController {
 
     @GetMapping
     @Operation(summary = "Lista todas as ordens de servico do cliente")
-    public ResponseEntity<List<AcompanhamentoOsResponseDTO>> listar(@PathVariable UUID clienteId) {
-        return ResponseEntity.ok(service.listarPorCliente(clienteId));
+    public ResponseEntity<RelatorioResponseDTO<AcompanhamentoOsResponseDTO>> listar(@PathVariable UUID clienteId) {
+        List<AcompanhamentoOsResponseDTO> ordens = service.listarPorCliente(clienteId);
+
+        if (ordens.isEmpty()) {
+            return ResponseEntity.ok(RelatorioResponseDTO.acompanhamentoVazio());
+        }
+
+        return ResponseEntity.ok(RelatorioResponseDTO.acompanhamentoSucesso(ordens));
     }
 
     @GetMapping("/{osId}")
     @Operation(summary = "Consulta o detalhe de uma ordem de servico do cliente")
-    public ResponseEntity<AcompanhamentoOsResponseDTO> detalhe(
+    public ResponseEntity<RelatorioResponseDTO<AcompanhamentoOsResponseDTO>> detalhe(
             @PathVariable UUID clienteId,
-            @PathVariable UUID osId) {
-        return ResponseEntity.ok(service.buscarDetalhe(clienteId, osId));
+            @PathVariable Long osId) {
+        AcompanhamentoOsResponseDTO ordem = service.buscarDetalhe(clienteId, osId);
+        return ResponseEntity.ok(RelatorioResponseDTO.acompanhamentoSucesso(List.of(ordem)));
     }
 }

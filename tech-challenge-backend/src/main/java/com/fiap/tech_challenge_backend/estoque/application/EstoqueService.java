@@ -91,6 +91,7 @@ public class EstoqueService {
                 .quantidadePorUnidade(request.quantidadePorUnidade())
                 .quantidadeEstoque(request.quantidadeEstoque())
                 .quantidadeMinima(request.quantidadeMinima())
+                .tipo(request.tipo())
                 .build();
         return PecaInsumoResponseDTO.from(pecaInsumoRepository.save(peca));
     }
