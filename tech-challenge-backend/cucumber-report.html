@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Cucumber Test Report</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			min-height: 100vh;
+			padding: 20px;
+		}
+
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			background: white;
+			border-radius: 12px;
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+			overflow: hidden;
+		}
+
+		.header {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			padding: 40px;
+			text-align: center;
+		}
+
+		.header h1 {
+			font-size: 2.5em;
+			margin-bottom: 10px;
+		}
+
+		.stats {
+			display: flex;
+			gap: 30px;
+			justify-content: center;
+			margin-top: 20px;
+			flex-wrap: wrap;
+		}
+
+		.stat-box {
+			text-align: center;
+			padding: 15px 30px;
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 8px;
+			backdrop-filter: blur(10px);
+		}
+
+		.stat-number {
+			font-size: 2em;
+			font-weight: bold;
+			display: block;
+		}
+
+		.stat-label {
+			font-size: 0.9em;
+			opacity: 0.9;
+		}
+
+		.content {
+			padding: 40px;
+		}
+
+		.feature {
+			margin-bottom: 30px;
+			border-left: 4px solid #667eea;
+			padding-left: 20px;
+		}
+
+		.feature-name {
+			font-size: 1.4em;
+			font-weight: 600;
+			color: #333;
+			margin-bottom: 15px;
+		}
+
+		.scenario {
+			margin-bottom: 15px;
+			padding: 15px;
+			background: #f8f9fa;
+			border-radius: 6px;
+			border-left: 4px solid #ddd;
+		}
+
+		.scenario.passed {
+			border-left-color: #28a745;
+			background: #f0f7f4;
+		}
+
+		.scenario.failed {
+			border-left-color: #dc3545;
+			background: #fdf1f1;
+		}
+
+		.scenario-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 10px;
+		}
+
+		.scenario-name {
+			font-weight: 500;
+			color: #333;
+		}
+
+		.scenario-status {
+			display: inline-block;
+			padding: 4px 12px;
+			border-radius: 20px;
+			font-size: 0.85em;
+			font-weight: 600;
+		}
+
+		.status-passed {
+			background: #d4edda;
+			color: #155724;
+		}
+
+		.status-failed {
+			background: #f8d7da;
+			color: #721c24;
+		}
+
+		.scenario-time {
+			font-size: 0.9em;
+			color: #666;
+		}
+
+		.steps {
+			margin-top: 10px;
+			padding-left: 20px;
+		}
+
+		.step {
+			display: flex;
+			align-items: center;
+			margin-bottom: 8px;
+			font-size: 0.95em;
+			color: #555;
+		}
+
+		.step-keyword {
+			font-weight: 600;
+			color: #667eea;
+			min-width: 70px;
+		}
+
+		.step-status {
+			width: 20px;
+			height: 20px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-right: 10px;
+			font-size: 0.8em;
+			color: white;
+		}
+
+		.step-status.passed {
+			background: #28a745;
+		}
+
+		.step-status.failed {
+			background: #dc3545;
+		}
+
+		.error-message {
+			margin-top: 10px;
+			padding: 10px;
+			background: #fff3cd;
+			border-left: 3px solid #ffc107;
+			color: #856404;
+			font-family: monospace;
+			font-size: 0.9em;
+			border-radius: 4px;
+		}
+
+		.loading {
+			text-align: center;
+			padding: 40px;
+			color: #667eea;
+			font-size: 1.2em;
+		}
+
+		.error {
+			text-align: center;
+			padding: 40px;
+			color: #dc3545;
+			font-size: 1.1em;
+		}
+
+		.summary {
+			background: #f8f9fa;
+			padding: 20px;
+			border-radius: 6px;
+			margin-bottom: 30px;
+		}
+
+		.summary-text {
+			font-size: 1.1em;
+			color: #333;
+		}
+
+		.timestamp {
+			color: #999;
+			font-size: 0.9em;
+			margin-top: 20px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>🥒 Cucumber Test Report</h1>
+			<p>Tech Challenge Backend</p>
+		</div>
+		<div class="content">
+			<div id="report"></div>
+		</div>
+	</div>
+
+	<script>
+		async function loadReport() {
+			try {
+				const response = await fetch('./target/cucumber.json');
+				if (!response.ok) throw new Error('Arquivo não encontrado em ./target/cucumber.json');
+
+				const data = await response.json();
+				renderReport(data);
+			} catch (error) {
+				document.getElementById('report').innerHTML = `
+					<div class="error">
+						❌ Erro ao carregar relatório: ${error.message}
+						<br><br>
+						<small>Certifique-se de que rodou: <code>./mvnw clean test</code></small>
+					</div>
+				`;
+			}
+		}
+
+		function renderReport(features) {
+			let html = '';
+			let totalScenarios = 0;
+			let passedScenarios = 0;
+			let failedScenarios = 0;
+			let totalSteps = 0;
+			let passedSteps = 0;
+
+			features.forEach(feature => {
+				html += `<div class="feature">
+					<div class="feature-name">📋 ${feature.name}</div>`;
+
+				feature.elements.forEach(scenario => {
+					const passed = scenario.steps.every(step => step.result.status === 'passed');
+					const status = passed ? 'passed' : 'failed';
+					const statusText = passed ? '✅ PASSED' : '❌ FAILED';
+
+					totalScenarios++;
+					if (passed) passedScenarios++;
+					else failedScenarios++;
+
+					const duration = calculateDuration(scenario);
+					const durationText = duration > 0 ? `${(duration / 1000).toFixed(2)}s` : '-';
+
+					html += `<div class="scenario ${status}">
+						<div class="scenario-header">
+							<div class="scenario-name">${scenario.name}</div>
+							<div style="display: flex; gap: 10px; align-items: center;">
+								<span class="scenario-time">${durationText}</span>
+								<span class="scenario-status status-${status}">${statusText}</span>
+							</div>
+						</div>
+						<div class="steps">`;
+
+					scenario.steps.forEach(step => {
+						const stepPassed = step.result.status === 'passed';
+						const stepStatus = stepPassed ? 'passed' : 'failed';
+
+						totalSteps++;
+						if (stepPassed) passedSteps++;
+
+						const icon = stepPassed ? '✓' : '✗';
+						html += `<div class="step">
+							<div class="step-status ${stepStatus}">${icon}</div>
+							<span class="step-keyword">${step.keyword}</span>
+							<span>${step.name}</span>
+						</div>`;
+					});
+
+					html += `</div></div>`;
+				});
+
+				html += `</div>`;
+			});
+
+			// Renderizar sumário no topo
+			const reportContent = document.getElementById('report');
+			reportContent.innerHTML = `
+				<div class="summary">
+					<div style="display: flex; gap: 40px; flex-wrap: wrap;">
+						<div>
+							<div class="stat-number" style="color: #667eea;">${totalScenarios}</div>
+							<div class="stat-label">Total de Cenários</div>
+						</div>
+						<div>
+							<div class="stat-number" style="color: #28a745;">${passedScenarios}</div>
+							<div class="stat-label">Cenários Passaram</div>
+						</div>
+						<div>
+							<div class="stat-number" style="color: ${failedScenarios > 0 ? '#dc3545' : '#28a745'};">${failedScenarios}</div>
+							<div class="stat-label">Cenários Falharam</div>
+						</div>
+						<div>
+							<div class="stat-number" style="color: #667eea;">${totalSteps}</div>
+							<div class="stat-label">Total de Steps</div>
+						</div>
+					</div>
+					<div class="summary-text" style="margin-top: 20px;">
+						<strong>Taxa de Sucesso:</strong> ${((passedScenarios / totalScenarios) * 100).toFixed(1)}%
+					</div>
+					<div class="timestamp">Relatório gerado em: ${new Date().toLocaleString('pt-BR')}</div>
+				</div>
+				${html}
+			`;
+		}
+
+		function calculateDuration(scenario) {
+			let total = 0;
+			scenario.before?.forEach(step => {
+				if (step.result?.duration) total += step.result.duration;
+			});
+			scenario.steps?.forEach(step => {
+				if (step.result?.duration) total += step.result.duration;
+			});
+			scenario.after?.forEach(step => {
+				if (step.result?.duration) total += step.result.duration;
+			});
+			return total;
+		}
+
+		document.getElementById('report').innerHTML = '<div class="loading">⏳ Carregando relatório...</div>';
+		loadReport();
+	</script>
+</body>
+</html>
