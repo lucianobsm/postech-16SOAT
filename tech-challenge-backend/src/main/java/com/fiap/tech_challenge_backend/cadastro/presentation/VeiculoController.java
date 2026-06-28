@@ -9,8 +9,10 @@ import com.fiap.tech_challenge_backend.cadastro.application.dtos.AtualizarVeicul
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroVeiculoRequest;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroVeiculoResponse;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.BuscarVeiculoResponse;
+import com.fiap.tech_challenge_backend.shared.application.dto.RelatorioResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -60,8 +62,9 @@ public class VeiculoController {
     }
 
     @DeleteMapping("/{placa}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable String placa) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<RelatorioResponseDTO<Void>> delete(@PathVariable String placa) {
         deletarVeiculoUseCase.execute(placa);
+        return ResponseEntity.ok(RelatorioResponseDTO.deleteVeiculoSucesso());
     }
 }

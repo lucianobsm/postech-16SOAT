@@ -33,7 +33,7 @@ INSERT INTO veiculos (id, placa, marca, modelo, ano, cor) VALUES
 ('66666666-6666-4666-8666-666666666660', 'ABC1234', 'Toyota', 'Corolla', 2020, 'Prata'),
 ('66666666-6666-4666-8666-666666666661', 'XYZ9876', 'Honda', 'Civic', 2021, 'Preto'),
 ('66666666-6666-4666-8666-666666666662', 'QWE1A34', 'Chevrolet', 'Onix', 2022, 'Branco'),
-('550e8400-e29b-41d4-a716-446655440003', 'AB87D28', 'Ford', 'Ka', 2000, 'Azul')
+('550e8400-e29b-41d4-a716-446655440003', 'ABD1D28', 'Ford', 'Ka', 2000, 'Azul')
 ON CONFLICT DO NOTHING;
 
 -- ============================================

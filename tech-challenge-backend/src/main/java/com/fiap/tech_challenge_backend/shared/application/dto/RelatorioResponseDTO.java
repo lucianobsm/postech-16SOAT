@@ -86,4 +86,28 @@ public record RelatorioResponseDTO<T>(
                 List.of()
         );
     }
+
+    public static <T> RelatorioResponseDTO<T> deleteSucesso(String tipoRecurso) {
+        return new RelatorioResponseDTO<>(
+                tipoRecurso + " removido com sucesso. O histórico associado foi preservado para consultas futuras.",
+                0,
+                List.of()
+        );
+    }
+
+    public static <T> RelatorioResponseDTO<T> deleteVeiculoSucesso() {
+        return new RelatorioResponseDTO<>(
+                "Veículo removido com sucesso. Todas as ordens de serviço associadas ao veículo foram preservadas no histórico.",
+                0,
+                List.of()
+        );
+    }
+
+    public static <T> RelatorioResponseDTO<T> deleteItemEstoqueSucesso() {
+        return new RelatorioResponseDTO<>(
+                "Item de estoque removido com sucesso. Todos os registros de utilização nas ordens de serviço foram preservados no histórico.",
+                0,
+                List.of()
+        );
+    }
 }

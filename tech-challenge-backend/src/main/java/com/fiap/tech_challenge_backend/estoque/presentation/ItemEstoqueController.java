@@ -133,9 +133,10 @@ public class ItemEstoqueController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Remover item")
-    public void remover(@PathVariable UUID id) {
+    public RelatorioResponseDTO<PecaInsumoResponseDTO> remover(@PathVariable UUID id) {
         service.remover(id);
+        return RelatorioResponseDTO.deleteItemEstoqueSucesso();
     }
 }

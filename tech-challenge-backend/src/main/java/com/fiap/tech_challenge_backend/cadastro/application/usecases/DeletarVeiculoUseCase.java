@@ -27,7 +27,7 @@ public class DeletarVeiculoUseCase {
         Veiculo veiculo = veiculoRepository.buscarPorPlaca(new Placa(placa))
                 .orElseThrow(() -> new VeiculoNaoEncontradoException(placa));
 
-        clienteVeiculoRepository.deletarPorVeiculoId(veiculo.getId());
-        veiculoRepository.deletar(veiculo.getId());
+        veiculo.setDeletedAt(java.time.LocalDateTime.now());
+        veiculoRepository.salvar(veiculo);
     }
 }
