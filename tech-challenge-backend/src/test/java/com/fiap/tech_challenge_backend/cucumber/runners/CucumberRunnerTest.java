@@ -9,9 +9,8 @@ import org.junit.platform.suite.api.Suite;
 @Suite
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features")
-@ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = "pretty,html:target/cucumber-reports/index.html")
+@ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = "pretty")
 @ConfigurationParameter(key = Constants.GLUE_PROPERTY_NAME, value = "com.fiap.tech_challenge_backend.cucumber")
-@ConfigurationParameter(key = Constants.FEATURES_PROPERTY_NAME, value = "classpath:features")
-@ConfigurationParameter(key = Constants.SNIPPET_TYPE_PROPERTY_NAME, value = "camelcase")
+@ConfigurationParameter(key = Constants.FEATURES_PROPERTY_NAME, value = "src/test/resources/features")
 public class CucumberRunnerTest {
 }

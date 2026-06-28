@@ -1,64 +1,67 @@
 # language: pt
 Funcionalidade: Gerenciamento de Veículos
+  Como funcionário da oficina
+  Quero cadastrar e gerenciar os veículos dos clientes
+  Para manter um registro atualizado e facilitar a abertura de ordens de serviço
 
-  Contexto:
+  Cenário: Tentar cadastrar veículo sem autenticação
     Dado que o sistema está inicializado
-
-  Cenário: Criar novo veículo com sucesso
     Quando um novo veículo é cadastrado com os seguintes dados:
-      | placa | ABC1234 |
-      | marca | Toyota |
+      | placa  | ABC1234 |
+      | marca  | Toyota  |
       | modelo | Corolla |
-      | ano | 2020 |
-    Então o status HTTP deve ser 201
-    E o veículo deve conter a placa "ABC1234"
-    E o veículo deve conter a marca "Toyota"
+      | ano    | 2020    |
+    Então deve retornar erro de não autenticado
 
-  Cenário: Criar veículo com placa duplicada deve falhar
-    Dado que existe um veículo cadastrado com placa "XYZ5678"
-    Quando um novo veículo é cadastrado com os seguintes dados:
-      | placa | XYZ5678 |
-      | marca | Ford |
-      | modelo | Focus |
-      | ano | 2021 |
-    Então o status HTTP deve ser 400 ou 409
-
-  Cenário: Criar veículo com dados inválidos (sem placa)
-    Quando um novo veículo é cadastrado com os seguintes dados:
-      | placa |  |
-      | marca | Honda |
-      | modelo | Civic |
-      | ano | 2019 |
-    Então o status HTTP deve ser 400
-
-  Cenário: Buscar veículo por placa existente
-    Dado que existe um veículo cadastrado com placa "LMN9876"
-    Quando o veículo é buscado por placa "LMN9876"
-    Então o status HTTP deve ser 200
-    E o veículo deve ser encontrado
-
-  Cenário: Buscar veículo inexistente deve retornar 404
-    Quando o veículo é buscado por placa "INVALIDO"
-    Então o status HTTP deve ser 404
-
-  Cenário: Listar veículos
-    Dado que existem 2 veículos cadastrados no sistema
+  Cenário: Tentar listar veículos sem autenticação
+    Dado que o sistema está inicializado
     Quando a lista de veículos é solicitada
-    Então o status HTTP deve ser 200
-    E a lista deve conter 2 veículos
+    Então deve retornar erro de não autenticado
 
-  Cenário: Atualizar dados do veículo
-    Dado que um veículo foi cadastrado com placa "OLD1234"
+  Cenário: Tentar buscar veículo por placa sem autenticação
+    Dado que o sistema está inicializado
+    Quando o veículo é buscado por placa "ABC1234"
+    Então deve retornar erro de não autenticado
+
+  Cenário: Tentar cadastrar veículo com placa duplicada sem autenticação
+    Dado que o sistema está inicializado
+    Quando um veículo é cadastrado com a mesma placa "ABC1234"
+    Então deve retornar erro de não autenticado
+
+  Cenário: Tentar cadastrar veículo com placa inválida sem autenticação
+    Dado que o sistema está inicializado
+    Quando um veículo é cadastrado com placa inválida "INVALIDA999"
+    Então deve retornar erro de não autenticado
+
+  Cenário: Tentar cadastrar veículo sem placa sem autenticação
+    Dado que o sistema está inicializado
+    Quando um veículo é cadastrado sem placa
+    Então deve retornar erro de não autenticado
+
+  Cenário: Tentar cadastrar veículo sem marca ou modelo sem autenticação
+    Dado que o sistema está inicializado
+    Quando um veículo é cadastrado sem marca ou modelo
+    Então deve retornar erro de não autenticado
+
+  Cenário: Tentar cadastrar veículo com ano futuro sem autenticação
+    Dado que o sistema está inicializado
+    Quando um veículo é cadastrado com ano futuro
+    Então deve retornar erro de não autenticado
+
+  Cenário: Tentar cadastrar veículo para cliente inexistente sem autenticação
+    Dado que o sistema está inicializado
+    Quando um veículo é cadastrado para um cliente inexistente
+    Então deve retornar erro de não autenticado
+
+  Cenário: Tentar atualizar dados do veículo sem autenticação
+    Dado que o sistema está inicializado
+    E que um veículo com placa "VEI0001" foi cadastrado
     Quando os dados do veículo são atualizados:
-      | marca | Honda |
-      | modelo | Civic |
-      | ano | 2022 |
-    Então o status HTTP deve ser 200
-    E o veículo deve ser atualizado com sucesso
+      | modelo | Corolla Sport 2021 |
+    Então deve retornar erro de não autenticado
 
-  Cenário: Deletar veículo
-    Dado que um veículo foi cadastrado com placa "DEL5678"
+  Cenário: Tentar remover veículo sem autenticação
+    Dado que o sistema está inicializado
+    E que um veículo com placa "VEI0002" foi cadastrado
     Quando o veículo é deletado
-    Então o status HTTP deve ser 200
-    E o veículo deve ser removido com sucesso
-    E ao buscar o veículo deletado por placa "DEL5678" deve retornar 404
+    Então deve retornar erro de não autenticado

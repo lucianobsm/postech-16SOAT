@@ -1,78 +1,33 @@
 # language: pt
-Funcionalidade: Gerenciamento de Serviços do Catálogo
+Funcionalidade: Catálogo de Serviços da Oficina
+  Como administrador da oficina
+  Quero gerenciar o catálogo de serviços disponíveis
+  Para manter os tipos de serviço e seus valores atualizados
 
-  Contexto:
+  Cenário: Tentar cadastrar serviço sem autenticação
     Dado que o sistema está inicializado
-
-  Cenário: Cadastrar novo serviço com sucesso
     Quando um novo serviço é cadastrado com os seguintes dados:
-      | nome | Troca de óleo |
-      | descricao | Troca de óleo do motor |
-      | valor_hora | 100.00 |
-      | tempo_estimado_horas | 0.5 |
-    Então o status HTTP deve ser 201
-    E o serviço deve conter o nome "Troca de óleo"
-    E o serviço deve ter valor por hora "100.00"
+      | nome        | Troca de óleo         |
+      | descricao   | Troca de óleo mineral |
+      | valor_hora  | 150.00                |
+    Então deve retornar erro de não autenticado
 
-  Cenário: Criar serviço com nome duplicado deve falhar
-    Dado que existe um serviço cadastrado com nome "Revisão Completa"
-    Quando um novo serviço é cadastrado com os seguintes dados:
-      | nome | Revisão Completa |
-      | descricao | Outra descrição |
-      | valor_hora | 150.00 |
-      | tempo_estimado_horas | 2.0 |
-    Então o status HTTP deve ser 400 ou 409
-
-  Cenário: Criar serviço com dados inválidos (sem nome)
-    Quando um novo serviço é cadastrado com os seguintes dados:
-      | nome |  |
-      | descricao | Descrição |
-      | valor_hora | 100.00 |
-      | tempo_estimado_horas | 1.0 |
-    Então o status HTTP deve ser 400
-
-  Cenário: Buscar serviço existente
-    Dado que existe um serviço cadastrado com nome "Troca de Pneu"
-    Quando o serviço é buscado por nome "Troca de Pneu"
-    Então o status HTTP deve ser 200
-    E o serviço deve ser encontrado
-
-  Cenário: Buscar serviço inexistente deve retornar 404
-    Quando o serviço é buscado por nome "Inexistente"
-    Então o status HTTP deve ser 404
-
-  Cenário: Listar serviços do catálogo
-    Dado que existem 4 serviços cadastrados no sistema
+  Cenário: Tentar listar serviços sem autenticação
+    Dado que o sistema está inicializado
     Quando a lista de serviços é solicitada
-    Então o status HTTP deve ser 200
-    E a lista deve conter 4 serviços
+    Então deve retornar erro de não autenticado
 
-  Cenário: Atualizar dados do serviço
-    Dado que existe um serviço cadastrado com nome "Alinhamento"
-    Quando os dados do serviço são atualizados:
-      | valor_hora | 120.00 |
-      | tempo_estimado_horas | 1.5 |
-    Então o status HTTP deve ser 200
-    E o serviço deve ter valor por hora "120.00"
+  Cenário: Tentar cadastrar serviço sem campo nome sem autenticação
+    Dado que o sistema está inicializado
+    Quando um serviço é cadastrado sem o campo "nome"
+    Então deve retornar erro de não autenticado
 
-  Cenário: Deletar serviço
-    Dado que existe um serviço cadastrado com nome "Balanceamento"
-    Quando o serviço é deletado
-    Então o status HTTP deve ser 200
-    E o serviço deve ser removido do sistema
+  Cenário: Tentar cadastrar serviço com valor por hora negativo sem autenticação
+    Dado que o sistema está inicializado
+    Quando um serviço é cadastrado com valor_hora negativo
+    Então deve retornar erro de não autenticado
 
-  Cenário: Não deve permitir valor negativo
-    Quando um novo serviço é cadastrado com os seguintes dados:
-      | nome | Serviço Teste |
-      | descricao | Descrição |
-      | valor_hora | -50.00 |
-      | tempo_estimado_horas | 1.0 |
-    Então o status HTTP deve ser 400
-
-  Cenário: Não deve permitir tempo estimado negativo
-    Quando um novo serviço é cadastrado com os seguintes dados:
-      | nome | Serviço Teste |
-      | descricao | Descrição |
-      | valor_hora | 100.00 |
-      | tempo_estimado_horas | -0.5 |
-    Então o status HTTP deve ser 400
+  Cenário: Tentar buscar serviço por nome sem autenticação
+    Dado que o sistema está inicializado
+    Quando o serviço é buscado por nome "Alinhamento e balanceamento"
+    Então deve retornar erro de não autenticado

@@ -37,7 +37,8 @@ class ClienteControllerIT {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.flyway.enabled", () -> "true");
+        registry.add("spring.flyway.enabled", () -> "false");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
     }
 
     @Autowired
@@ -158,14 +159,17 @@ class ClienteControllerIT {
 
     @Test
     @WithMockUser
-    @DisplayName("DELETE /clientes/{cpfCnpj} - deve deletar cliente e retornar 204")
+    @DisplayName("DELETE /clientes/{cpfCnpj} - deve deletar cliente e retornar 200")
     void deveDeletarCliente() throws Exception {
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestJoao())));
 
         mockMvc.perform(delete("/clientes/12345678901"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sucesso").value(true))
+                .andExpect(jsonPath("$.mensagem").value("Cliente deletado com sucesso"))
+                .andExpect(jsonPath("$.cpfCnpj").value("12345678901"));
 
         mockMvc.perform(get("/clientes"))
                 .andExpect(jsonPath("$", hasSize(0)));

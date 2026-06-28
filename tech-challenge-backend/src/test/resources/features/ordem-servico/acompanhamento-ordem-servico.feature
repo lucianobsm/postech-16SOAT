@@ -1,61 +1,45 @@
 # language: pt
-Funcionalidade: Acompanhamento e Gerenciamento de Status de Ordem de Serviço
+Funcionalidade: Acompanhamento do Status de Ordem de Serviço pelo Cliente
+  Como cliente da oficina
+  Quero consultar minhas ordens de serviço
+  Para acompanhar o progresso do atendimento do meu veículo
 
-  Contexto:
-    Dado que o sistema está inicializado
+  Cenário: Visualizar detalhes completos de uma ordem em execução
+    Dado que sou um cliente autenticado
+    E tenho uma ordem de serviço em execução
+    Quando solicito os detalhes dessa ordem
+    Então devo receber status 200
+    E devo ver os detalhes da ordem
+    E devo ver o veículo associado
+    E devo ver o valor total da ordem
 
-  Cenário: Alterar status de RECEBIDA para EM_PROGRESSO
-    Dado que existe uma ordem de serviço com status "RECEBIDA"
-    Quando o status da ordem é alterado para "EM_PROGRESSO"
-    Então o status HTTP deve ser 200
-    E a ordem deve ter status "EM_PROGRESSO"
-    E deve haver um registro no histórico de status
+  Cenário: Listar apenas as próprias ordens de serviço
+    Dado que sou um cliente autenticado
+    E tenho uma ordem de serviço em execução
+    Quando solicito listar minhas ordens de serviço
+    Então devo receber status 200
+    E devo ver minha ordem na lista
 
-  Cenário: Alterar status de EM_PROGRESSO para CONCLUIDA
-    Dado que existe uma ordem de serviço com status "EM_PROGRESSO"
-    Quando o status da ordem é alterado para "CONCLUIDA"
-    Então o status HTTP deve ser 200
-    E a ordem deve ter status "CONCLUIDA"
+  Cenário: Verificar isolamento entre ordens de clientes diferentes
+    Dado que sou um cliente autenticado
+    E outro cliente tem uma ordem de serviço
+    Quando tento buscar a ordem do outro cliente
+    Então devo receber status 404
 
-  Cenário: Alterar status de CONCLUIDA para ENTREGUE
-    Dado que existe uma ordem de serviço com status "CONCLUIDA"
-    Quando o status da ordem é alterado para "ENTREGUE"
-    Então o status HTTP deve ser 200
-    E a ordem deve ter status "ENTREGUE"
+  Cenário: Verificar o status atual da ordem em andamento
+    Dado que sou um cliente autenticado
+    E tenho uma ordem com status "EM_EXECUCAO"
+    Quando solicito os detalhes dessa ordem
+    Então devo receber status 200
+    E devo receber o status "EM_EXECUCAO"
+    E devo ver a descrição "Em execução"
 
-  Cenário: Cancelar ordem de serviço
-    Dado que existe uma ordem de serviço com status "RECEBIDA"
-    Quando a ordem é cancelada
-    Então o status HTTP deve ser 200
-    E a ordem deve ter status "CANCELADA"
+  Cenário: Retornar erro ao buscar ordem inexistente
+    Dado que sou um cliente autenticado
+    Quando solicito uma ordem que não existe
+    Então devo receber status 404
 
-  Cenário: Não deve permitir alteração para status inválido
-    Dado que existe uma ordem de serviço com status "RECEBIDA"
-    Quando tenta-se alterar o status para "STATUS_INVALIDO"
-    Então o status HTTP deve ser 400
-
-  Cenário: Cliente consegue acompanhar sua ordem de serviço
-    Dado que existe um cliente com CPF "12345678901"
-    E que este cliente possui uma ordem de serviço em aberto
-    Quando o cliente busca suas ordens de serviço
-    Então o status HTTP deve ser 200
-    E a ordem deve ser listada na resposta
-
-  Cenário: Cliente não consegue ver ordens de outros clientes
-    Dado que existe um cliente com CPF "11111111111"
-    E existe outro cliente com CPF "22222222222"
-    E que o cliente "22222222222" possui uma ordem de serviço
-    Quando o cliente "11111111111" tenta buscar suas ordens
-    Então o status HTTP deve ser 200
-    E a ordem do cliente "22222222222" não deve estar na resposta
-
-  Cenário: Deletar ordem de serviço (apenas ADMIN)
-    Dado que existe uma ordem de serviço com status "RECEBIDA"
-    Quando a ordem é deletada por usuário ADMIN
-    Então o status HTTP deve ser 200
-    E a ordem deve ser removida do sistema
-
-  Cenário: Usuário não-ADMIN não consegue deletar ordem
-    Dado que existe uma ordem de serviço com status "RECEBIDA"
-    Quando tenta-se deletar a ordem com usuário não-ADMIN
-    Então o status HTTP deve ser 403
+  Cenário: Exigir autenticação para acessar ordens de serviço
+    Dado que não estou autenticado
+    Quando solicito acessar minhas ordens de serviço
+    Então devo receber status 401

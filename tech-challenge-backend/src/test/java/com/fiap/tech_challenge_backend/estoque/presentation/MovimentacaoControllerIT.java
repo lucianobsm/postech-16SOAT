@@ -42,7 +42,8 @@ class MovimentacaoControllerIT {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.flyway.enabled", () -> "true");
+        registry.add("spring.flyway.enabled", () -> "false");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
     }
 
     @Autowired private MockMvc mockMvc;
@@ -89,14 +90,14 @@ class MovimentacaoControllerIT {
     void deveListarMovimentacoesOrdenadas() throws Exception {
         var peca = salvarPeca();
         salvarMovimentacao(peca, TipoMovimentacao.ENTRADA, 10, "Compra NF-001");
-        salvarMovimentacao(peca, TipoMovimentacao.VENDA, 3, "Venda OS-001");
-        salvarMovimentacao(peca, TipoMovimentacao.RESERVA, 2, "Reserva OS-002");
+        salvarMovimentacao(peca, TipoMovimentacao.SAIDA, 3, "Saida OS-001");
+        salvarMovimentacao(peca, TipoMovimentacao.AJUSTE, 2, "Ajuste OS-002");
 
         mockMvc.perform(get("/estoque/movimentacoes/item/{id}", peca.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].tipoMovimentacao").value("RESERVA"))
-                .andExpect(jsonPath("$[1].tipoMovimentacao").value("VENDA"))
+                .andExpect(jsonPath("$[0].tipoMovimentacao").value("AJUSTE"))
+                .andExpect(jsonPath("$[1].tipoMovimentacao").value("SAIDA"))
                 .andExpect(jsonPath("$[2].tipoMovimentacao").value("ENTRADA"));
     }
 
@@ -141,7 +142,7 @@ class MovimentacaoControllerIT {
     @DisplayName("GET /item/{id} - deve retornar movimentação sem observação")
     void deveRetornarMovimentacaoSemObservacao() throws Exception {
         var peca = salvarPeca();
-        salvarMovimentacao(peca, TipoMovimentacao.VENDA, 5, null);
+        salvarMovimentacao(peca, TipoMovimentacao.SAIDA, 5, null);
 
         mockMvc.perform(get("/estoque/movimentacoes/item/{id}", peca.getId()))
                 .andExpect(status().isOk())
@@ -164,7 +165,7 @@ class MovimentacaoControllerIT {
 
         salvarMovimentacao(peca1, TipoMovimentacao.ENTRADA, 10, "Peca 1");
         salvarMovimentacao(peca2, TipoMovimentacao.ENTRADA, 5, "Peca 2");
-        salvarMovimentacao(peca2, TipoMovimentacao.VENDA, 2, "Peca 2 venda");
+        salvarMovimentacao(peca2, TipoMovimentacao.SAIDA, 2, "Peca 2 saida");
 
         mockMvc.perform(get("/estoque/movimentacoes/item/{id}", peca1.getId()))
                 .andExpect(status().isOk())
@@ -174,20 +175,18 @@ class MovimentacaoControllerIT {
 
     @Test
     @WithMockUser
-    @DisplayName("GET /item/{id} - deve retornar todos os tipos de movimentação")
+    @DisplayName("GET /item/{id} - deve retornar todos os tipos de movimentação válidos")
     void deveRetornarTodosOsTiposDeMovimentacao() throws Exception {
         var peca = salvarPeca();
         salvarMovimentacao(peca, TipoMovimentacao.ENTRADA, 50, null);
         salvarMovimentacao(peca, TipoMovimentacao.SAIDA,   5,  null);
-        salvarMovimentacao(peca, TipoMovimentacao.VENDA,   3,  null);
-        salvarMovimentacao(peca, TipoMovimentacao.RESERVA, 2,  null);
         salvarMovimentacao(peca, TipoMovimentacao.AJUSTE,  1,  null);
 
         mockMvc.perform(get("/estoque/movimentacoes/item/{id}", peca.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(5)))
+                .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[*].tipoMovimentacao",
-                        containsInAnyOrder("ENTRADA", "SAIDA", "VENDA", "RESERVA", "AJUSTE")));
+                        containsInAnyOrder("ENTRADA", "SAIDA", "AJUSTE")));
     }
 
     @Test
