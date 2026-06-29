@@ -6,7 +6,7 @@ import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroVeiculo
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroVeiculoResponse;
 import com.fiap.tech_challenge_backend.cadastro.application.exceptions.VeiculoNaoEncontradoException;
 import com.fiap.tech_challenge_backend.cadastro.application.usecases.*;
-import com.fiap.tech_challenge_backend.config.TestSecurityConfig;
+import com.fiap.tech_challenge_backend.config.TestSecurityConfigWithAuth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(VeiculoController.class)
+@Import(TestSecurityConfigWithAuth.class)
 @DisplayName("VeiculoController - Testes Unitários")
 class VeiculoControllerTest {
 
