@@ -379,7 +379,7 @@ public class OrdemServicoService
     @Override
     @Transactional(readOnly = true)
     public List<RelatorioOsEnriquecidoResponseDTO> listarRelatorio(String[] expands) {
-        return montarRelatorio(ordemServicoRepository.listarPriorizadas(), expands);
+        return montarRelatorio(ordemServicoRepository.listarParaRelatorio(), expands);
     }
 
     @Override

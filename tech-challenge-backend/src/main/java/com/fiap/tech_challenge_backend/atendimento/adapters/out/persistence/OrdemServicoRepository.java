@@ -41,6 +41,16 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
 	List<OrdemServico> findAllPrioritized();
 
 	@Query("""
+			SELECT DISTINCT os
+			FROM OrdemServico os
+			LEFT JOIN FETCH os.veiculo
+			LEFT JOIN FETCH os.cliente
+			LEFT JOIN FETCH os.mecanico
+			ORDER BY os.urgente DESC, os.dataCriacao ASC
+			""")
+	List<OrdemServico> findAllForRelatorio();
+
+	@Query("""
 			SELECT os
 			FROM OrdemServico os
 			JOIN FETCH os.cliente
