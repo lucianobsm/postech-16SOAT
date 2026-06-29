@@ -158,7 +158,7 @@ class OsPecaTest {
     @Test
     @DisplayName("Deve ter hash code consistente")
     void testHashCode() {
-        assertNotNull(osPeca.hashCode());
+        assertEquals(osPeca.hashCode(), osPeca.hashCode());
     }
 
     @Test
