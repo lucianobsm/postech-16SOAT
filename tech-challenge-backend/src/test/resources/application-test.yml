@@ -16,7 +16,5 @@ spring:
     enable-csrf: false
 
 app:
-  security:
-    enabled: false
   jwt:
     secret: test-secret-key-for-testing-only
