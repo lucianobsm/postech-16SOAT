@@ -28,7 +28,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AcompanhamentoController.class)
-@Import(TestSecurityConfig.class)
 @DisplayName("AcompanhamentoController - Testes Unitários")
 class AcompanhamentoControllerTest {
 

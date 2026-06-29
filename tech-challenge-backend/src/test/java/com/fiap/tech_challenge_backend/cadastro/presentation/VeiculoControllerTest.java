@@ -31,7 +31,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(VeiculoController.class)
-@Import(TestSecurityConfig.class)
 @DisplayName("VeiculoController - Testes Unitários")
 class VeiculoControllerTest {
 
