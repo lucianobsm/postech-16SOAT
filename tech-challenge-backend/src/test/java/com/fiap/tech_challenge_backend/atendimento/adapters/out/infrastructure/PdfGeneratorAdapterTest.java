@@ -1,13 +1,18 @@
 package com.fiap.tech_challenge_backend.atendimento.adapters.out.infrastructure;
 
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsOrcamento;
+import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsPeca;
+import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsServico;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
+import com.fiap.tech_challenge_backend.atendimento.domain.entities.ServicoCatalogo;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrcamento;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.TipoOrcamento;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
+import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Placa;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -188,5 +194,109 @@ class PdfGeneratorAdapterTest {
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
+    }
+
+    // ─── Cobertura de criarCelulaCorpo e criarCelulaCorpoAlinhada ────────────
+
+    @Nested
+    @DisplayName("linhas alternadas em tabelas")
+    class LinhasAlternadas {
+
+        private OsServico criarServico(String nome, BigDecimal preco) {
+            ServicoCatalogo catalogo = new ServicoCatalogo();
+            catalogo.setId(UUID.randomUUID());
+            catalogo.setNome(nome);
+
+            return OsServico.builder()
+                    .id(UUID.randomUUID())
+                    .servico(catalogo)
+                    .precoMaoDeObraAplicado(preco)
+                    .build();
+        }
+
+        private OsPeca criarPeca(String descricao, int quantidade, BigDecimal preco) {
+            PecaInsumo pecaInsumo = new PecaInsumo();
+            pecaInsumo.setId(UUID.randomUUID());
+            pecaInsumo.setDescricao(descricao);
+
+            return OsPeca.builder()
+                    .id(UUID.randomUUID())
+                    .peca(pecaInsumo)
+                    .quantidade(quantidade)
+                    .precoVendaAplicado(preco)
+                    .build();
+        }
+
+        @Test
+        @DisplayName("deve gerar PDF com um servico — cobre criarCelulaCorpo(alternado=false)")
+        void testUmServico() {
+            orcamento.setServicos(new ArrayList<>(List.of(
+                    criarServico("Troca de Óleo", BigDecimal.valueOf(150))
+            )));
+
+            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+
+            assertNotNull(pdf);
+            assertTrue(pdf.length > 0);
+        }
+
+        @Test
+        @DisplayName("deve gerar PDF com dois servicos — cobre alternado=false e alternado=true em criarCelulaCorpo e criarCelulaCorpoAlinhada")
+        void testDoisServicos() {
+            orcamento.setServicos(new ArrayList<>(List.of(
+                    criarServico("Troca de Óleo", BigDecimal.valueOf(150)),
+                    criarServico("Alinhamento", BigDecimal.valueOf(80))
+            )));
+
+            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+
+            assertNotNull(pdf);
+            assertTrue(pdf.length > 0);
+        }
+
+        @Test
+        @DisplayName("deve gerar PDF com uma peca — cobre criarCelulaCorpoAlinhada(alternado=false) na tabela de pecas")
+        void testUmaPeca() {
+            orcamento.setPecas(new ArrayList<>(List.of(
+                    criarPeca("Filtro de Óleo", 1, BigDecimal.valueOf(45))
+            )));
+
+            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+
+            assertNotNull(pdf);
+            assertTrue(pdf.length > 0);
+        }
+
+        @Test
+        @DisplayName("deve gerar PDF com duas pecas — cobre alternado=false e alternado=true em criarCelulaCorpoAlinhada da tabela de pecas")
+        void testDuasPecas() {
+            orcamento.setPecas(new ArrayList<>(List.of(
+                    criarPeca("Filtro de Óleo", 1, BigDecimal.valueOf(45)),
+                    criarPeca("Pastilha de Freio", 4, BigDecimal.valueOf(120))
+            )));
+
+            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+
+            assertNotNull(pdf);
+            assertTrue(pdf.length > 0);
+        }
+
+        @Test
+        @DisplayName("deve gerar PDF com dois servicos e duas pecas — cobre todos os branches de alternado simultaneamente")
+        void testDoisServicosDuasPecas() {
+            orcamento.setServicos(new ArrayList<>(List.of(
+                    criarServico("Troca de Óleo", BigDecimal.valueOf(150)),
+                    criarServico("Balanceamento", BigDecimal.valueOf(60))
+            )));
+            orcamento.setPecas(new ArrayList<>(List.of(
+                    criarPeca("Filtro de Óleo", 1, BigDecimal.valueOf(45)),
+                    criarPeca("Pastilha de Freio", 2, BigDecimal.valueOf(120))
+            )));
+
+            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+
+            assertNotNull(pdf);
+            assertTrue(pdf.length > 0);
+        }
     }
 }
