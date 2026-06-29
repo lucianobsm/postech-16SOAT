@@ -58,5 +58,10 @@ public class OrdemServicoRepositoryAdapter implements OrdemServicoRepositoryPort
     public boolean existePorId(Long id) {
         return repository.existsById(id);
     }
+
+    @Override
+    public List<OrdemServico> listarParaRelatorio() {
+        return repository.findAllForRelatorio();
+    }
 }
 

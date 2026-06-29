@@ -25,6 +25,8 @@ public interface OrdemServicoRepositoryPort {
     void remover(Long id);
 
     boolean existePorId(Long id);
+
+    List<OrdemServico> listarParaRelatorio();
 }
 
 
