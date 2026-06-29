@@ -3,6 +3,7 @@ package com.fiap.tech_challenge_backend.acompanhamento.presentation;
 import com.fiap.tech_challenge_backend.acompanhamento.application.AcompanhamentoService;
 import com.fiap.tech_challenge_backend.acompanhamento.application.dto.AcompanhamentoOsResponseDTO;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico;
+import com.fiap.tech_challenge_backend.config.TestSecurityConfig;
 import com.fiap.tech_challenge_backend.shared.application.dto.RelatorioResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AcompanhamentoController.class)
+@Import(TestSecurityConfig.class)
 @DisplayName("AcompanhamentoController - Testes Unitários")
 class AcompanhamentoControllerTest {
 
