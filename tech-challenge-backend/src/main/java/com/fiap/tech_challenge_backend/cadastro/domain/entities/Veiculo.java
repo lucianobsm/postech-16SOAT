@@ -8,7 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -24,6 +26,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Where(clause = "deleted_at IS NULL")
 public class Veiculo {
 
     @Id
@@ -55,5 +58,8 @@ public class Veiculo {
     @Size(min = 2, max = 50, message = "A cor deve ter entre 2 e 50 caracteres")
     @Column(name = "cor", nullable = false, length = 50)
     private String cor;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }
 

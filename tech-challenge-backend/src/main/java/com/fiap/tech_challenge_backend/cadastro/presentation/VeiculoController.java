@@ -1,27 +1,5 @@
 package com.fiap.tech_challenge_backend.cadastro.presentation;
 
-/*
- * NOTA: Este controller está temporariamente comentado porque as use cases
- * do contexto de cadastro ainda não foram implementadas no merge.
- *
- * Use cases que precisam ser criadas:
- * - CadastroVeiculoUseCase
- * - ListarVeiculosUseCase
- * - BuscarVeiculoUseCase
- * - AtualizarVeiculoUseCase
- * - DeletarVeiculoUseCase
- *
- * DTOs necessários:
- * - AtualizarVeiculoRequest
- * - CadastroVeiculoRequest
- * - CadastroVeiculoResponse
- * - BuscarVeiculoResponse
- *
- * Contexto Delimitado: cadastro
- * Camada: Presentation
- */
-
-/*
 import com.fiap.tech_challenge_backend.cadastro.application.usecases.AtualizarVeiculoUseCase;
 import com.fiap.tech_challenge_backend.cadastro.application.usecases.BuscarVeiculoUseCase;
 import com.fiap.tech_challenge_backend.cadastro.application.usecases.CadastroVeiculoUseCase;
@@ -31,8 +9,10 @@ import com.fiap.tech_challenge_backend.cadastro.application.dtos.AtualizarVeicul
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroVeiculoRequest;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroVeiculoResponse;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.BuscarVeiculoResponse;
+import com.fiap.tech_challenge_backend.shared.application.dto.RelatorioResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -63,28 +43,28 @@ public class VeiculoController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CadastroVeiculoResponse create(@Valid @RequestBody CadastroVeiculoRequest request) {
-        return cadastroVeiculoUseCase.create(request);
+        return cadastroVeiculoUseCase.execute(request);
     }
 
     @GetMapping
     public List<BuscarVeiculoResponse> list() {
-        return listarVeiculosUseCase.list();
+        return listarVeiculosUseCase.execute();
     }
 
-    @GetMapping("/{id}")
-    public BuscarVeiculoResponse getById(@PathVariable String id) {
-        return buscarVeiculoUseCase.get(id);
+    @GetMapping("/{placa}")
+    public BuscarVeiculoResponse getByPlaca(@PathVariable String placa) {
+        return buscarVeiculoUseCase.execute(placa);
     }
 
-    @PutMapping("/{id}")
-    public CadastroVeiculoResponse update(@PathVariable String id, @Valid @RequestBody AtualizarVeiculoRequest request) {
-        return atualizarVeiculoUseCase.update(id, request);
+    @PutMapping("/{placa}")
+    public BuscarVeiculoResponse update(@PathVariable String placa, @Valid @RequestBody AtualizarVeiculoRequest request) {
+        return atualizarVeiculoUseCase.execute(placa, request);
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable String id) {
-        deletarVeiculoUseCase.delete(id);
+    @DeleteMapping("/{placa}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<RelatorioResponseDTO<Void>> delete(@PathVariable String placa) {
+        deletarVeiculoUseCase.execute(placa);
+        return ResponseEntity.ok(RelatorioResponseDTO.deleteVeiculoSucesso());
     }
 }
-*/

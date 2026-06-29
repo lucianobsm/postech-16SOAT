@@ -4,6 +4,7 @@ import com.fiap.tech_challenge_backend.atendimento.application.dto.AprovarRejeit
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrcamentoResponseDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.AutorizarOrdemServicoUseCase;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.ResponderOrcamentoUseCase;
+import com.fiap.tech_challenge_backend.atendimento.domain.exceptions.OrdemServicoStatusException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
@@ -132,6 +133,18 @@ public class ClienteOrdemServicoController {
             erro.put("timestamp", java.time.LocalDateTime.now());
 
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
+
+        } catch (OrdemServicoStatusException e) {
+            log.warn("Status inválido para responder orçamento | OS: {} | Erro: {}", id, e.getMessage());
+
+            Map<String, Object> erro = new LinkedHashMap<>();
+            erro.put("sucesso", false);
+            erro.put("erro", "Status da Ordem de Serviço inválido");
+            erro.put("mensagem", e.getMessage() +
+                    " Para aprovar ou rejeitar um orçamento, a ordem de serviço deve estar aguardando sua resposta.");
+            erro.put("timestamp", java.time.LocalDateTime.now());
+
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(erro);
 
         } catch (IllegalArgumentException e) {
             log.warn("Erro ao responder orçamento | OS: {} | Mensagem: {}", id, e.getMessage());

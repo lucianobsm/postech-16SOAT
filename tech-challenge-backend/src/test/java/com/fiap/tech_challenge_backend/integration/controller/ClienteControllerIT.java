@@ -1,6 +1,9 @@
 package com.fiap.tech_challenge_backend.integration.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.ClienteJpaRepository;
+import com.fiap.tech_challenge_backend.acesso.infrastructure.repositories.UsuarioJpaRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +11,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.HashMap;
@@ -23,9 +28,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
+@ActiveProfiles("test-auth")
 @DisplayName("ClienteControllerIT - Testes de Integração")
 class ClienteControllerIT {
+
+    @DynamicPropertySource
+    static void overrideDataSourceProps(DynamicPropertyRegistry registry) {
+        registry.add("spring.flyway.enabled", () -> "false");
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -33,12 +43,30 @@ class ClienteControllerIT {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private ClienteJpaRepository clienteJpaRepository;
+
+    @Autowired
+    private UsuarioJpaRepository usuarioJpaRepository;
+
+    @BeforeEach
+    void setUp() {
+        clienteJpaRepository.deleteAll();
+        usuarioJpaRepository.deleteAll();
+    }
+
     private Map<String, String> criarClienteRequest() {
         Map<String, String> cliente = new HashMap<>();
         cliente.put("nome", "João Silva");
         cliente.put("cpfCnpj", "12345678901");
         cliente.put("email", "joao@example.com");
         cliente.put("telefone", "11999999999");
+        cliente.put("senha", "senha123");
+        cliente.put("cep", "01310100");
+        cliente.put("rua", "Av. Paulista");
+        cliente.put("numero", "1000");
+        cliente.put("cidade", "São Paulo");
+        cliente.put("estado", "SP");
         return cliente;
     }
 
@@ -72,7 +100,7 @@ class ClienteControllerIT {
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -117,6 +145,12 @@ class ClienteControllerIT {
         cliente2.put("cpfCnpj", "98765432100");
         cliente2.put("email", "maria@example.com");
         cliente2.put("telefone", "11988888888");
+        cliente2.put("senha", "senha123");
+        cliente2.put("cep", "04538133");
+        cliente2.put("rua", "Rua Nova");
+        cliente2.put("numero", "50");
+        cliente2.put("cidade", "São Paulo");
+        cliente2.put("estado", "SP");
 
         String requestBody2 = objectMapper.writeValueAsString(cliente2);
         mockMvc.perform(post("/clientes")

@@ -91,6 +91,7 @@ public class EstoqueService {
                 .quantidadePorUnidade(request.quantidadePorUnidade())
                 .quantidadeEstoque(request.quantidadeEstoque())
                 .quantidadeMinima(request.quantidadeMinima())
+                .tipo(request.tipo())
                 .build();
         return PecaInsumoResponseDTO.from(pecaInsumoRepository.save(peca));
     }
@@ -141,17 +142,8 @@ public class EstoqueService {
 
     public void remover(UUID id) {
         var peca = buscarEntidade(id);
-
-        long referenciaCount = pecaInsumoRepository.countByPecaInUso(id);
-        if (referenciaCount > 0) {
-            throw new ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "Não é possível deletar a peça/insumo '" + peca.getNome() +
-                "' pois está sendo utilizada em " + referenciaCount + " ordem(ns) de serviço(s)"
-            );
-        }
-
-        pecaInsumoRepository.deleteById(id);
+        peca.setDeletedAt(java.time.LocalDateTime.now());
+        pecaInsumoRepository.save(peca);
     }
 
     public void registrarEntrada(UUID id, Integer quantidade, String observacao) {

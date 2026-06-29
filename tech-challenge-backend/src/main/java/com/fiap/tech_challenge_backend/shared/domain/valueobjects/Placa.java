@@ -9,7 +9,7 @@ import java.util.Objects;
 @Embeddable
 public class Placa {
 
-    private static final String REGEX = "^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$";
+    private static final String REGEX = "^[A-Z]{3}([0-9]{4}|[0-9][A-Z][0-9]{2})$";
 
     @Column(name = "placa", length = 8)
     private String valor;
@@ -32,6 +32,10 @@ public class Placa {
 
     public boolean isFormatoMercosul() {
         return valor.matches("^[A-Z]{3}[0-9][A-Z][0-9]{2}$");
+    }
+
+    public boolean isFormatoAntigo() {
+        return valor.matches("^[A-Z]{3}[0-9]{4}$");
     }
 
     public String valor() {

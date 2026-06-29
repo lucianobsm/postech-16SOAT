@@ -2,6 +2,7 @@ package com.fiap.tech_challenge_backend.acompanhamento.application;
 
 import com.fiap.tech_challenge_backend.acompanhamento.application.dto.AcompanhamentoOsResponseDTO;
 import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.OrdemServicoRepository;
+import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,15 +21,19 @@ public class AcompanhamentoService {
     }
 
     public List<AcompanhamentoOsResponseDTO> listarPorCliente(UUID clienteId) {
-        // TODO: Implementar método findByClienteIdWithDetails no repository
-        return List.of();
-        // return ordemServicoRepository.findByClienteIdWithDetails(clienteId).stream()
-        //         .map(AcompanhamentoOsResponseDTO::from)
-        //         .toList();
+        return ordemServicoRepository.findByClienteIdWithDetails(clienteId).stream()
+                .map(AcompanhamentoOsResponseDTO::from)
+                .toList();
     }
 
-    public AcompanhamentoOsResponseDTO buscarDetalhe(UUID clienteId, UUID osId) {
-        // TODO: Implementar método findByIdAndClienteId no repository
-        throw new EntityNotFoundException("Ordem de servico nao encontrada para o cliente informado");
+    public AcompanhamentoOsResponseDTO buscarDetalhe(UUID clienteId, Long osId) {
+        OrdemServico ordem = ordemServicoRepository.findById(osId)
+                .orElseThrow(() -> new EntityNotFoundException("Ordem de servico nao encontrada"));
+
+        if (!ordem.getCliente().getId().equals(clienteId)) {
+            throw new EntityNotFoundException("Ordem de servico nao encontrada para o cliente informado");
+        }
+
+        return AcompanhamentoOsResponseDTO.from(ordem);
     }
 }
