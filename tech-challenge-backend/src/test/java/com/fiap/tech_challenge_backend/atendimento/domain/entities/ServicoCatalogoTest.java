@@ -124,7 +124,7 @@ class ServicoCatalogoTest {
     @Test
     @DisplayName("Deve ter hash code consistente")
     void testHashCode() {
-        assertNotNull(servico.hashCode());
+        assertEquals(servico.hashCode(), servico.hashCode());
     }
 
     @Test

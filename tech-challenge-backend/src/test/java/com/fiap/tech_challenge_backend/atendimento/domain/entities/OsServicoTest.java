@@ -135,7 +135,7 @@ class OsServicoTest {
     @Test
     @DisplayName("Deve ter hash code consistente")
     void testHashCode() {
-        assertNotNull(osServico.hashCode());
+        assertEquals(osServico.hashCode(), osServico.hashCode());
     }
 
     @Test
