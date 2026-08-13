@@ -12,7 +12,6 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
 
-    # Define a pasta raiz do projeto Java para TODOS os passos deste job
     defaults:
       run:
         working-directory: ./tech-challenge-backend
@@ -22,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configurar Java 21 (Temurin)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -55,8 +54,9 @@ jobs:
       - name: Checkout do Código
         uses: actions/checkout@v4
 
+      # Atualizado para v5
       - name: Configurar Java 21 (Temurin)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
