@@ -1,0 +1,71 @@
+name: Java CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "feature/**" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  # JOB 1: ETAPA DE BUILD (COMPILAÇÃO)
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Dar permissão ao Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Compilar Aplicação e Gerar Pacote (sem rodar testes)
+        run: ./mvnw clean package -DskipTests -B
+
+      # Salva os arquivos compilados (target) para o job de testes usar se necessário
+      - name: Upload dos artefatos de build
+        uses: actions/upload-artifact@v4
+        with:
+          name: target-build
+          path: target/
+
+  # JOB 2: ETAPA DE TESTES
+  test:
+    name: Testes
+    runs-on: ubuntu-latest
+    needs: build # Garante que os testes só rodam se o Build passar com sucesso
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Dar permissão ao Maven Wrapper
+        run: chmod +x mvnw
+
+      # Baixa os artefatos compilados no job de Build
+      - name: Download dos artefatos de build
+        uses: actions/download-artifact@v4
+        with:
+          name: target-build
+          path: target/
+
+      - name: Executar Testes Unitários
+        run: ./mvnw test -Dgroups=unit -B
+
+      - name: Gerar Relatório JaCoCo
+        if: always()
+        run: ./mvnw jacoco:report -B
