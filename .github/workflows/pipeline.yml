@@ -40,9 +40,9 @@ jobs:
           name: target-build
           path: tech-challenge-backend/target/
 
-  # JOB 2: ETAPA DE TESTES
+  # JOB 2: TESTES UNITÁRIOS
   test:
-    name: Testes
+    name: Testes Unitários
     runs-on: ubuntu-latest
     needs: build
 
@@ -54,7 +54,6 @@ jobs:
       - name: Checkout do Código
         uses: actions/checkout@v4
 
-      # Atualizado para v5
       - name: Configurar Java 21 (Temurin)
         uses: actions/setup-java@v5
         with:
@@ -73,8 +72,71 @@ jobs:
           path: tech-challenge-backend/target/
 
       - name: Executar Testes Unitários
-        run: ./mvnw test -Dgroups=unit -Dtest='!*Cucumber*' -B
+        run: ./mvnw test -Dtest='!CucumberRunnerTest' -B
 
-      - name: Gerar Relatório JaCoCo
+      - name: Gerar Relatório JaCoCo (Unitários)
         if: always()
         run: ./mvnw jacoco:report -B
+
+      - name: Upload do Relatório JaCoCo (Unitários)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report-unit
+          path: tech-challenge-backend/target/site/jacoco/
+
+      - name: Upload de Relatórios de Falha (Surefire)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: tech-challenge-backend/target/surefire-reports/
+
+  # JOB 3: TESTES DE INTEGRAÇÃO
+  integration-test:
+    name: Testes de Integração
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: ./tech-challenge-backend
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21 (Temurin)
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+          cache-dependency-path: 'tech-challenge-backend/pom.xml'
+
+      - name: Dar permissão ao Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Download dos artefatos de build
+        uses: actions/download-artifact@v4
+        with:
+          name: target-build
+          path: tech-challenge-backend/target/
+
+      - name: Executar Testes de Integração (Failsafe)
+        run: ./mvnw verify -Pintegration-tests -Dsurefire.skip=true -B
+
+      - name: Upload do Relatório JaCoCo (Integração)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report-integration
+          path: tech-challenge-backend/target/site/jacoco/
+
+      - name: Upload de Relatórios de Falha (Failsafe)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failsafe-reports
+          path: tech-challenge-backend/target/failsafe-reports/
