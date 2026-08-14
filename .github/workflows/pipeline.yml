@@ -72,7 +72,7 @@ jobs:
           path: tech-challenge-backend/target/
 
       - name: Executar Testes Unitários
-        run: ./mvnw test -Dtest='!CucumberRunnerTest' -B
+        run: ./mvnw test -Dtest='!CucumberRunnerTest,!*IT' -B
 
       - name: Gerar Relatório JaCoCo (Unitários)
         if: always()
