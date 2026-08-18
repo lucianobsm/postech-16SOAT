@@ -18,6 +18,8 @@ public interface OrdemServicoRepositoryPort {
 
     List<OrdemServico> listarPriorizadas();
 
+    List<OrdemServico> listarAtivasPriorizadas();
+
     List<OrdemServico> listarPorStatus(StatusOrdemServico status);
 
     Optional<OrdemServico> buscarPorOrcamentoId(Long orcamentoId);
@@ -28,5 +30,4 @@ public interface OrdemServicoRepositoryPort {
 
     List<OrdemServico> listarParaRelatorio();
 }
-
 

@@ -178,6 +178,8 @@ public class OrdemServicoService
                 .statusDestino(StatusOrdemServico.RECEBIDA)
                 .build());
 
+        notificarMudancaStatus(saved, null);
+
         return OrdemServicoResponseDTO.from(saved);
     }
 
@@ -269,6 +271,14 @@ public class OrdemServicoService
     @Transactional(readOnly = true)
     public List<OrdemServicoResponseDTO> listarTodos() {
         return ordemServicoRepository.listarPriorizadas().stream()
+                .map(OrdemServicoResponseDTO::from)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrdemServicoResponseDTO> listarAtivasPriorizadas() {
+        return ordemServicoRepository.listarAtivasPriorizadas().stream()
                 .map(OrdemServicoResponseDTO::from)
                 .toList();
     }
@@ -373,6 +383,10 @@ public class OrdemServicoService
         osHistoricoStatusRepository.salvar(historico);
         salva.getHistoricoStatus().add(historico);
 
+        if (statusAtual != novoStatus) {
+            notificarMudancaStatus(salva, statusAtual);
+        }
+
         return OrdemServicoResponseDTO.from(salva);
     }
 
@@ -464,6 +478,8 @@ public class OrdemServicoService
                 String.format("orcamento_os_%s.pdf", salva.getId())
         );
 
+        notificarMudancaStatus(salva, statusAnterior);
+
         log.info("Orçamento finalizado e e-mail enviado para: {} | OS: {} | Orçamento: {}",
                 request.emailCliente(), salva.getId(), orcamentoConcluido.getId());
     }
@@ -489,6 +505,8 @@ public class OrdemServicoService
                 .statusDestino(StatusOrdemServico.EM_EXECUCAO)
                 .usuario(null)
                 .build());
+
+        notificarMudancaStatus(salva, statusAnterior);
 
         log.info("Ordem de serviço autorizada pelo cliente. OS: {} | Status anterior: {} | Status novo: {}",
                 id, statusAnterior, StatusOrdemServico.EM_EXECUCAO);
@@ -905,6 +923,97 @@ public class OrdemServicoService
                 "</html>";
     }
 
+    private void notificarMudancaStatus(OrdemServico os, StatusOrdemServico statusAnterior) {
+        String emailCliente = obterEmailCliente(os);
+        if (emailCliente == null) {
+            return;
+        }
+
+        StatusOrdemServico statusAtual = os.getStatus();
+        String assunto = String.format("Atualização da OS #%s: %s", os.getId(), statusAtual.name());
+        String corpoHtml = montarTemplateEmailStatus(os, statusAnterior);
+
+        emailSenderPort.enviarEmail(emailCliente, assunto, corpoHtml);
+
+        log.info("E-mail de status enviado | OS: {} | De: {} | Para: {}",
+                os.getId(),
+                statusAnterior != null ? statusAnterior.name() : "NENHUM",
+                statusAtual.name());
+    }
+
+    private String obterEmailCliente(OrdemServico os) {
+        if (os.getCliente() == null || os.getCliente().getUsuario() == null || os.getCliente().getUsuario().getEmail() == null) {
+            log.warn("OS {} sem email de cliente cadastrado. Notificação de status não enviada.", os.getId());
+            return null;
+        }
+
+        return os.getCliente().getUsuario().getEmail().toString();
+    }
+
+    private String montarTemplateEmailStatus(OrdemServico os, StatusOrdemServico statusAnterior) {
+        return "<!DOCTYPE html>" +
+                "<html lang=\"pt-BR\">" +
+                "<head>" +
+                "  <meta charset=\"UTF-8\">" +
+                "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                "  <style>" +
+                "    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
+                "    .container { max-width: 600px; margin: 0 auto; padding: 20px; }" +
+                "    .header { background-color: #2c3e50; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }" +
+                "    .content { background-color: #ecf0f1; padding: 20px; border-radius: 0 0 5px 5px; }" +
+                "    .box { background-color: #fff; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0; }" +
+                "    .footer { margin-top: 20px; font-size: 12px; color: #7f8c8d; text-align: center; }" +
+                "  </style>" +
+                "</head>" +
+                "<body>" +
+                "  <div class=\"container\">" +
+                "    <div class=\"header\">" +
+                "      <h1>Status da sua Ordem de Serviço</h1>" +
+                "    </div>" +
+                "    <div class=\"content\">" +
+                "      <p>Olá, " + os.getCliente().getNome() + ".</p>" +
+                "      <p>Sua OS #" + os.getId() + " teve uma atualização de status.</p>" +
+                "      <div class=\"box\">" +
+                "        <p><strong>Status anterior:</strong> " + formatarStatus(statusAnterior) + "</p>" +
+                "        <p><strong>Status atual:</strong> " + formatarStatus(os.getStatus()) + "</p>" +
+                "        <p><strong>Veículo:</strong> " + os.getVeiculo().getModelo() + " - " + os.getVeiculo().getPlaca() + "</p>" +
+                "      </div>" +
+                "      <p>" + mensagemStatus(os.getStatus()) + "</p>" +
+                "    </div>" +
+                "    <div class=\"footer\">" +
+                "      <p>Este é um e-mail automático. Não responda diretamente.</p>" +
+                "    </div>" +
+                "  </div>" +
+                "</body>" +
+                "</html>";
+    }
+
+    private String formatarStatus(StatusOrdemServico status) {
+        if (status == null) {
+            return "Criação da OS";
+        }
+
+        return switch (status) {
+            case RECEBIDA -> "Recebida";
+            case EM_DIAGNOSTICO -> "Diagnóstico";
+            case AGUARDANDO_APROVACAO -> "Aguardando Aprovação";
+            case EM_EXECUCAO -> "Em Execução";
+            case FINALIZADA -> "Finalizada";
+            case ENTREGUE -> "Entregue";
+        };
+    }
+
+    private String mensagemStatus(StatusOrdemServico status) {
+        return switch (status) {
+            case RECEBIDA -> "Sua ordem foi recebida e entrou na fila de atendimento.";
+            case EM_DIAGNOSTICO -> "Nossa equipe está realizando o diagnóstico do veículo.";
+            case AGUARDANDO_APROVACAO -> "O orçamento foi concluído e aguarda sua aprovação.";
+            case EM_EXECUCAO -> "Os serviços foram aprovados e já estão em execução.";
+            case FINALIZADA -> "Os serviços foram finalizados e o veículo está pronto para retirada.";
+            case ENTREGUE -> "Seu veículo foi entregue com sucesso.";
+        };
+    }
+
     // ─────────────────────────────────────────────
     // BuscarOrcamentoUseCase
     // ─────────────────────────────────────────────
@@ -943,9 +1052,27 @@ public class OrdemServicoService
         OrdemServico os = buscarEntidade(ordemServicoId);
 
         if (request.status() == StatusOrcamento.APROVADO) {
+            StatusOrdemServico statusAnterior = os.getStatus();
             os.aprovarOrcamento(orcamentoId);
             log.info("Orçamento aprovado | Orcamento: {} | OS Status: {} | Valor Acumulado: {}",
                     orcamentoId, os.getStatus(), os.getValorTotalAcumulado());
+
+            OrdemServico salva = ordemServicoRepository.salvar(os);
+
+            osHistoricoStatusRepository.salvar(OsHistoricoStatus.builder()
+                    .ordemServico(salva)
+                    .statusOrigem(statusAnterior)
+                    .statusDestino(StatusOrdemServico.EM_EXECUCAO)
+                    .build());
+
+            notificarMudancaStatus(salva, statusAnterior);
+
+            OsOrcamento orcamentoAtualizado = salva.getOrcamentos().stream()
+                    .filter(orc -> orc.getId().equals(orcamentoId))
+                    .findFirst()
+                    .orElseThrow();
+
+            return OrcamentoResponseDTO.from(orcamentoAtualizado);
         } else if (request.status() == StatusOrcamento.REJEITADO) {
             os.rejeitarOrcamento(orcamentoId);
             log.info("Orçamento rejeitado | Orcamento: {}", orcamentoId);
@@ -971,5 +1098,3 @@ public class OrdemServicoService
                         "Ordem de serviço não encontrada: " + id));
     }
 }
-
-

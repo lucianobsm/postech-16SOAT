@@ -12,6 +12,14 @@ Sistema completo para:
 - Controle de peças e estoque
 - Rastreamento de histórico de status e operações
 
+### Principais entregas
+- Abertura de OS com cliente, veículo, serviços e peças
+- Consulta e atualização do status da OS
+- Aprovação/rejeição de orçamento por endpoint público
+- Listagem priorizada de OS ativas
+- Notificações por e-mail a cada mudança de status
+- Containerização com Docker e manifestos Kubernetes
+
 ## 🛠️ Tecnologias
 
 | Tecnologia | Versão | Uso |
@@ -197,6 +205,14 @@ Resposta esperada:
 }
 ```
 
+### Kubernetes
+
+```bash
+kubectl apply -k k8s/
+```
+
+Os manifestos incluem `Namespace`, `ConfigMap`, `Secret`, `PostgreSQL`, `Deployment`, `Service` e `HPA`.
+
 ### Acessar Swagger UI
 Abra no navegador: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
@@ -354,12 +370,19 @@ Se estiver usando Docker Compose, o debugger está disponível na porta `5005`:
 - `DELETE /veiculos/{placa}` - Deletar veículo
 
 ### Ordens de Serviço
-- `POST /os` - Criar ordem de serviço
-- `GET /os` - Listar ordens
-- `GET /os?id={id}` - Buscar ordem
-- `PUT /os?id={id}` - Atualizar ordem
-- `DELETE /os?id={id}` - Deletar ordem
-- `PATCH /os/status?id={id}` - Alterar status
+- `POST /api/v1/ordens-servico/criar` - Criar OS
+- `GET /api/v1/ordens-servico/listar-os` - Listar OS
+- `GET /api/v1/ordens-servico/listar-os-priorizadas` - Listar OS ativas priorizadas
+- `GET /api/v1/ordens-servico/buscar?id={id}` - Buscar OS
+- `PUT /api/v1/ordens-servico/editar?id={id}` - Atualizar OS
+- `DELETE /api/v1/ordens-servico/deletar?id={id}` - Remover OS
+- `PATCH /api/v1/ordens-servico/alterar-status?id={id}` - Alterar status da OS
+- `POST /api/v1/ordens-servico/criar-orcamento?id={id}` - Criar orçamento
+- `GET /api/v1/ordens-servico/buscar-orcamento?idOS={id}&idOrcamento={orcamentoId}` - Buscar orçamento
+
+### Público
+- `GET /api/public/atendimento/ordens/{id}/autorizar` - Autorizar orçamento por link
+- `PATCH /api/public/atendimento/ordens/{id}/orcamentos/{orcamentoId}/status` - Responder orçamento
 
 ### Estoque
 - `POST /estoque/pecas` - Criar peça/insumo
@@ -390,6 +413,8 @@ SPRING_DATASOURCE_PASSWORD=postgres
 # Spring Profile
 SPRING_PROFILES_ACTIVE=dev
 ```
+
+No Kubernetes, os valores sensíveis vão para `Secret` e os demais parâmetros para `ConfigMap`.
 
 ---
 

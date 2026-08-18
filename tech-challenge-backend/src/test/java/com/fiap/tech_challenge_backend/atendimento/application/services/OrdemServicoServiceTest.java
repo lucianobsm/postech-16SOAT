@@ -2,6 +2,7 @@ package com.fiap.tech_challenge_backend.atendimento.application.services;
 
 import com.fiap.tech_challenge_backend.acesso.application.ports.UsuarioRepository;
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
+import com.fiap.tech_challenge_backend.acesso.domain.enums.PerfilUsuario;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.*;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.out.*;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
@@ -10,6 +11,7 @@ import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteReposit
 import com.fiap.tech_challenge_backend.cadastro.application.ports.VeiculoRepository;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
+import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Email;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -271,6 +273,43 @@ class OrdemServicoServiceTest {
     }
 
     @Test
+    @DisplayName("Deve listar ordens de serviço ativas priorizadas")
+    void testListarAtivasPriorizadas() {
+        Cliente cliente = new Cliente();
+        cliente.setNome("João");
+
+        Veiculo veiculo = new Veiculo();
+        veiculo.setModelo("Ford");
+
+        OrdemServico os1 = OrdemServico.builder()
+                .id(1L)
+                .cliente(cliente)
+                .veiculo(veiculo)
+                .status(StatusOrdemServico.EM_EXECUCAO)
+                .valorTotalAcumulado(BigDecimal.ZERO)
+                .orcamentos(List.of())
+                .build();
+
+        OrdemServico os2 = OrdemServico.builder()
+                .id(2L)
+                .cliente(cliente)
+                .veiculo(veiculo)
+                .status(StatusOrdemServico.RECEBIDA)
+                .valorTotalAcumulado(BigDecimal.valueOf(500))
+                .orcamentos(List.of())
+                .build();
+
+        when(ordemServicoRepository.listarAtivasPriorizadas()).thenReturn(List.of(os1, os2));
+
+        List<OrdemServicoResponseDTO> resultado = service.listarAtivasPriorizadas();
+
+        assertThat(resultado).hasSize(2);
+        assertThat(resultado.get(0).status()).isEqualTo(StatusOrdemServico.EM_EXECUCAO);
+        assertThat(resultado.get(1).status()).isEqualTo(StatusOrdemServico.RECEBIDA);
+        verify(ordemServicoRepository, times(1)).listarAtivasPriorizadas();
+    }
+
+    @Test
     @DisplayName("Deve remover ordem de serviço")
     void testRemoverOrdemServico() {
         when(ordemServicoRepository.existePorId(1L)).thenReturn(true);
@@ -436,6 +475,13 @@ class OrdemServicoServiceTest {
         cliente.setId(UUID.randomUUID());
         cliente.setNome("Joao");
 
+        Usuario clienteUsuario = new Usuario();
+        clienteUsuario.setId(UUID.randomUUID());
+        clienteUsuario.setNome("Cliente");
+        clienteUsuario.setEmail(new Email("cliente@email.com"));
+        clienteUsuario.setPerfil(PerfilUsuario.CLIENTE);
+        cliente.setUsuario(clienteUsuario);
+
         Veiculo veiculo = new Veiculo();
         veiculo.setModelo("Gol");
 
@@ -460,6 +506,7 @@ class OrdemServicoServiceTest {
 
         verify(ordemServicoRepository, times(1)).salvar(any());
         verify(osHistoricoStatusRepository, times(1)).salvar(any());
+        verify(emailSenderPort, times(1)).enviarEmail(eq("cliente@email.com"), any(), any());
     }
 
     @Test
@@ -527,6 +574,41 @@ class OrdemServicoServiceTest {
         assertThatThrownBy(() -> service.alterarStatus(999L, StatusOrdemServico.EM_EXECUCAO, null, null))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("Ordem de serviço não encontrada");
+    }
+
+    @Test
+    @DisplayName("Deve enviar e-mail quando autorizar ordem de serviço")
+    void testAutorizarEnviaEmailDeStatus() {
+        Cliente cliente = new Cliente();
+        cliente.setNome("Joao");
+
+        Usuario clienteUsuario = new Usuario();
+        clienteUsuario.setId(UUID.randomUUID());
+        clienteUsuario.setNome("Cliente");
+        clienteUsuario.setEmail(new Email("cliente@email.com"));
+        clienteUsuario.setPerfil(PerfilUsuario.CLIENTE);
+        cliente.setUsuario(clienteUsuario);
+
+        Veiculo veiculo = new Veiculo();
+        veiculo.setModelo("Gol");
+
+        OrdemServico os = OrdemServico.builder()
+                .id(1L)
+                .cliente(cliente)
+                .veiculo(veiculo)
+                .status(StatusOrdemServico.AGUARDANDO_APROVACAO)
+                .valorTotalAcumulado(BigDecimal.ZERO)
+                .orcamentos(List.of())
+                .build();
+
+        when(ordemServicoRepository.buscarPorId(1L)).thenReturn(Optional.of(os));
+        when(ordemServicoRepository.salvar(any())).thenReturn(os);
+
+        service.autorizar(1L);
+
+        verify(ordemServicoRepository, times(1)).salvar(any());
+        verify(osHistoricoStatusRepository, times(1)).salvar(any());
+        verify(emailSenderPort, times(1)).enviarEmail(eq("cliente@email.com"), any(), any());
     }
 
     // ─────────────────────────────────────────────
