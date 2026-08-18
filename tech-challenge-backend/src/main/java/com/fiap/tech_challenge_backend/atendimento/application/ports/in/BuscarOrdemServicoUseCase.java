@@ -10,6 +10,7 @@ public interface BuscarOrdemServicoUseCase {
     OrdemServicoResponseDTO buscarPorId(Long id);
 
     List<OrdemServicoResponseDTO> listarTodos();
-}
 
+    List<OrdemServicoResponseDTO> listarAtivasPriorizadas();
+}
 

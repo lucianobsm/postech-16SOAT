@@ -40,6 +40,11 @@ public class OrdemServicoRepositoryAdapter implements OrdemServicoRepositoryPort
     }
 
     @Override
+    public List<OrdemServico> listarAtivasPriorizadas() {
+        return repository.findAllAtivasPrioritized();
+    }
+
+    @Override
     public List<OrdemServico> listarPorStatus(StatusOrdemServico status) {
         return repository.findAllByStatusPrioritized(status);
     }
@@ -64,4 +69,3 @@ public class OrdemServicoRepositoryAdapter implements OrdemServicoRepositoryPort
         return repository.findAllForRelatorio();
     }
 }
-

@@ -26,12 +26,15 @@ public class EmailSenderAdapter implements EmailSenderPort {
     public void enviarEmailComAnexo(String para, String assunto, String corpoHtml, byte[] anexo, String nomeAnexo) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            boolean possuiAnexo = anexo != null && nomeAnexo != null && !nomeAnexo.isBlank();
+            MimeMessageHelper helper = new MimeMessageHelper(message, possuiAnexo, "UTF-8");
 
             helper.setTo(para);
             helper.setSubject(assunto);
             helper.setText(corpoHtml, true);
-            helper.addAttachment(nomeAnexo, () -> new java.io.ByteArrayInputStream(anexo));
+            if (possuiAnexo) {
+                helper.addAttachment(nomeAnexo, () -> new java.io.ByteArrayInputStream(anexo));
+            }
 
             mailSender.send(message);
 
