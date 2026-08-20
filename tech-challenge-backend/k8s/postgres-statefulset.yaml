@@ -19,6 +19,11 @@ spec:
           ports:
             - containerPort: 5432
           env:
+            # Volumes EBS/ext4 vem com uma pasta "lost+found" na raiz do
+            # mount, e o initdb recusa inicializar um diretorio que nao
+            # esteja vazio. Apontando pra uma subpasta evita o conflito.
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
             - name: POSTGRES_DB
               valueFrom:
                 configMapKeyRef:
