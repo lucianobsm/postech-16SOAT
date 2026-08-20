@@ -1,3 +1,11 @@
+# AVISO: este SG e passado em vpc_config.security_group_ids do
+# aws_eks_cluster, mas o EKS so anexa esse SG "adicional" as ENIs de
+# controle - os nos (e portanto os pods) usam o "cluster security group"
+# que o proprio EKS cria automaticamente (exposto como
+# aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id). Regras
+# de trafego de/para os nos (ex.: NodePort do ingress-nginx) precisam ir em
+# eks-node-security-group.tf, nao aqui. A regra HTTP abaixo nunca teve
+# efeito real sobre trafego para os nos.
 resource "aws_security_group" "security_group" {
   name        = "security-group-${var.project_name}"
   description = "Security group for use for exposing EKS cluster"

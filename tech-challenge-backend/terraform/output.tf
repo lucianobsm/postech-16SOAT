@@ -27,6 +27,17 @@ output "ecr_repository_url" {
   value = aws_ecr_repository.app.repository_url
 }
 
+output "api_access" {
+  description = "Como acessar a API pelo Ingress (NodePort, sem Load Balancer)"
+  value       = <<-EOT
+    O ingress-nginx expoe a API na porta 30080 (HTTP) de qualquer no do cluster.
+    Pegue o IP publico de um no:
+      kubectl get nodes -o wide
+    Depois acesse:
+      curl -H "Host: tech-challenge.local" http://<IP_PUBLICO_DO_NO>:30080/
+  EOT
+}
+
 output "docker_build_and_push" {
   description = "Comandos para publicar a imagem da aplicacao no ECR"
   value       = <<-EOT
