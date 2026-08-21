@@ -428,6 +428,27 @@ docker compose ps
 
 ---
 
+## 🔧 Solução de Problemas Comuns
+
+### Erro do Flyway: "Migration checksum mismatch"
+
+```
+Migration checksum mismatch for migration version X
+-> Applied to database : ...
+-> Resolved locally    : ...
+```
+
+Acontece quando o volume do Postgres já tem uma migration aplicada com um conteúdo diferente do arquivo `.sql` atual (por exemplo, após um `git pull` que alterou uma migration já versionada, ou ao trocar de branch). Como o volume local é descartável, a forma mais rápida de resolver é recriá-lo do zero:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+Isso apaga os dados do Postgres local e deixa o Flyway reaplicar todas as migrations (incluindo o seed de dados de teste) do começo.
+
+---
+
 ## 📚 Coleções Postman/Insomnia
 
 Disponível em: `Insomnia_Collection_TechChallenge.json`
