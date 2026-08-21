@@ -12,6 +12,14 @@ Sistema completo para:
 - Controle de peças e estoque
 - Rastreamento de histórico de status e operações
 
+### Principais entregas
+- Abertura de OS com cliente, veículo, serviços e peças
+- Consulta e atualização do status da OS
+- Aprovação/rejeição de orçamento por endpoint público
+- Listagem priorizada de OS ativas
+- Notificações por e-mail a cada mudança de status
+- Containerização com Docker e manifestos Kubernetes
+
 ## 🛠️ Tecnologias
 
 | Tecnologia | Versão | Uso |
@@ -197,8 +205,126 @@ Resposta esperada:
 }
 ```
 
+### Kubernetes (local, via Kind)
+
+```bash
+kubectl apply -k k8s/
+```
+
+Os manifestos incluem `Namespace`, `ConfigMap`, `Secret`, `PostgreSQL`, `Deployment`, `Service` e `HPA`. Passo a passo completo (criar cluster Kind, carregar a imagem, testar) em [`k8s/README.md`](k8s/README.md).
+
 ### Acessar Swagger UI
 Abra no navegador: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+---
+
+## ☁️ Deploy na AWS (EKS via Terraform)
+
+Sobe a mesma aplicação num cluster EKS real, provisionado via Terraform (pasta `terraform/`), usando os mesmos manifestos de `k8s/`.
+
+> ⚠️ **Custo**: o cluster EKS e os nodes (`t3.medium`) geram cobrança contínua enquanto existirem — não é free tier. Se estiver numa AWS Academy com budget limitado, rode `terraform destroy` assim que terminar os testes.
+
+### Pré-requisitos
+- **Terraform** ≥ 1.5 — [Download](https://developer.hashicorp.com/terraform/downloads)
+- **AWS CLI** configurado com as credenciais da sua sessão (AWS Academy: `aws configure` com as credenciais temporárias do Learner Lab)
+- **kubectl**
+- **Docker** (para publicar a imagem da aplicação)
+
+### 1. Configurar os segredos
+
+O `Secret` do Kubernetes (`tech-challenge-secrets`) **não** é lido a partir de `k8s/secret.yaml` quando provisionado via Terraform — aquele arquivo tem só placeholders e existe pro fluxo local com Kind, onde pode ficar versionado sem problema. No caminho AWS, os valores reais vêm de variáveis do Terraform marcadas como `sensitive`, sem default, definidas em [`terraform/vars.tf`](terraform/vars.tf) (`db_user`, `db_pass`, `jwt_secret`, `mail_username`, `mail_password`) e montadas em [`terraform/k8s-secret.tf`](terraform/k8s-secret.tf) via `yamlencode()` — assim o segredo real nunca precisa existir como texto num arquivo `.yaml` commitado.
+
+```bash
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+```
+
+Edite o `terraform.tfvars` recém-criado com os valores reais. Ele já está no `.gitignore` (`terraform/*.tfvars`) — só o `.example` (sem valores reais) fica versionado. Alternativa sem arquivo, via variáveis de ambiente:
+
+```bash
+export TF_VAR_db_user=postgres
+export TF_VAR_db_pass=...
+export TF_VAR_jwt_secret=...
+export TF_VAR_mail_username=...
+export TF_VAR_mail_password=...
+```
+
+Pro `jwt_secret`, a aplicação usa os bytes crus da string (`getBytes()`) como chave HMAC-SHA256, que exige no mínimo 256 bits (32 bytes) — gere um valor válido com:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+> ⚠️ `sensitive = true` só esconde o valor na saída do `plan`/`apply` no terminal — o valor real continua em texto puro no **state file**, armazenado no bucket S3 do backend. Quem tiver acesso de leitura a esse bucket vê os segredos. Para um projeto acadêmico isso costuma ser aceitável, mas vale no mínimo habilitar *versioning* + *encryption at rest* (SSE-S3, sem custo extra) no bucket.
+
+### 2. Provisionar a infraestrutura
+
+```bash
+terraform init
+terraform apply
+```
+
+Isso cria a VPC, o cluster EKS, o node group, o repositório ECR, os addons necessários (EBS CSI driver, metrics-server) e aplica todos os manifestos de `k8s/` (namespace, ConfigMap, Secret, Postgres, aplicação, Service, HPA, PDB). O `Ingress` também é criado, mas fica inerte — não há controller instalado (ver `TODO.md`), então a forma de acessar a API é via port-forward (passo 5).
+
+### 3. Publicar a imagem da aplicação no ECR
+
+O Terraform cria o repositório, mas não builda nem publica a imagem — isso é manual:
+
+```bash
+terraform output docker_build_and_push
+```
+
+Copie e rode os três comandos exibidos (`docker login`, `docker build`, `docker push`), **a partir da raiz do projeto** (onde está o `Dockerfile`), não de dentro de `terraform/`.
+
+### 4. Apontar o kubectl para o cluster
+
+```bash
+terraform output configure_kubectl
+```
+
+Copie e rode o comando exibido (`aws eks update-kubeconfig ...`).
+
+### 5. Verificar se os pods subiram
+
+```bash
+kubectl -n tech-challenge get pods -w
+```
+
+Espere os pods do Postgres e da aplicação ficarem `1/1 Running`. Se algum ficar em `ImagePullBackOff`, a imagem não foi publicada (volte ao passo 3). Se ficar em `CrashLoopBackOff`, veja os logs (`kubectl -n tech-challenge logs <pod> --previous`) e os eventos (`kubectl -n tech-challenge describe pod <pod>`).
+
+### 6. Testar via port-forward
+
+```bash
+kubectl -n tech-challenge port-forward svc/tech-challenge-app 8080:80
+```
+
+Em outro terminal:
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+Ou no navegador:
+- Health: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
+- Swagger UI: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+As coleções do Postman/Insomnia (seção "📚 Coleções Postman/Insomnia" mais abaixo) também funcionam aqui, apontando para `localhost:8080`.
+
+### 7. Testar o autoscaling (HPA)
+
+Gere carga contra o endpoint (ex.: com `hey`, `ab`, ou um pod `busybox` em loop de `wget`) e acompanhe:
+
+```bash
+kubectl -n tech-challenge get hpa -w
+```
+
+O número de réplicas deve subir conforme o uso de CPU/memória passa dos limites configurados (70%/75%).
+
+### 8. Derrubar tudo
+
+```bash
+cd terraform
+terraform destroy
+```
 
 ---
 
@@ -354,12 +480,19 @@ Se estiver usando Docker Compose, o debugger está disponível na porta `5005`:
 - `DELETE /veiculos/{placa}` - Deletar veículo
 
 ### Ordens de Serviço
-- `POST /os` - Criar ordem de serviço
-- `GET /os` - Listar ordens
-- `GET /os?id={id}` - Buscar ordem
-- `PUT /os?id={id}` - Atualizar ordem
-- `DELETE /os?id={id}` - Deletar ordem
-- `PATCH /os/status?id={id}` - Alterar status
+- `POST /api/v1/ordens-servico/criar` - Criar OS
+- `GET /api/v1/ordens-servico/listar-os` - Listar OS
+- `GET /api/v1/ordens-servico/listar-os-priorizadas` - Listar OS ativas priorizadas
+- `GET /api/v1/ordens-servico/buscar?id={id}` - Buscar OS
+- `PUT /api/v1/ordens-servico/editar?id={id}` - Atualizar OS
+- `DELETE /api/v1/ordens-servico/deletar?id={id}` - Remover OS
+- `PATCH /api/v1/ordens-servico/alterar-status?id={id}` - Alterar status da OS
+- `POST /api/v1/ordens-servico/criar-orcamento?id={id}` - Criar orçamento
+- `GET /api/v1/ordens-servico/buscar-orcamento?idOS={id}&idOrcamento={orcamentoId}` - Buscar orçamento
+
+### Público
+- `GET /api/public/atendimento/ordens/{id}/autorizar` - Autorizar orçamento por link
+- `PATCH /api/public/atendimento/ordens/{id}/orcamentos/{orcamentoId}/status` - Responder orçamento
 
 ### Estoque
 - `POST /estoque/pecas` - Criar peça/insumo
@@ -390,6 +523,8 @@ SPRING_DATASOURCE_PASSWORD=postgres
 # Spring Profile
 SPRING_PROFILES_ACTIVE=dev
 ```
+
+No Kubernetes, os valores sensíveis vão para `Secret` e os demais parâmetros para `ConfigMap`.
 
 ---
 

@@ -151,4 +151,15 @@ class EmailSenderAdapterTest {
 
         verify(mailSender, times(1)).send(mimeMessage);
     }
+
+    @Test
+    @DisplayName("deve enviar email sem anexo quando o anexo não for informado")
+    void testEnviarEmailSemAnexo() {
+        MimeMessage mimeMessage = mock(MimeMessage.class);
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+
+        emailSenderAdapter.enviarEmailComAnexo(email, assunto, corpoHtml, null, null);
+
+        verify(mailSender, times(1)).send(mimeMessage);
+    }
 }

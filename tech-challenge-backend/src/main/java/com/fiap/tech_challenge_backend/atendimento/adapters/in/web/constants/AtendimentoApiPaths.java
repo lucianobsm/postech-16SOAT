@@ -9,6 +9,7 @@ public class AtendimentoApiPaths {
 
     public static final String CRIAR_OS = "/criar";
     public static final String LISTAR_OS = "/listar-os";
+    public static final String LISTAR_OS_PRIORIZADAS = "/listar-os-priorizadas";
     public static final String BUSCAR_OS = "/buscar";
     public static final String ATUALIZAR_OS = "/editar";
     public static final String REMOVER_OS = "/deletar";

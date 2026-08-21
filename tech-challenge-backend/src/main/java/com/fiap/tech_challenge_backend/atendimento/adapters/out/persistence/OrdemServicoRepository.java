@@ -43,6 +43,30 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
 	@Query("""
 			SELECT DISTINCT os
 			FROM OrdemServico os
+			JOIN FETCH os.cliente
+			LEFT JOIN FETCH os.veiculo
+			LEFT JOIN FETCH os.mecanico
+			WHERE os.status IN (
+			    com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico.EM_EXECUCAO,
+			    com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico.AGUARDANDO_APROVACAO,
+			    com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico.EM_DIAGNOSTICO,
+			    com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico.RECEBIDA
+			)
+			ORDER BY
+			    CASE
+			        WHEN os.status = com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico.EM_EXECUCAO THEN 1
+			        WHEN os.status = com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico.AGUARDANDO_APROVACAO THEN 2
+			        WHEN os.status = com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico.EM_DIAGNOSTICO THEN 3
+			        WHEN os.status = com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico.RECEBIDA THEN 4
+			        ELSE 5
+			    END,
+			    os.dataCriacao ASC
+			""")
+	List<OrdemServico> findAllAtivasPrioritized();
+
+	@Query("""
+			SELECT DISTINCT os
+			FROM OrdemServico os
 			LEFT JOIN FETCH os.veiculo
 			LEFT JOIN FETCH os.cliente
 			LEFT JOIN FETCH os.mecanico
@@ -110,5 +134,4 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
 			""")
 	List<OrdemServico> findByClienteIdWithDetails(@Param("clienteId") UUID clienteId);
 }
-
 

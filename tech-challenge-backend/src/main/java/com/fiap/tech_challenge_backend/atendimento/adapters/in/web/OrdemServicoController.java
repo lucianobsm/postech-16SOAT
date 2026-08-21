@@ -85,6 +85,13 @@ public class OrdemServicoController {
         return buscarUseCase.listarTodos();
     }
 
+    @GetMapping(AtendimentoApiPaths.LISTAR_OS_PRIORIZADAS)
+    @PreAuthorize("hasAnyRole('ADMIN', 'FUNCIONARIO')")
+    @Operation(summary = "Listar Ordens de Serviço priorizadas por status e data")
+    public List<OrdemServicoResponseDTO> listarPriorizadas() {
+        return buscarUseCase.listarAtivasPriorizadas();
+    }
+
     @GetMapping(AtendimentoApiPaths.BUSCAR_OS)
     @PreAuthorize("hasAnyRole('ADMIN', 'FUNCIONARIO')")
     @Operation(summary = "Buscar Ordem de Serviço por ID")
@@ -155,5 +162,4 @@ public class OrdemServicoController {
         return buscarOrcamentoUseCase.buscarPorId(id, orcamentoId);
     }
 }
-
 

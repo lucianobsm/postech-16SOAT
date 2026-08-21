@@ -108,6 +108,28 @@ class OrdemServicoControllerTest {
 
     @Test
     @WithMockUser(roles = "FUNCIONARIO")
+    @DisplayName("GET /os/listar-os-priorizadas - deve listar OS ativas priorizadas")
+    void testListarOrdensServicoPriorizadas() throws Exception {
+        ClienteInfoDTO cliente = new ClienteInfoDTO(UUID.randomUUID(), "João", "11999999999", "joao@test.com");
+        VeiculoInfoDTO veiculo = new VeiculoInfoDTO("ABC1234", "Fusca", "Azul");
+        OrdemServicoResponseDTO response = new OrdemServicoResponseDTO(
+                1L, cliente, veiculo, UUID.randomUUID(), "Mecânico", StatusOrdemServico.EM_EXECUCAO,
+                BigDecimal.ZERO, "Revisão", null, LocalDateTime.now(), null, null, false, List.of()
+        );
+
+        when(buscarUseCase.listarAtivasPriorizadas()).thenReturn(Arrays.asList(response));
+
+        mockMvc.perform(get(AtendimentoApiPaths.OS_BASE + AtendimentoApiPaths.LISTAR_OS_PRIORIZADAS)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].status").value("EM_EXECUCAO"));
+
+        verify(buscarUseCase, times(1)).listarAtivasPriorizadas();
+    }
+
+    @Test
+    @WithMockUser(roles = "FUNCIONARIO")
     @DisplayName("GET /os?id={id} - deve buscar por ID")
     void testBuscarOrdemServicoPorId() throws Exception {
         ClienteInfoDTO cliente = new ClienteInfoDTO(UUID.randomUUID(), "João", "11999999999", "joao@test.com");
@@ -212,6 +234,18 @@ class OrdemServicoControllerTest {
         when(buscarUseCase.listarTodos()).thenReturn(List.of());
 
         mockMvc.perform(get(AtendimentoApiPaths.OS_BASE + AtendimentoApiPaths.LISTAR_OS).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @WithMockUser(roles = "FUNCIONARIO")
+    @DisplayName("GET /os/listar-os-priorizadas - deve retornar lista vazia")
+    void testListarOrdensPriorizadasSemResultados() throws Exception {
+        when(buscarUseCase.listarAtivasPriorizadas()).thenReturn(List.of());
+
+        mockMvc.perform(get(AtendimentoApiPaths.OS_BASE + AtendimentoApiPaths.LISTAR_OS_PRIORIZADAS)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }

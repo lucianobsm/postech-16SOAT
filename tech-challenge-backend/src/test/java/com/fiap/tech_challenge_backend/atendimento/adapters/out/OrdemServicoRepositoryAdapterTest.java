@@ -101,6 +101,18 @@ class OrdemServicoRepositoryAdapterTest {
     }
 
     @Test
+    @DisplayName("Deve listar ordens de serviço ativas priorizadas")
+    void testListarAtivasPriorizadas() {
+        List<OrdemServico> ordens = List.of(ordemServico);
+        when(repository.findAllAtivasPrioritized()).thenReturn(ordens);
+
+        List<OrdemServico> resultado = adapter.listarAtivasPriorizadas();
+
+        assertThat(resultado).hasSize(1);
+        verify(repository, times(1)).findAllAtivasPrioritized();
+    }
+
+    @Test
     @DisplayName("Deve listar ordens de serviço por status")
     void testListarPorStatus() {
         List<OrdemServico> ordens = List.of(ordemServico);
