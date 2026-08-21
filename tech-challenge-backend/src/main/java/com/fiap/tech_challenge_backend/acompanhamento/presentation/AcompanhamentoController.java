@@ -4,6 +4,7 @@ import com.fiap.tech_challenge_backend.acompanhamento.application.Acompanhamento
 import com.fiap.tech_challenge_backend.acompanhamento.application.dto.AcompanhamentoOsResponseDTO;
 import com.fiap.tech_challenge_backend.shared.application.dto.RelatorioResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/clientes/{clienteId}/ordens")
 @Tag(name = "Acompanhamento", description = "Consulta do status das ordens de servico pelo cliente")
+@SecurityRequirement(name = "bearerAuth")
 public class AcompanhamentoController {
 
     private final AcompanhamentoService service;

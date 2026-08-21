@@ -10,6 +10,7 @@ import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroVeiculo
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroVeiculoResponse;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.BuscarVeiculoResponse;
 import com.fiap.tech_challenge_backend.shared.application.dto.RelatorioResponseDTO;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/veiculos")
+@SecurityRequirement(name = "bearerAuth")
 public class VeiculoController {
 
     private final CadastroVeiculoUseCase cadastroVeiculoUseCase;

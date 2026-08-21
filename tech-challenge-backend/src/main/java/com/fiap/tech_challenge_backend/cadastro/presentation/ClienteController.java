@@ -5,6 +5,7 @@ import com.fiap.tech_challenge_backend.cadastro.application.dtos.BuscarClienteRe
 import com.fiap.tech_challenge_backend.cadastro.application.usecases.*;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroClienteRequest;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroClienteResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/clientes")
+@SecurityRequirement(name = "bearerAuth")
 public class ClienteController {
 
     private static final Logger log = LoggerFactory.getLogger(ClienteController.class);

@@ -7,6 +7,7 @@ import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoRequest
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoResponseDTO;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @RequestMapping("/estoque/itens")
 @RequiredArgsConstructor
 @Tag(name = "Estoque - Itens", description = "Gerenciamento de peças e insumos do estoque")
+@SecurityRequirement(name = "bearerAuth")
 public class ItemEstoqueController {
 
     private static final Logger log = LoggerFactory.getLogger(ItemEstoqueController.class);

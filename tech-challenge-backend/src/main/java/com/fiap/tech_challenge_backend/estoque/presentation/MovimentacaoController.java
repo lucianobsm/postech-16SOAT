@@ -3,6 +3,7 @@ package com.fiap.tech_challenge_backend.estoque.presentation;
 import com.fiap.tech_challenge_backend.estoque.application.EstoqueService;
 import com.fiap.tech_challenge_backend.estoque.application.dto.MovimentacaoResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @RequestMapping("/estoque/movimentacoes")
 @RequiredArgsConstructor
 @Tag(name = "Estoque - Movimentações", description = "Histórico de movimentações de estoque")
+@SecurityRequirement(name = "bearerAuth")
 public class MovimentacaoController {
 
     private final EstoqueService service;
