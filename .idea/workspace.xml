@@ -7,7 +7,44 @@
     <option name="selectedModelId" value="auto" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d29e88ca-fa2b-4106-b4d8-b17cd5967ba3" name="Changes" comment="feat: add DTOs and use cases for managing orçamento and ordem de serviço" />
+    <list default="true" id="d29e88ca-fa2b-4106-b4d8-b17cd5967ba3" name="Changes" comment="feat: add DTOs and use cases for managing orçamento and ordem de serviço">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/.terraform.lock.hcl" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/.terraform.lock.hcl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/access_entry.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/access_entry.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/backend.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/backend.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/data.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/data.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/ecr.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/ecr.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/eks-cluster.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/eks-cluster.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/eks-node.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/eks-node.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/internet-gw.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/internet-gw.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-configmap.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-configmap.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-deployment.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-deployment.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-ebs-csi-addon.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-ebs-csi-addon.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-hpa.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-hpa.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-ingress.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-ingress.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-metrics-server.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-metrics-server.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-namespace.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-namespace.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-pdb.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-pdb.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-postgres-service.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-postgres-service.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-postgres-statefulset.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-postgres-statefulset.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-secret.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-secret.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-service.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-service.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/k8s-storageclass.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/k8s-storageclass.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/launch-template.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/launch-template.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/locals.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/locals.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/output.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/output.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/providers.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/providers.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/route-table.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/route-table.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/security-group.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/security-group.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/subnet.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/subnet.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/terraform.tfvars.example" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/terraform.tfvars.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/vars.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/vars.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tech-challenge-backend/terraform/vpc.tf" beforeDir="false" afterPath="$PROJECT_DIR$/tech-challenge-backend/infra/vpc.tf" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -41,6 +78,69 @@
     &quot;accountId&quot;: &quot;c0652f15-00d8-4d30-a985-d5cd063375fd&quot;
   }
 }</component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0000001251652864" />
+      <entry key="MS500" value="1.0494600512193706" />
+      <entry key="S2" value="1.749125303315703" />
+      <entry key="S5" value="2.347170129512355" />
+      <entry key="S10" value="2.7161654971627858" />
+      <entry key="S30" value="3.5303036797179796" />
+      <entry key="S60" value="4.07823223565312" />
+      <entry key="M2" value="4.4779322635806675" />
+      <entry key="M5" value="4.774101514260523" />
+      <entry key="M10" value="4.883978685598967" />
+      <entry key="M15" value="4.9219518595246115" />
+      <entry key="M30" value="4.960621039121229" />
+      <entry key="H1" value="4.980220925079246" />
+      <entry key="H2" value="4.990087953981968" />
+      <entry key="H4" value="4.995038336048966" />
+      <entry key="D1" value="4.999172271369654" />
+      <entry key="W1" value="4.999881733821839" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.9330331099498131" />
+      <entry key="MS500" value="1.0351151459889054" />
+      <entry key="S2" value="1.7432832209030789" />
+      <entry key="S5" value="2.3439790960593223" />
+      <entry key="S10" value="2.7129960451090005" />
+      <entry key="S30" value="3.5233618133808284" />
+      <entry key="S60" value="4.071853158534292" />
+      <entry key="M2" value="4.473571825585109" />
+      <entry key="M5" value="4.771993359080126" />
+      <entry key="M10" value="4.882855564070709" />
+      <entry key="M15" value="4.921187087220184" />
+      <entry key="M30" value="4.960230463981209" />
+      <entry key="H1" value="4.980023556526705" />
+      <entry key="H2" value="4.989988745189078" />
+      <entry key="H4" value="4.99498859998608" />
+      <entry key="D1" value="4.999163963693072" />
+      <entry key="W1" value="4.999880546561335" />
+    </decayedShown>
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 8
@@ -61,7 +161,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "copilot.chat.legacySessionMetadata.migrated": "true",
-    "git-widget-placeholder": "feature/atendimento-",
+    "git-widget-placeholder": "feature/terraform",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
