@@ -57,12 +57,12 @@ build/
 .vscode/
 
 # Terraform
-terraform/.terraform/
-terraform/*.tfstate
-terraform/*.tfstate.*
-terraform/crash.log
-terraform/*.tfvars
-!terraform/*.tfvars.example
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/crash.log
+infra/*.tfvars
+!infra/*.tfvars.example
 
 # TODO
 TODO.md

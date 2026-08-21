@@ -220,7 +220,7 @@ Abra no navegador: [http://localhost:8080/swagger-ui.html](http://localhost:8080
 
 ## ☁️ Deploy na AWS (EKS via Terraform)
 
-Sobe a mesma aplicação num cluster EKS real, provisionado via Terraform (pasta `terraform/`), usando os mesmos manifestos de `k8s/`.
+Sobe a mesma aplicação num cluster EKS real, provisionado via Terraform (pasta `infra/`), usando os mesmos manifestos de `k8s/`.
 
 > ⚠️ **Custo**: o cluster EKS e os nodes (`t3.medium`) geram cobrança contínua enquanto existirem — não é free tier. Se estiver numa AWS Academy com budget limitado, rode `terraform destroy` assim que terminar os testes.
 
@@ -232,7 +232,7 @@ Sobe a mesma aplicação num cluster EKS real, provisionado via Terraform (pasta
 
 ### 1. Configurar os segredos
 
-O `Secret` do Kubernetes (`tech-challenge-secrets`) **não** é lido a partir de `k8s/secret.yaml` quando provisionado via Terraform — aquele arquivo tem só placeholders e existe pro fluxo local com Kind, onde pode ficar versionado sem problema. No caminho AWS, os valores reais vêm de variáveis do Terraform marcadas como `sensitive`, sem default, definidas em [`terraform/vars.tf`](terraform/vars.tf) (`db_user`, `db_pass`, `jwt_secret`, `mail_username`, `mail_password`) e montadas em [`terraform/k8s-secret.tf`](terraform/k8s-secret.tf) via `yamlencode()` — assim o segredo real nunca precisa existir como texto num arquivo `.yaml` commitado.
+O `Secret` do Kubernetes (`tech-challenge-secrets`) **não** é lido a partir de `k8s/secret.yaml` quando provisionado via Terraform — aquele arquivo tem só placeholders e existe pro fluxo local com Kind, onde pode ficar versionado sem problema. No caminho AWS, os valores reais vêm de variáveis do Terraform marcadas como `sensitive`, sem default, definidas em [`terraform/vars.tf`](infra/vars.tf) (`db_user`, `db_pass`, `jwt_secret`, `mail_username`, `mail_password`) e montadas em [`terraform/k8s-secret.tf`](infra/k8s-secret.tf) via `yamlencode()` — assim o segredo real nunca precisa existir como texto num arquivo `.yaml` commitado.
 
 ```bash
 cd terraform
