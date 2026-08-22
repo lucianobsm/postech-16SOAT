@@ -36,6 +36,12 @@ variable "instance_types" {
   default     = ["t3.medium"]
 }
 
+variable "state_bucket_name" {
+  description = "Nome do bucket S3 do state remoto (precisa bater com backend.tf)"
+  type        = string
+  default     = "tech-challenge-soat16-grupo15"
+}
+
 # Preencha os valores reais em terraform.tfvars (gitignored) ou via env vars
 # TF_VAR_db_user, TF_VAR_db_pass, etc. Nunca coloque valor default aqui -
 # isso viraria o segredo committado no lugar do secret.yaml.

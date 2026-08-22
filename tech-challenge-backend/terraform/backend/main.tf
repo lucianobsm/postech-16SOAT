@@ -1,11 +1,11 @@
-# Bucket S3 que guarda o terraform.tfstate do modulo principal
-# (ver tech-challenge-backend/terraform/backend.tf).
+# Bucket S3 que guarda o terraform.tfstate deste mesmo módulo raiz
+# (ver ../backend.tf, que configura o backend "s3" apontando pra ele).
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = var.state_bucket_name
+  bucket = var.bucket_name
 
   # Evita "terraform destroy" acidental deste bucket enquanto ele guarda o
-  # state de toda a infraestrutura (VPC/EKS/ECR/K8s). Para derrubar de
-  # verdade, remova esta linha antes do destroy.
+  # state de toda a infraestrutura (VPC/EKS/ECR/K8s/ele mesmo). Para derrubar
+  # de verdade, remova esta linha antes do destroy.
   lifecycle {
     prevent_destroy = true
   }

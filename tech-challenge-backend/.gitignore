@@ -64,13 +64,5 @@ terraform/crash.log
 terraform/*.tfvars
 !terraform/*.tfvars.example
 
-# Terraform (bootstrap do bucket de state - state local, nunca commitado)
-terraform-bootstrap/.terraform/
-terraform-bootstrap/*.tfstate
-terraform-bootstrap/*.tfstate.*
-terraform-bootstrap/crash.log
-terraform-bootstrap/*.tfvars
-!terraform-bootstrap/*.tfvars.example
-
 # TODO
 TODO.md
