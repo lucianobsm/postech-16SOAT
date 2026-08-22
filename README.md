@@ -356,19 +356,31 @@ Se estiver usando Docker Compose, o debugger está disponível na porta `5005`:
 - `DELETE /veiculos/{placa}` - Deletar veículo
 
 ### Ordens de Serviço
-- `POST /os` - Criar ordem de serviço
-- `GET /os` - Listar ordens
-- `GET /os?id={id}` - Buscar ordem
-- `PUT /os?id={id}` - Atualizar ordem
-- `DELETE /os?id={id}` - Deletar ordem
-- `PATCH /os/status?id={id}` - Alterar status
+- `POST /api/v1/ordens-servico/criar` - Criar OS
+- `GET /api/v1/ordens-servico/listar-os` - Listar OS
+- `GET /api/v1/ordens-servico/listar-os-priorizadas` - Listar OS ativas priorizadas
+- `GET /api/v1/ordens-servico/buscar?id={id}` - Buscar OS
+- `PUT /api/v1/ordens-servico/editar?id={id}` - Atualizar OS
+- `DELETE /api/v1/ordens-servico/deletar?id={id}` - Remover OS
+- `PATCH /api/v1/ordens-servico/alterar-status?id={id}` - Alterar status da OS
+- `POST /api/v1/ordens-servico/criar-orcamento?id={id}` - Criar orçamento
+- `GET /api/v1/ordens-servico/buscar-orcamento?idOS={id}&idOrcamento={orcamentoId}` - Buscar orçamento
+
+### Público
+- `GET /api/public/atendimento/ordens/{id}/autorizar` - Autorizar orçamento por link
+- `PATCH /api/public/atendimento/ordens/{id}/orcamentos/{orcamentoId}/status` - Cliente aprova ou rejeita um orçamento
 
 ### Estoque
-- `POST /estoque/pecas` - Criar peça/insumo
-- `GET /estoque/pecas` - Listar itens
-- `GET /estoque/pecas/{codigo}` - Buscar item
-- `PUT /estoque/pecas/{codigo}` - Atualizar item
-- `DELETE /estoque/pecas/{codigo}` - Deletar item
+- `POST /estoque/itens` - Cadastrar peça ou insumo
+- `GET /estoque/itens` - Listar itens (filtro opcional por tipo: PECA ou INSUMO)
+- `GET /estoque/itens/{id}` - Buscar item por ID
+- `PUT /estoque/itens/{id}` - Atualizar item
+- `DELETE /estoque/itens/{id}` - Remover item
+- `GET /estoque/itens/abaixo-do-minimo` - Listar itens com estoque abaixo do mínimo
+- `POST /estoque/itens/entrada` - Dar entrada no estoque (cadastra se não existir ou repõe se já existir)
+- `PATCH /estoque/itens/{id}/entrada` - Registrar entrada de estoque
+- `PATCH /estoque/itens/{id}/saida` - Registrar saída de estoque
+- `GET /estoque/movimentacoes/item/{pecaInsumoId}` - Listar movimentações de um item
 
 Veja a documentação completa no Swagger: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 

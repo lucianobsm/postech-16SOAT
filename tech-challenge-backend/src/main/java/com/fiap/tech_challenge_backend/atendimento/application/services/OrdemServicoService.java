@@ -699,16 +699,20 @@ public class OrdemServicoService
                 os.getId(), orcamento.getId(), orcamento.getTipo(), emailCliente);
 
         try {
-            String linkAprovacao = String.format(
-                    "http://localhost:8080/api/public/atendimento/ordens/%s/orcamentos/%s/status",
+            String linkAprovar = String.format(
+                    "http://localhost:8080/api/public/atendimento/ordens/%s/orcamentos/%s/aprovar",
+                    os.getId(), orcamento.getId()
+            );
+            String linkRejeitar = String.format(
+                    "http://localhost:8080/api/public/atendimento/ordens/%s/orcamentos/%s/rejeitar",
                     os.getId(), orcamento.getId()
             );
 
             byte[] documento = pdfGeneratorPort.gerarDocumentoTexto(orcamento);
 
             String corpoHtml = orcamento.getTipo() == TipoOrcamento.ADICIONAL
-                    ? montarTemplateEmailOrcamentoAdicional(os, orcamento, linkAprovacao)
-                    : montarTemplateEmailOrcamento(os, orcamento, linkAprovacao);
+                    ? montarTemplateEmailOrcamentoAdicional(os, orcamento, linkAprovar, linkRejeitar)
+                    : montarTemplateEmailOrcamento(os, orcamento, linkAprovar, linkRejeitar);
 
             String assunto = orcamento.getTipo() == TipoOrcamento.ADICIONAL
                     ? String.format("Orçamento Adicional Necessário - OS #%s | Novos Problemas Identificados", os.getId())
@@ -751,7 +755,7 @@ public class OrdemServicoService
         }
     }
 
-    private String montarTemplateEmailOrcamentoAdicional(OrdemServico os, OsOrcamento orcamento, String linkAprovacao) {
+    private String montarTemplateEmailOrcamentoAdicional(OrdemServico os, OsOrcamento orcamento, String linkAprovar, String linkRejeitar) {
         return "<!DOCTYPE html>" +
                 "<html lang=\"pt-BR\">" +
                 "<head>" +
@@ -842,15 +846,15 @@ public class OrdemServicoService
                 "      </div>" +
                 "" +
                 "      <p style=\"text-align: center; margin: 30px 0;\">" +
-                "        <a href=\"" + linkAprovacao + "?status=APROVADO\" class=\"cta-button\">✓ APROVAR ORÇAMENTO ADICIONAL</a>" +
+                "        <a href=\"" + linkAprovar + "\" class=\"cta-button\">✓ APROVAR ORÇAMENTO ADICIONAL</a>" +
                 "      </p>" +
                 "" +
                 "      <p style=\"text-align: center;\">" +
-                "        <a href=\"" + linkAprovacao + "?status=REJEITADO\" style=\"color: #e74c3c; text-decoration: none; font-weight: bold;\">✗ Rejeitar e Conversar com o Mecânico</a>" +
+                "        <a href=\"" + linkRejeitar + "\" style=\"color: #e74c3c; text-decoration: none; font-weight: bold;\">✗ Rejeitar e Conversar com o Mecânico</a>" +
                 "      </p>" +
                 "" +
                 "      <p style=\"font-size: 12px; color: #7f8c8d; text-align: center;\">" +
-                "        <small>Ou copie e cole este link no seu navegador:<br>" + linkAprovacao + "</small>" +
+                "        <small>Ou copie e cole um dos links abaixo no seu navegador:<br>Aprovar: " + linkAprovar + "<br>Rejeitar: " + linkRejeitar + "</small>" +
                 "      </p>" +
                 "    </div>" +
                 "    <div class=\"footer\">" +
@@ -868,7 +872,7 @@ public class OrdemServicoService
                 "</html>";
     }
 
-    private String montarTemplateEmailOrcamento(OrdemServico os, OsOrcamento orcamento, String linkAprovacao) {
+    private String montarTemplateEmailOrcamento(OrdemServico os, OsOrcamento orcamento, String linkAprovar, String linkRejeitar) {
         return "<!DOCTYPE html>" +
                 "<html lang=\"pt-BR\">" +
                 "<head>" +
@@ -906,12 +910,12 @@ public class OrdemServicoService
                 "        <li>Prazo de execução</li>" +
                 "      </ul>" +
                 "      <p style=\"text-align: center; margin: 30px 0;\">" +
-                "        <a href=\"" + linkAprovacao + "?status=APROVADO\" class=\"button\">✓ APROVAR ORÇAMENTO</a>" +
+                "        <a href=\"" + linkAprovar + "\" class=\"button\">✓ APROVAR ORÇAMENTO</a>" +
                 "      </p>" +
                 "      <p style=\"text-align: center;\">" +
-                "        <a href=\"" + linkAprovacao + "?status=REJEITADO\" class=\"button button-reject\">✗ REJEITAR ORÇAMENTO</a>" +
+                "        <a href=\"" + linkRejeitar + "\" class=\"button button-reject\">✗ REJEITAR ORÇAMENTO</a>" +
                 "      </p>" +
-                "      <p style=\"font-size: 12px; color: #95a5a6; text-align: center;\"><small>Ou copie e cole este link no seu navegador: " + linkAprovacao + "</small></p>" +
+                "      <p style=\"font-size: 12px; color: #95a5a6; text-align: center;\"><small>Ou copie e cole um dos links abaixo no seu navegador:<br>Aprovar: " + linkAprovar + "<br>Rejeitar: " + linkRejeitar + "</small></p>" +
                 "    </div>" +
                 "    <div class=\"footer\">" +
                 "      <p><strong>Oficina Mecânica Premium</strong></p>" +
@@ -1065,17 +1069,18 @@ public class OrdemServicoService
                     .statusDestino(StatusOrdemServico.EM_EXECUCAO)
                     .build());
 
-            notificarMudancaStatus(salva, statusAnterior);
-
             OsOrcamento orcamentoAtualizado = salva.getOrcamentos().stream()
                     .filter(orc -> orc.getId().equals(orcamentoId))
                     .findFirst()
                     .orElseThrow();
 
+            notificarMudancaStatus(salva, statusAnterior);
+            notificarRespostaOrcamento(salva, orcamentoAtualizado, true);
+
             return OrcamentoResponseDTO.from(orcamentoAtualizado);
         } else if (request.status() == StatusOrcamento.REJEITADO) {
             os.rejeitarOrcamento(orcamentoId);
-            log.info("Orçamento rejeitado | Orcamento: {}", orcamentoId);
+            log.info("Orçamento rejeitado | Orcamento: {}", orcamentoId );
         }
 
         OrdemServico salva = ordemServicoRepository.salvar(os);
@@ -1085,7 +1090,119 @@ public class OrdemServicoService
                 .findFirst()
                 .orElseThrow();
 
+        if (request.status() == StatusOrcamento.REJEITADO) {
+            notificarRespostaOrcamento(salva, orcamentoAtualizado, false);
+        }
+
         return OrcamentoResponseDTO.from(orcamentoAtualizado);
+    }
+
+    private void notificarRespostaOrcamento(OrdemServico os, OsOrcamento orcamento, boolean aprovado) {
+        String emailCliente = obterEmailCliente(os);
+        if (emailCliente == null) {
+            return;
+        }
+
+        String assunto = aprovado
+                ? String.format("Orçamento aprovado - OS #%s", os.getId())
+                : String.format("Orçamento rejeitado - OS #%s", os.getId());
+
+        String corpoHtml = aprovado
+                ? montarTemplateEmailOrcamentoAprovado(os, orcamento)
+                : montarTemplateEmailOrcamentoRejeitado(os, orcamento);
+
+        emailSenderPort.enviarEmail(emailCliente, assunto, corpoHtml);
+
+        log.info("E-mail de resposta de orçamento enviado | OS: {} | Orcamento: {} | Aprovado: {}",
+                os.getId(), orcamento.getId(), aprovado);
+    }
+
+    private String montarTemplateEmailOrcamentoAprovado(OrdemServico os, OsOrcamento orcamento) {
+        return "<!DOCTYPE html>" +
+                "<html lang=\"pt-BR\">" +
+                "<head>" +
+                "  <meta charset=\"UTF-8\">" +
+                "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                "  <style>" +
+                "    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
+                "    .container { max-width: 600px; margin: 0 auto; padding: 20px; }" +
+                "    .header { background-color: #27ae60; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }" +
+                "    .content { background-color: #ecf0f1; padding: 20px; border-radius: 0 0 5px 5px; }" +
+                "    .info-box { background-color: #fff; padding: 15px; border-left: 4px solid #27ae60; margin: 15px 0; }" +
+                "    .info-box strong { color: #2c3e50; }" +
+                "    .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #bdc3c7; font-size: 12px; color: #7f8c8d; text-align: center; }" +
+                "  </style>" +
+                "</head>" +
+                "<body>" +
+                "  <div class=\"container\">" +
+                "    <div class=\"header\">" +
+                "      <h1>✓ Orçamento Aprovado!</h1>" +
+                "    </div>" +
+                "    <div class=\"content\">" +
+                "      <p>Olá <strong>" + os.getCliente().getNome() + "</strong>,</p>" +
+                "      <p>Confirmamos o recebimento da sua aprovação. Nossa equipe já foi notificada e os trabalhos no seu veículo serão iniciados em breve.</p>" +
+                "      <div class=\"info-box\">" +
+                "        <p><strong>Número da Ordem de Serviço:</strong> " + os.getId() + "</p>" +
+                "        <p><strong>Veículo:</strong> " + os.getVeiculo().getModelo() + " - Placa: " + os.getVeiculo().getPlaca() + "</p>" +
+                "        <p><strong>Valor Aprovado:</strong> <strong style=\"color: #27ae60; font-size: 18px;\">R$ " + String.format("%.2f", orcamento.getValorTotal()) + "</strong></p>" +
+                "      </div>" +
+                "      <p>Você receberá uma nova notificação assim que houver atualização no status do serviço.</p>" +
+                "    </div>" +
+                "    <div class=\"footer\">" +
+                "      <p>Oficina Mecânica Premium<br>" +
+                "      Telefone: (11) 3000-0000<br>" +
+                "      E-mail: contato@oficina.com.br</p>" +
+                "      <p style=\"margin-top: 15px; color: #95a5a6;\">Este é um e-mail automático. Por favor, não responda.</p>" +
+                "    </div>" +
+                "  </div>" +
+                "</body>" +
+                "</html>";
+    }
+
+    private String montarTemplateEmailOrcamentoRejeitado(OrdemServico os, OsOrcamento orcamento) {
+        return "<!DOCTYPE html>" +
+                "<html lang=\"pt-BR\">" +
+                "<head>" +
+                "  <meta charset=\"UTF-8\">" +
+                "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                "  <style>" +
+                "    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
+                "    .container { max-width: 600px; margin: 0 auto; padding: 20px; }" +
+                "    .header { background-color: #e74c3c; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }" +
+                "    .content { background-color: #ecf0f1; padding: 20px; border-radius: 0 0 5px 5px; }" +
+                "    .info-box { background-color: #fff; padding: 15px; border-left: 4px solid #e74c3c; margin: 15px 0; }" +
+                "    .info-box strong { color: #2c3e50; }" +
+                "    .contact-box { background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 15px 0; }" +
+                "    .contact-box strong { color: #1565c0; }" +
+                "    .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #bdc3c7; font-size: 12px; color: #7f8c8d; text-align: center; }" +
+                "  </style>" +
+                "</head>" +
+                "<body>" +
+                "  <div class=\"container\">" +
+                "    <div class=\"header\">" +
+                "      <h1>Orçamento Rejeitado</h1>" +
+                "    </div>" +
+                "    <div class=\"content\">" +
+                "      <p>Olá <strong>" + os.getCliente().getNome() + "</strong>,</p>" +
+                "      <p>Registramos a rejeição do orçamento abaixo. Nenhum serviço adicional será executado sem sua aprovação.</p>" +
+                "      <div class=\"info-box\">" +
+                "        <p><strong>Número da Ordem de Serviço:</strong> " + os.getId() + "</p>" +
+                "        <p><strong>Veículo:</strong> " + os.getVeiculo().getModelo() + " - Placa: " + os.getVeiculo().getPlaca() + "</p>" +
+                "        <p><strong>Valor Rejeitado:</strong> R$ " + String.format("%.2f", orcamento.getValorTotal()) + "</p>" +
+                "      </div>" +
+                "      <div class=\"contact-box\">" +
+                "        <p><strong>Quer discutir outras opções?</strong></p>" +
+                "        <p>Entre em contato com nossa equipe para conversarmos sobre alternativas para o seu veículo.</p>" +
+                "        <p style=\"margin: 5px 0;\">📞 (11) 3000-0000 | 📧 contato@oficina.com.br</p>" +
+                "      </div>" +
+                "    </div>" +
+                "    <div class=\"footer\">" +
+                "      <p>Oficina Mecânica Premium</p>" +
+                "      <p style=\"margin-top: 15px; color: #95a5a6;\">Este é um e-mail automático. Por favor, não responda.</p>" +
+                "    </div>" +
+                "  </div>" +
+                "</body>" +
+                "</html>";
     }
 
     // ─────────────────────────────────────────────

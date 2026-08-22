@@ -495,11 +495,16 @@ Se estiver usando Docker Compose, o debugger está disponível na porta `5005`:
 - `PATCH /api/public/atendimento/ordens/{id}/orcamentos/{orcamentoId}/status` - Responder orçamento
 
 ### Estoque
-- `POST /estoque/pecas` - Criar peça/insumo
-- `GET /estoque/pecas` - Listar itens
-- `GET /estoque/pecas/{codigo}` - Buscar item
-- `PUT /estoque/pecas/{codigo}` - Atualizar item
-- `DELETE /estoque/pecas/{codigo}` - Deletar item
+- `POST /estoque/itens` - Cadastrar peça ou insumo
+- `GET /estoque/itens` - Listar itens (filtro opcional por tipo: PECA ou INSUMO)
+- `GET /estoque/itens/{id}` - Buscar item por ID
+- `PUT /estoque/itens/{id}` - Atualizar item
+- `DELETE /estoque/itens/{id}` - Remover item
+- `GET /estoque/itens/abaixo-do-minimo` - Listar itens com estoque abaixo do mínimo
+- `POST /estoque/itens/entrada` - Dar entrada no estoque (cadastra se não existir ou repõe se já existir)
+- `PATCH /estoque/itens/{id}/entrada` - Registrar entrada de estoque
+- `PATCH /estoque/itens/{id}/saida` - Registrar saída de estoque
+- `GET /estoque/movimentacoes/item/{pecaInsumoId}` - Listar movimentações de um item
 
 Veja a documentação completa no Swagger: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 

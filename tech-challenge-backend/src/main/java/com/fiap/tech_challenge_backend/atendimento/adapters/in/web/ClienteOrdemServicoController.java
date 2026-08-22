@@ -4,6 +4,7 @@ import com.fiap.tech_challenge_backend.atendimento.application.dto.AprovarRejeit
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrcamentoResponseDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.AutorizarOrdemServicoUseCase;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.ResponderOrcamentoUseCase;
+import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrcamento;
 import com.fiap.tech_challenge_backend.atendimento.domain.exceptions.OrdemServicoStatusException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -103,23 +104,50 @@ public class ClienteOrdemServicoController {
     public ResponseEntity<Map<String, Object>> responderOrcamento(@PathVariable Long id,
                                                                   @PathVariable Long orcamentoId,
                                                                   @Valid @RequestBody AprovarRejeitarOrcamentoRequestDTO request) {
-        try {
-            log.info("Cliente respondendo orçamento | OS: {} | Orcamento: {} | Status: {}", id, orcamentoId, request.status());
+        return processarResposta(id, orcamentoId, request.status());
+    }
 
-            OrcamentoResponseDTO orcamento = responderOrcamentoUseCase.responder(id, orcamentoId, request);
+    /**
+     * Endpoint público para o cliente aprovar um orçamento clicando no link do e-mail.
+     * Acesso direto via navegador (GET) - o link de PATCH não é clicável a partir de um e-mail.
+     */
+    @GetMapping("/{id}/orcamentos/{orcamentoId}/aprovar")
+    @Operation(summary = "Cliente aprova um orçamento via link do e-mail")
+    public ResponseEntity<Map<String, Object>> aprovarOrcamentoViaLink(@PathVariable Long id,
+                                                                       @PathVariable Long orcamentoId) {
+        return processarResposta(id, orcamentoId, StatusOrcamento.APROVADO);
+    }
+
+    /**
+     * Endpoint público para o cliente rejeitar um orçamento clicando no link do e-mail.
+     * Acesso direto via navegador (GET) - o link de PATCH não é clicável a partir de um e-mail.
+     */
+    @GetMapping("/{id}/orcamentos/{orcamentoId}/rejeitar")
+    @Operation(summary = "Cliente rejeita um orçamento via link do e-mail")
+    public ResponseEntity<Map<String, Object>> rejeitarOrcamentoViaLink(@PathVariable Long id,
+                                                                        @PathVariable Long orcamentoId) {
+        return processarResposta(id, orcamentoId, StatusOrcamento.REJEITADO);
+    }
+
+    private ResponseEntity<Map<String, Object>> processarResposta(Long id, Long orcamentoId, StatusOrcamento status) {
+        try {
+            log.info("Cliente respondendo orçamento | OS: {} | Orcamento: {} | Status: {}", id, orcamentoId, status);
+
+            OrcamentoResponseDTO orcamento = responderOrcamentoUseCase.responder(
+                    id, orcamentoId, new AprovarRejeitarOrcamentoRequestDTO(status));
 
             Map<String, Object> resposta = new LinkedHashMap<>();
             resposta.put("sucesso", true);
             resposta.put("mensagem", "Sua resposta foi registrada com sucesso!");
             resposta.put("orcamento", orcamento);
 
-            if ("APROVADO".equals(request.status().toString())) {
+            if (status == StatusOrcamento.APROVADO) {
                 resposta.put("proximoPasso", "Seu orçamento foi aprovado! Em breve iniciaremos os trabalhos.");
             } else {
                 resposta.put("proximoPasso", "Seu orçamento foi rejeitado. Entre em contato para discutir outras opções.");
             }
 
-            log.info("Orçamento respondido com sucesso | OS: {} | Status: {}", id, request.status());
+            log.info("Orçamento respondido com sucesso | OS: {} | Status: {}", id, status);
 
             return ResponseEntity.ok(resposta);
 
