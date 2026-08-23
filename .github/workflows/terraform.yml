@@ -171,5 +171,9 @@ jobs:
 
       - name: Terraform Destroy
         # Preserva o bucket S3 do state remoto (protegido por prevent_destroy
-        # em infra/backend/main.tf); destroi só o restante da infra.
-        run: terraform destroy -input=false -auto-approve -exclude=module.state_bucket
+        # em infra/backend/main.tf). O Terraform OSS não tem flag "-exclude"
+        # (só "-target", que inclui); então montamos a lista de -target com
+        # tudo, exceto os recursos do module.state_bucket.
+        run: |
+          TARGETS=$(terraform state list | grep -v '^module\.state_bucket' | sed 's/^/-target=/' | tr '\n' ' ')
+          terraform destroy -input=false -auto-approve $TARGETS
