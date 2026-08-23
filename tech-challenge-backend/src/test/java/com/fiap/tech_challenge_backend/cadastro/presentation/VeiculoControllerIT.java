@@ -132,6 +132,21 @@ class VeiculoControllerIT {
 
     @Test
     @WithMockUser
+    @DisplayName("POST /veiculos - deve retornar 409 quando placa já cadastrada")
+    void deveRetornar409QuandoPlacaJaCadastrada() throws Exception {
+        mockMvc.perform(post("/veiculos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestFord())))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/veiculos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestFord())))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @WithMockUser
     @DisplayName("GET /veiculos - deve listar veículos cadastrados")
     void deveListarVeiculos() throws Exception {
         mockMvc.perform(post("/veiculos")

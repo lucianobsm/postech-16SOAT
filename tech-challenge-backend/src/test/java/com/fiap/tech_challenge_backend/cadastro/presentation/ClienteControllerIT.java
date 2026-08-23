@@ -98,6 +98,22 @@ class ClienteControllerIT {
 
     @Test
     @WithMockUser
+    @DisplayName("POST /clientes - deve retornar 400 quando campos obrigatórios estão ausentes")
+    void deveRetornarBadRequestQuandoNomeVazio() throws Exception {
+        CadastroClienteRequest invalido = new CadastroClienteRequest(
+                "", "joao@email.com", "senha1234",
+                "12345678901", "11987654321", "01310100",
+                "Av. Paulista", "1000", null, "São Paulo", "SP"
+        );
+
+        mockMvc.perform(post("/clientes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalido)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
     @DisplayName("GET /clientes - deve listar clientes cadastrados")
     void deveListarClientes() throws Exception {
         mockMvc.perform(post("/clientes")
