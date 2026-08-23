@@ -6,11 +6,6 @@ on:
     paths:
       - "tech-challenge-backend/infra/**"
       - "tech-challenge-backend/k8s/**"
-  pull_request:
-    branches: [ "main"]
-    paths:
-      - "tech-challenge-backend/infra/**"
-      - "tech-challenge-backend/k8s/**"
   workflow_dispatch:
     inputs:
       action:
@@ -25,7 +20,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 concurrency:
   group: terraform-infra
@@ -37,12 +31,11 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
-  # JOB 1: PLAN — roda em PR que mexe em terraform/ ou k8s/, ou via dispatch manual
+  # JOB 1: PLAN — roda em push na main que mexe em infra/ ou k8s/, ou via dispatch manual
   plan:
     name: Terraform Plan
-    # Roda em PR e em push na main (paths terraform/k8s), ou via dispatch manual para plan/apply/destroy.
     # O job apply/destroy usa needs: plan, então o plan precisa rodar também no push para não pular o apply.
-    if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.action == 'plan' || inputs.action == 'apply' || inputs.action == 'destroy'))
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.action == 'plan' || inputs.action == 'apply' || inputs.action == 'destroy'))
     runs-on: ubuntu-latest
 
     defaults:
@@ -87,25 +80,6 @@ jobs:
         id: plan
         run: terraform plan -input=false -no-color -out=tfplan
         continue-on-error: true
-
-      - name: Publicar Plan no PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        env:
-          PLAN: "${{ steps.plan.outputs.stdout }}${{ steps.plan.outputs.stderr }}"
-        with:
-          script: |
-            const output = `#### Terraform Plan 📖
-            \`\`\`
-            ${process.env.PLAN}
-            \`\`\`
-            `;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            });
 
       - name: Falhar se o Plan deu erro
         if: steps.plan.outcome == 'failure'
