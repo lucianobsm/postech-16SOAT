@@ -69,7 +69,7 @@ class CadastroClienteUseCaseTest {
 
         cliente = Cliente.builder()
                 .id(clienteId)
-                .usuario(usuario)
+                .usuarioId(usuario.getId())
                 .nome("João Silva")
                 .cpfCnpj(new CpfCnpj("12345678901"))
                 .telefone(new Telefone("11987654321"))

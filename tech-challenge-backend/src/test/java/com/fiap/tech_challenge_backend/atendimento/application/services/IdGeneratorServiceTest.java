@@ -1,6 +1,6 @@
 package com.fiap.tech_challenge_backend.atendimento.application.services;
 
-import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.OrdemServicoRepository;
+import com.fiap.tech_challenge_backend.atendimento.application.ports.out.OrdemServicoRepositoryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,14 +18,14 @@ import static org.mockito.Mockito.when;
 class IdGeneratorServiceTest {
 
     @Mock
-    private OrdemServicoRepository ordemServicoRepository;
+    private OrdemServicoRepositoryPort ordemServicoRepository;
 
     private IdGeneratorService idGeneratorService;
 
     @BeforeEach
     void setUp() {
-        when(ordemServicoRepository.findMaxId()).thenReturn(null);
-        when(ordemServicoRepository.findMaxOrcamentoId()).thenReturn(null);
+        when(ordemServicoRepository.buscarMaiorIdOrdemServico()).thenReturn(null);
+        when(ordemServicoRepository.buscarMaiorIdOrcamento()).thenReturn(null);
         idGeneratorService = new IdGeneratorService(ordemServicoRepository);
     }
 
@@ -125,8 +125,8 @@ class IdGeneratorServiceTest {
     @Test
     @DisplayName("Deve inicializar com sequência a partir do banco de dados")
     void testInicializarSequenciaDoRepositorio() {
-        when(ordemServicoRepository.findMaxId()).thenReturn(202600100L);
-        when(ordemServicoRepository.findMaxOrcamentoId()).thenReturn(26000050L);
+        when(ordemServicoRepository.buscarMaiorIdOrdemServico()).thenReturn(202600100L);
+        when(ordemServicoRepository.buscarMaiorIdOrcamento()).thenReturn(26000050L);
 
         IdGeneratorService service = new IdGeneratorService(ordemServicoRepository);
 
@@ -143,8 +143,8 @@ class IdGeneratorServiceTest {
     @Test
     @DisplayName("Deve tratar exceção ao inicializar sequência do banco")
     void testTratarExcecaoInicializacao() {
-        when(ordemServicoRepository.findMaxId()).thenThrow(new RuntimeException("Erro ao consultar banco"));
-        when(ordemServicoRepository.findMaxOrcamentoId()).thenThrow(new RuntimeException("Erro ao consultar banco"));
+        when(ordemServicoRepository.buscarMaiorIdOrdemServico()).thenThrow(new RuntimeException("Erro ao consultar banco"));
+        when(ordemServicoRepository.buscarMaiorIdOrcamento()).thenThrow(new RuntimeException("Erro ao consultar banco"));
 
         assertDoesNotThrow(() -> new IdGeneratorService(ordemServicoRepository));
 

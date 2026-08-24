@@ -2,13 +2,13 @@ package com.fiap.tech_challenge_backend.atendimento.adapters.in.web;
 
 import com.fiap.tech_challenge_backend.atendimento.application.dto.AprovarRejeitarOrcamentoRequestDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrcamentoResponseDTO;
+import com.fiap.tech_challenge_backend.atendimento.application.exceptions.OrdemServicoNaoEncontradaException;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.AutorizarOrdemServicoUseCase;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.ResponderOrcamentoUseCase;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrcamento;
 import com.fiap.tech_challenge_backend.atendimento.domain.exceptions.OrdemServicoStatusException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +73,7 @@ public class ClienteOrdemServicoController {
 
             return ResponseEntity.ok(resposta);
 
-        } catch (EntityNotFoundException e) {
+        } catch (OrdemServicoNaoEncontradaException e) {
             log.warn("Tentativa de autorizar OS inexistente. ID: {}", id);
 
             Map<String, Object> erro = new LinkedHashMap<>();
@@ -151,7 +151,7 @@ public class ClienteOrdemServicoController {
 
             return ResponseEntity.ok(resposta);
 
-        } catch (EntityNotFoundException e) {
+        } catch (OrdemServicoNaoEncontradaException e) {
             log.warn("Tentativa de responder orçamento inexistente. OS: {} | Orcamento: {}", id, orcamentoId);
 
             Map<String, Object> erro = new LinkedHashMap<>();

@@ -7,6 +7,7 @@ import com.fiap.tech_challenge_backend.cadastro.application.exceptions.ClienteJa
 import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteRepository;
 import com.fiap.tech_challenge_backend.cadastro.application.ports.CriarUsuarioClienteCommand;
 import com.fiap.tech_challenge_backend.cadastro.application.ports.CriarUsuarioClientePort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.CadastrarClienteInputPort;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Cep;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
@@ -21,7 +22,7 @@ import org.springframework.stereotype.Service;
  * Camada: Application
  */
 @Service
-public class CadastroClienteUseCase {
+public class CadastroClienteUseCase implements CadastrarClienteInputPort {
 
     private final ClienteRepository clienteRepository;
     private final CriarUsuarioClientePort criarUsuarioClientePort;
@@ -34,6 +35,7 @@ public class CadastroClienteUseCase {
         this.criarUsuarioClientePort = criarUsuarioClientePort;
     }
 
+    @Override
     @Transactional
     public CadastroClienteResponse execute(CadastroClienteRequest request) {
         Email email = new Email(request.email());
@@ -54,7 +56,7 @@ public class CadastroClienteUseCase {
         );
 
         Cliente cliente = Cliente.builder()
-                .usuario(usuario)
+                .usuarioId(usuario.getId())
                 .nome(request.nome())
                 .cpfCnpj(cpfCnpj)
                 .telefone(telefone)

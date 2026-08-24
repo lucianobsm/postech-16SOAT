@@ -1,8 +1,8 @@
 package com.fiap.tech_challenge_backend.atendimento.adapters.out;
 
+import com.fiap.tech_challenge_backend.estoque.application.ports.out.PecaInsumoRepositoryPort;
 import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
-import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +22,7 @@ class PecaInsumoRepositoryAdapterTest {
     private PecaInsumoRepositoryAdapter adapter;
 
     @Mock
-    private PecaInsumoRepository repository;
+    private PecaInsumoRepositoryPort repository;
 
     private PecaInsumo pecaInsumo;
     private UUID pecaId;
@@ -48,7 +48,7 @@ class PecaInsumoRepositoryAdapterTest {
     @Test
     @DisplayName("Deve buscar peça/insumo por id")
     void testBuscarPorId() {
-        when(repository.findById(pecaId)).thenReturn(Optional.of(pecaInsumo));
+        when(repository.buscarPorId(pecaId)).thenReturn(Optional.of(pecaInsumo));
 
         Optional<PecaInsumo> resultado = adapter.buscarPorId(pecaId);
 
@@ -56,19 +56,19 @@ class PecaInsumoRepositoryAdapterTest {
         assertThat(resultado.get().getId()).isEqualTo(pecaId);
         assertThat(resultado.get().getNome()).isEqualTo("Pneu");
         assertThat(resultado.get().getTipo()).isEqualTo(TipoPecaInsumo.PECA);
-        verify(repository, times(1)).findById(pecaId);
+        verify(repository, times(1)).buscarPorId(pecaId);
     }
 
     @Test
     @DisplayName("Deve retornar vazio quando peça/insumo não existe")
     void testBuscarPorIdNaoEncontrado() {
         UUID idInexistente = UUID.randomUUID();
-        when(repository.findById(idInexistente)).thenReturn(Optional.empty());
+        when(repository.buscarPorId(idInexistente)).thenReturn(Optional.empty());
 
         Optional<PecaInsumo> resultado = adapter.buscarPorId(idInexistente);
 
         assertThat(resultado).isEmpty();
-        verify(repository, times(1)).findById(idInexistente);
+        verify(repository, times(1)).buscarPorId(idInexistente);
     }
 
     @Test
@@ -85,39 +85,39 @@ class PecaInsumoRepositoryAdapterTest {
                 .quantidadeMinima(20)
                 .build();
 
-        when(repository.findById(pecaId)).thenReturn(Optional.of(insumo));
+        when(repository.buscarPorId(pecaId)).thenReturn(Optional.of(insumo));
 
         Optional<PecaInsumo> resultado = adapter.buscarPorId(pecaId);
 
         assertThat(resultado).isPresent();
         assertThat(resultado.get().getTipo()).isEqualTo(TipoPecaInsumo.INSUMO);
         assertThat(resultado.get().getNome()).isEqualTo("Óleo Motor");
-        verify(repository, times(1)).findById(pecaId);
+        verify(repository, times(1)).buscarPorId(pecaId);
     }
 
     @Test
     @DisplayName("Deve buscar peça com quantidade em estoque")
     void testBuscarPecaComEstoque() {
-        when(repository.findById(pecaId)).thenReturn(Optional.of(pecaInsumo));
+        when(repository.buscarPorId(pecaId)).thenReturn(Optional.of(pecaInsumo));
 
         Optional<PecaInsumo> resultado = adapter.buscarPorId(pecaId);
 
         assertThat(resultado).isPresent();
         assertThat(resultado.get().getQuantidadeEstoque()).isEqualTo(50);
         assertThat(resultado.get().getQuantidadeMinima()).isEqualTo(10);
-        verify(repository, times(1)).findById(pecaId);
+        verify(repository, times(1)).buscarPorId(pecaId);
     }
 
     @Test
     @DisplayName("Deve validar preços da peça/insumo")
     void testBuscarPecaComPrecos() {
-        when(repository.findById(pecaId)).thenReturn(Optional.of(pecaInsumo));
+        when(repository.buscarPorId(pecaId)).thenReturn(Optional.of(pecaInsumo));
 
         Optional<PecaInsumo> resultado = adapter.buscarPorId(pecaId);
 
         assertThat(resultado).isPresent();
         assertThat(resultado.get().getPrecoVenda()).isEqualByComparingTo(BigDecimal.valueOf(250.00));
         assertThat(resultado.get().getPrecoCompra()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
-        verify(repository, times(1)).findById(pecaId);
+        verify(repository, times(1)).buscarPorId(pecaId);
     }
 }

@@ -4,14 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.acesso.domain.enums.PerfilUsuario;
 import com.fiap.tech_challenge_backend.acesso.infrastructure.repositories.UsuarioJpaRepository;
+import com.fiap.tech_challenge_backend.acesso.infrastructure.repositories.UsuarioMapper;
+import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.OrdemServicoMapper;
 import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.OrdemServicoRepository;
 import com.fiap.tech_challenge_backend.atendimento.application.services.IdGeneratorService;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.ClienteJpaRepository;
+import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.ClienteMapper;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
 import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.VeiculoJpaRepository;
+import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.VeiculoMapper;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Cep;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Email;
@@ -98,11 +102,11 @@ class AcompanhamentoControllerIT {
                 .perfil(PerfilUsuario.CLIENTE)
                 .cpfCnpj(new CpfCnpj("12345678901"))
                 .build();
-        usuarioJpaRepository.save(usuario);
+        Usuario usuarioSalvo = UsuarioMapper.toDomain(usuarioJpaRepository.save(UsuarioMapper.toEntity(usuario)));
 
         Cliente cliente = Cliente.builder()
                 .nome("João Silva")
-                .usuario(usuario)
+                .usuarioId(usuarioSalvo.getId())
                 .cpfCnpj(new CpfCnpj("12345678901"))
                 .telefone(new Telefone("11987654321"))
                 .cep(new Cep("01310100"))
@@ -112,7 +116,7 @@ class AcompanhamentoControllerIT {
                 .cidade("São Paulo")
                 .estado("SP")
                 .build();
-        clienteId = clienteJpaRepository.save(cliente).getId();
+        clienteId = clienteJpaRepository.save(ClienteMapper.toEntity(cliente)).getId();
 
         Veiculo veiculo = Veiculo.builder()
                 .placa(new Placa("ABC1234"))
@@ -121,15 +125,15 @@ class AcompanhamentoControllerIT {
                 .ano(2020)
                 .cor("Branco")
                 .build();
-        veiculoJpaRepository.save(veiculo);
+        Veiculo veiculoSalvo = VeiculoMapper.toDomain(veiculoJpaRepository.save(VeiculoMapper.toEntity(veiculo)));
 
-        Cliente clienteSalvo = clienteJpaRepository.findById(clienteId).orElseThrow();
+        Cliente clienteSalvo = ClienteMapper.toDomain(clienteJpaRepository.findById(clienteId).orElseThrow());
 
         OrdemServico os = OrdemServico.builder()
                 .id(idGeneratorService.gerarIdOrdemServico())
-                .cliente(clienteSalvo)
-                .veiculo(veiculo)
-                .mecanico(null)
+                .clienteId(clienteSalvo.getId())
+                .veiculoId(veiculoSalvo.getId())
+                .mecanicoId(null)
                 .status(StatusOrdemServico.EM_EXECUCAO)
                 .dataCriacao(LocalDateTime.now().minusDays(2))
                 .dataInicioExecucao(LocalDateTime.now().minusHours(1))
@@ -137,7 +141,7 @@ class AcompanhamentoControllerIT {
                 .valorTotal(BigDecimal.valueOf(80.00))
                 .queixaCliente("Verificar troca de óleo e revisão geral")
                 .build();
-        osId = ordemServicoRepository.save(os).getId();
+        osId = ordemServicoRepository.save(OrdemServicoMapper.toEntity(os)).getId();
     }
 
     @Test
@@ -163,11 +167,11 @@ class AcompanhamentoControllerIT {
                 .perfil(PerfilUsuario.CLIENTE)
                 .cpfCnpj(new CpfCnpj("98765432100"))
                 .build();
-        usuarioJpaRepository.save(usuario);
+        Usuario usuarioSalvo2 = UsuarioMapper.toDomain(usuarioJpaRepository.save(UsuarioMapper.toEntity(usuario)));
 
         Cliente cliente = Cliente.builder()
                 .nome("Maria Silva")
-                .usuario(usuario)
+                .usuarioId(usuarioSalvo2.getId())
                 .cpfCnpj(new CpfCnpj("98765432100"))
                 .telefone(new Telefone("11988888888"))
                 .cep(new Cep("01310100"))
@@ -177,7 +181,7 @@ class AcompanhamentoControllerIT {
                 .cidade("São Paulo")
                 .estado("SP")
                 .build();
-        UUID novoClienteId = clienteJpaRepository.save(cliente).getId();
+        UUID novoClienteId = clienteJpaRepository.save(ClienteMapper.toEntity(cliente)).getId();
 
         mockMvc.perform(get("/clientes/{clienteId}/ordens", novoClienteId)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -217,11 +221,11 @@ class AcompanhamentoControllerIT {
                 .perfil(PerfilUsuario.CLIENTE)
                 .cpfCnpj(new CpfCnpj("55555555555"))
                 .build();
-        usuarioJpaRepository.save(usuario);
+        Usuario usuarioSalvo3 = UsuarioMapper.toDomain(usuarioJpaRepository.save(UsuarioMapper.toEntity(usuario)));
 
         Cliente cliente = Cliente.builder()
                 .nome("Carlos Silva")
-                .usuario(usuario)
+                .usuarioId(usuarioSalvo3.getId())
                 .cpfCnpj(new CpfCnpj("55555555555"))
                 .telefone(new Telefone("11999999999"))
                 .cep(new Cep("01310100"))
@@ -231,7 +235,7 @@ class AcompanhamentoControllerIT {
                 .cidade("São Paulo")
                 .estado("SP")
                 .build();
-        UUID outroClienteId = clienteJpaRepository.save(cliente).getId();
+        UUID outroClienteId = clienteJpaRepository.save(ClienteMapper.toEntity(cliente)).getId();
 
         mockMvc.perform(get("/clientes/{clienteId}/ordens/{osId}", outroClienteId, osId)
                 .contentType(MediaType.APPLICATION_JSON))

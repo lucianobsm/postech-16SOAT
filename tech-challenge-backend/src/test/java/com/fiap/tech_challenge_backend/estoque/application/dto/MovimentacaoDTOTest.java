@@ -133,14 +133,13 @@ class MovimentacaoDTOTest {
         }
 
         private MovimentacaoEstoque movimentacao(TipoMovimentacao tipo, String obs) {
-            var m = MovimentacaoEstoque.builder()
+            return MovimentacaoEstoque.builder()
                     .pecaInsumo(peca)
                     .tipoMovimentacao(tipo)
                     .quantidade(5)
                     .observacao(obs)
+                    .criadoEm(java.time.LocalDateTime.now())
                     .build();
-            m.prePersist();
-            return m;
         }
 
         @Test

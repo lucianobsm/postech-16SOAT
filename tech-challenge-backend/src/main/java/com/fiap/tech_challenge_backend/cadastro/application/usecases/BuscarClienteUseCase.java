@@ -3,11 +3,12 @@ package com.fiap.tech_challenge_backend.cadastro.application.usecases;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.BuscarClienteResponse;
 import com.fiap.tech_challenge_backend.cadastro.application.exceptions.ClienteNaoEncontradoException;
 import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteRepository;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.BuscarClienteInputPort;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
 import org.springframework.stereotype.Service;
 
 @Service
-public class BuscarClienteUseCase {
+public class BuscarClienteUseCase implements BuscarClienteInputPort {
 
     private final ClienteRepository clienteRepository;
 
@@ -15,6 +16,7 @@ public class BuscarClienteUseCase {
         this.clienteRepository = clienteRepository;
     }
 
+    @Override
     public BuscarClienteResponse execute(String cpfCnpj) {
         return clienteRepository.buscarPorCpfCnpj(new CpfCnpj(cpfCnpj))
                 .map(c -> new BuscarClienteResponse(

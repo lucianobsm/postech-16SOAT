@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.acesso.domain.enums.PerfilUsuario;
 import com.fiap.tech_challenge_backend.acesso.infrastructure.repositories.UsuarioJpaRepository;
+import com.fiap.tech_challenge_backend.acesso.infrastructure.repositories.UsuarioMapper;
+import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.OrdemServicoMapper;
 import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.OrdemServicoRepository;
+import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.ServicoCatalogoMapper;
 import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.ServicoCatalogoRepository;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.*;
 import com.fiap.tech_challenge_backend.atendimento.application.services.IdGeneratorService;
@@ -15,7 +18,9 @@ import com.fiap.tech_challenge_backend.atendimento.domain.enums.TipoOrcamento;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
 import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.ClienteJpaRepository;
+import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.ClienteMapper;
 import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.VeiculoJpaRepository;
+import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.VeiculoMapper;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Cep;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Email;
@@ -104,11 +109,11 @@ class OrdemServicoControllerIT {
                 .perfil(PerfilUsuario.CLIENTE)
                 .cpfCnpj(new CpfCnpj("12345678901"))
                 .build();
-        usuarioJpaRepository.save(usuario);
+        Usuario usuarioSalvo = UsuarioMapper.toDomain(usuarioJpaRepository.save(UsuarioMapper.toEntity(usuario)));
 
         Cliente cliente = Cliente.builder()
                 .nome("Joao Silva")
-                .usuario(usuario)
+                .usuarioId(usuarioSalvo.getId())
                 .cpfCnpj(new CpfCnpj("12345678901"))
                 .telefone(new Telefone("11987654321"))
                 .cep(new Cep("01310100"))
@@ -118,7 +123,7 @@ class OrdemServicoControllerIT {
                 .cidade("Sao Paulo")
                 .estado("SP")
                 .build();
-        clienteId = clienteJpaRepository.save(cliente).getId();
+        clienteId = clienteJpaRepository.save(ClienteMapper.toEntity(cliente)).getId();
 
         Veiculo veiculo = Veiculo.builder()
                 .placa(new Placa("ABC1234"))
@@ -127,28 +132,28 @@ class OrdemServicoControllerIT {
                 .ano(2020)
                 .cor("Branco")
                 .build();
-        veiculoId = veiculoJpaRepository.save(veiculo).getId();
+        veiculoId = veiculoJpaRepository.save(VeiculoMapper.toEntity(veiculo)).getId();
 
         ServicoCatalogo servico = ServicoCatalogo.builder()
                 .nome("Troca de Oleo")
                 .descricao("Substituicao do oleo do motor")
                 .precoMaoDeObra(new BigDecimal("120.00"))
                 .build();
-        servicoId = servicoCatalogoRepository.save(servico).getId();
+        servicoId = servicoCatalogoRepository.save(ServicoCatalogoMapper.toEntity(servico)).getId();
 
-        Cliente clienteSalvo = clienteJpaRepository.findById(clienteId).orElseThrow();
+        Cliente clienteSalvo = ClienteMapper.toDomain(clienteJpaRepository.findById(clienteId).orElseThrow());
         OrdemServico os = OrdemServico.builder()
                 .id(idGeneratorService.gerarIdOrdemServico())
-                .cliente(clienteSalvo)
-                .veiculo(veiculo)
-                .mecanico(null)
+                .clienteId(clienteSalvo.getId())
+                .veiculoId(veiculoId)
+                .mecanicoId(null)
                 .status(StatusOrdemServico.EM_DIAGNOSTICO)
                 .dataCriacao(LocalDateTime.now())
                 .valorTotal(BigDecimal.ZERO)
                 .queixaCliente("Verificar troca de oleo")
                 .urgente(false)
                 .build();
-        osId = ordemServicoRepository.save(os).getId();
+        osId = ordemServicoRepository.save(OrdemServicoMapper.toEntity(os)).getId();
     }
 
     // ─────────────────────────────────────────────

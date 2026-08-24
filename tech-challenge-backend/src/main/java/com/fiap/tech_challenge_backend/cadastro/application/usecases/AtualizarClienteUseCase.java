@@ -4,6 +4,7 @@ import com.fiap.tech_challenge_backend.cadastro.application.dtos.AtualizarClient
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.BuscarClienteResponse;
 import com.fiap.tech_challenge_backend.cadastro.application.exceptions.ClienteNaoEncontradoException;
 import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteRepository;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.AtualizarClienteInputPort;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Cep;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
@@ -12,7 +13,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AtualizarClienteUseCase {
+public class AtualizarClienteUseCase implements AtualizarClienteInputPort {
 
     private final ClienteRepository clienteRepository;
 
@@ -20,6 +21,7 @@ public class AtualizarClienteUseCase {
         this.clienteRepository = clienteRepository;
     }
 
+    @Override
     @Transactional
     public BuscarClienteResponse execute(String cpfCnpj, AtualizarClienteRequest request) {
         Cliente cliente = clienteRepository.buscarPorCpfCnpj(new CpfCnpj(cpfCnpj))

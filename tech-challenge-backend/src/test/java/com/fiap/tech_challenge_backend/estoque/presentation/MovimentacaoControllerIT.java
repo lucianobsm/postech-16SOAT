@@ -4,7 +4,9 @@ import com.fiap.tech_challenge_backend.estoque.domain.entities.MovimentacaoEstoq
 import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoMovimentacao;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
+import com.fiap.tech_challenge_backend.estoque.infrastructure.MovimentacaoEstoqueMapper;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.MovimentacaoRepository;
+import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoMapper;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -59,14 +61,14 @@ class MovimentacaoControllerIT {
     }
 
     private PecaInsumo salvarPeca() {
-        return pecaRepository.save(PecaInsumo.builder()
+        return PecaInsumoMapper.toDomain(pecaRepository.save(PecaInsumoMapper.toEntity(PecaInsumo.builder()
                 .nome("Filtro de óleo")
                 .precoVenda(new BigDecimal("35.00"))
                 .precoCompra(new BigDecimal("25.00"))
                 .quantidadeEstoque(20)
                 .quantidadeMinima(5)
                 .tipo(TipoPecaInsumo.PECA)
-                .build());
+                .build())));
     }
 
     private MovimentacaoEstoque salvarMovimentacao(PecaInsumo peca, TipoMovimentacao tipo, int quantidade, String obs) {
@@ -76,8 +78,8 @@ class MovimentacaoControllerIT {
                 .quantidade(quantidade)
                 .observacao(obs)
                 .build();
-        mov.prePersist();
-        return movimentacaoRepository.save(mov);
+        var salvo = movimentacaoRepository.save(MovimentacaoEstoqueMapper.toEntity(mov));
+        return MovimentacaoEstoqueMapper.toDomain(salvo);
     }
 
     // ─────────────────────────────────────────────
@@ -154,14 +156,14 @@ class MovimentacaoControllerIT {
     @DisplayName("GET /item/{id} - deve retornar apenas movimentações da peça solicitada")
     void deveRetornarApenasMovimentacoesDaPecaSolicitada() throws Exception {
         var peca1 = salvarPeca();
-        var peca2 = pecaRepository.save(PecaInsumo.builder()
+        var peca2 = PecaInsumoMapper.toDomain(pecaRepository.save(PecaInsumoMapper.toEntity(PecaInsumo.builder()
                 .nome("Pastilha de freio")
                 .precoVenda(new BigDecimal("80.00"))
                 .precoCompra(new BigDecimal("50.00"))
                 .quantidadeEstoque(10)
                 .quantidadeMinima(3)
                 .tipo(TipoPecaInsumo.PECA)
-                .build());
+                .build())));
 
         salvarMovimentacao(peca1, TipoMovimentacao.ENTRADA, 10, "Peca 1");
         salvarMovimentacao(peca2, TipoMovimentacao.ENTRADA, 5, "Peca 2");

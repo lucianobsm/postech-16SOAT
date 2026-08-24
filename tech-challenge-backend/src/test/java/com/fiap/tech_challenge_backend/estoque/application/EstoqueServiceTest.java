@@ -2,12 +2,12 @@ package com.fiap.tech_challenge_backend.estoque.application;
 
 import com.fiap.tech_challenge_backend.estoque.application.dto.EntradaEstoqueRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoRequestDTO;
+import com.fiap.tech_challenge_backend.estoque.application.ports.out.MovimentacaoRepositoryPort;
+import com.fiap.tech_challenge_backend.estoque.application.ports.out.PecaInsumoRepositoryPort;
 import com.fiap.tech_challenge_backend.estoque.domain.entities.MovimentacaoEstoque;
 import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoMovimentacao;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
-import com.fiap.tech_challenge_backend.estoque.infrastructure.MovimentacaoRepository;
-import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,8 +32,8 @@ import static org.mockito.Mockito.*;
 @DisplayName("EstoqueService")
 class EstoqueServiceTest {
 
-    @Mock private PecaInsumoRepository pecaInsumoRepository;
-    @Mock private MovimentacaoRepository movimentacaoRepository;
+    @Mock private PecaInsumoRepositoryPort pecaInsumoRepository;
+    @Mock private MovimentacaoRepositoryPort movimentacaoRepository;
     @InjectMocks private EstoqueService service;
 
     private UUID pecaId;
@@ -77,13 +77,13 @@ class EstoqueServiceTest {
                     .quantidadeMinima(5)
                     .tipo(TipoPecaInsumo.PECA)
                     .build();
-            when(pecaInsumoRepository.save(any())).thenReturn(salva);
+            when(pecaInsumoRepository.salvar(any())).thenReturn(salva);
 
             var dto = service.cadastrar(request);
 
             assertThat(dto.nome()).isEqualTo("Correia Dentada");
             assertThat(dto.quantidadeEstoque()).isEqualTo(20);
-            verify(pecaInsumoRepository).save(any(PecaInsumo.class));
+            verify(pecaInsumoRepository).salvar(any(PecaInsumo.class));
             verifyNoInteractions(movimentacaoRepository);
         }
     }
@@ -103,35 +103,53 @@ class EstoqueServiceTest {
         }
 
         @Test
-        @DisplayName("deve atualizar campos e gerar movimentacao AJUSTE quando estoque muda")
-        void deveAtualizarEGerarAjuste() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
-            when(pecaInsumoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        @DisplayName("deve atualizar campos e gerar movimentacao AJUSTE quando estoque aumenta")
+        void deveAtualizarEGerarAjusteQuandoAumenta() {
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.salvar(any())).thenAnswer(inv -> inv.getArgument(0));
 
             var captor = ArgumentCaptor.forClass(MovimentacaoEstoque.class);
 
             service.atualizar(pecaId, requestComNovoEstoque(20)); // era 10, vai para 20
 
-            verify(movimentacaoRepository).save(captor.capture());
+            assertThat(peca.getQuantidadeEstoque()).isEqualTo(20);
+            verify(movimentacaoRepository).salvar(captor.capture());
             assertThat(captor.getValue().getTipoMovimentacao()).isEqualTo(TipoMovimentacao.AJUSTE);
             assertThat(captor.getValue().getQuantidade()).isEqualTo(10);
         }
 
         @Test
+        @DisplayName("deve atualizar campos e gerar movimentacao AJUSTE quando estoque diminui")
+        void deveAtualizarEGerarAjusteQuandoDiminui() {
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.salvar(any())).thenAnswer(inv -> inv.getArgument(0));
+
+            var captor = ArgumentCaptor.forClass(MovimentacaoEstoque.class);
+
+            service.atualizar(pecaId, requestComNovoEstoque(4)); // era 10, vai para 4
+
+            assertThat(peca.getQuantidadeEstoque()).isEqualTo(4);
+            verify(movimentacaoRepository).salvar(captor.capture());
+            assertThat(captor.getValue().getTipoMovimentacao()).isEqualTo(TipoMovimentacao.AJUSTE);
+            assertThat(captor.getValue().getQuantidade()).isEqualTo(6);
+        }
+
+        @Test
         @DisplayName("nao deve gerar movimentacao quando estoque nao muda")
         void naoDeveGerarAjusteQuandoEstoqueIgual() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
-            when(pecaInsumoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.salvar(any())).thenAnswer(inv -> inv.getArgument(0));
 
             service.atualizar(pecaId, requestComNovoEstoque(10)); // mesmo valor
 
+            assertThat(peca.getQuantidadeEstoque()).isEqualTo(10);
             verifyNoInteractions(movimentacaoRepository);
         }
 
         @Test
         @DisplayName("deve lancar EntityNotFoundException quando peca nao existe")
         void deveLancarExcecaoQuandoNaoEncontrado() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.empty());
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> service.atualizar(pecaId, requestComNovoEstoque(5)))
                     .isInstanceOf(EntityNotFoundException.class);
@@ -148,7 +166,7 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve retornar DTO quando peca existe")
         void deveRetornarDTO() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
 
             var dto = service.buscarPorId(pecaId);
 
@@ -159,7 +177,7 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve lancar EntityNotFoundException quando peca nao existe")
         void deveLancarExcecaoQuandoNaoEncontrado() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.empty());
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> service.buscarPorId(pecaId))
                     .isInstanceOf(EntityNotFoundException.class);
@@ -174,27 +192,27 @@ class EstoqueServiceTest {
     class ListarTodos {
 
         @Test
-        @DisplayName("sem filtro de tipo deve chamar findAll")
-        void semFiltroDeveUsarFindAll() {
-            when(pecaInsumoRepository.findAll()).thenReturn(List.of(peca));
+        @DisplayName("sem filtro de tipo deve chamar buscarTodos")
+        void semFiltroDeveUsarBuscarTodos() {
+            when(pecaInsumoRepository.buscarTodos()).thenReturn(List.of(peca));
 
             var resultado = service.listarTodos(null);
 
             assertThat(resultado).hasSize(1);
-            verify(pecaInsumoRepository).findAll();
-            verify(pecaInsumoRepository, never()).findByTipo(any());
+            verify(pecaInsumoRepository).buscarTodos();
+            verify(pecaInsumoRepository, never()).buscarPorTipo(any());
         }
 
         @Test
-        @DisplayName("com filtro de tipo deve chamar findByTipo")
-        void comFiltroDeveUsarFindByTipo() {
-            when(pecaInsumoRepository.findByTipo(TipoPecaInsumo.PECA)).thenReturn(List.of(peca));
+        @DisplayName("com filtro de tipo deve chamar buscarPorTipo")
+        void comFiltroDeveUsarBuscarPorTipo() {
+            when(pecaInsumoRepository.buscarPorTipo(TipoPecaInsumo.PECA)).thenReturn(List.of(peca));
 
             var resultado = service.listarTodos(TipoPecaInsumo.PECA);
 
             assertThat(resultado).hasSize(1);
-            verify(pecaInsumoRepository).findByTipo(TipoPecaInsumo.PECA);
-            verify(pecaInsumoRepository, never()).findAll();
+            verify(pecaInsumoRepository).buscarPorTipo(TipoPecaInsumo.PECA);
+            verify(pecaInsumoRepository, never()).buscarTodos();
         }
     }
 
@@ -208,7 +226,7 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve retornar DTOs mapeados das pecas abaixo do minimo")
         void deveRetornarDTOs() {
-            when(pecaInsumoRepository.findAbaixoDoMinimo()).thenReturn(List.of(peca));
+            when(pecaInsumoRepository.buscarAbaixoDoMinimo()).thenReturn(List.of(peca));
 
             var resultado = service.listarAbaixoDoMinimo();
 
@@ -219,7 +237,7 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve retornar lista vazia quando nenhuma peca abaixo do minimo")
         void deveRetornarListaVazia() {
-            when(pecaInsumoRepository.findAbaixoDoMinimo()).thenReturn(List.of());
+            when(pecaInsumoRepository.buscarAbaixoDoMinimo()).thenReturn(List.of());
 
             assertThat(service.listarAbaixoDoMinimo()).isEmpty();
         }
@@ -235,19 +253,19 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve aplicar soft delete e salvar peca")
         void deveAplicarSoftDelete() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
-            when(pecaInsumoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.salvar(any())).thenAnswer(inv -> inv.getArgument(0));
 
             service.remover(pecaId);
 
             assertThat(peca.getDeletedAt()).isNotNull();
-            verify(pecaInsumoRepository).save(peca);
+            verify(pecaInsumoRepository).salvar(peca);
         }
 
         @Test
         @DisplayName("deve lancar EntityNotFoundException quando peca nao existe")
         void deveLancarExcecaoQuandoNaoEncontrado() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.empty());
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> service.remover(pecaId))
                     .isInstanceOf(EntityNotFoundException.class);
@@ -264,15 +282,15 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve incrementar estoque e registrar movimentacao ENTRADA")
         void deveIncrementarERegistrar() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
-            when(pecaInsumoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.salvar(any())).thenAnswer(inv -> inv.getArgument(0));
 
             var captor = ArgumentCaptor.forClass(MovimentacaoEstoque.class);
 
             service.registrarEntrada(pecaId, 5, "Compra NF-001");
 
             assertThat(peca.getQuantidadeEstoque()).isEqualTo(15);
-            verify(movimentacaoRepository).save(captor.capture());
+            verify(movimentacaoRepository).salvar(captor.capture());
             assertThat(captor.getValue().getTipoMovimentacao()).isEqualTo(TipoMovimentacao.ENTRADA);
             assertThat(captor.getValue().getQuantidade()).isEqualTo(5);
             assertThat(captor.getValue().getObservacao()).isEqualTo("Compra NF-001");
@@ -281,7 +299,7 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve lancar EntityNotFoundException quando peca nao existe")
         void deveLancarExcecaoQuandoNaoEncontrado() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.empty());
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> service.registrarEntrada(pecaId, 5, "obs"))
                     .isInstanceOf(EntityNotFoundException.class);
@@ -299,15 +317,15 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve decrementar estoque e registrar movimentacao SAIDA")
         void deveDecrementarERegistrar() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
-            when(pecaInsumoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.salvar(any())).thenAnswer(inv -> inv.getArgument(0));
 
             var captor = ArgumentCaptor.forClass(MovimentacaoEstoque.class);
 
             service.registrarSaida(pecaId, 4, "Uso interno");
 
             assertThat(peca.getQuantidadeEstoque()).isEqualTo(6);
-            verify(movimentacaoRepository).save(captor.capture());
+            verify(movimentacaoRepository).salvar(captor.capture());
             assertThat(captor.getValue().getTipoMovimentacao()).isEqualTo(TipoMovimentacao.SAIDA);
             assertThat(captor.getValue().getQuantidade()).isEqualTo(4);
         }
@@ -315,7 +333,7 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve lancar IllegalArgumentException quando estoque insuficiente")
         void deveLancarExcecaoQuandoEstoqueInsuficiente() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
 
             assertThatThrownBy(() -> service.registrarSaida(pecaId, 999, "obs"))
                     .isInstanceOf(IllegalArgumentException.class);
@@ -325,7 +343,7 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve lancar EntityNotFoundException quando peca nao existe")
         void deveLancarExcecaoQuandoNaoEncontrado() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.empty());
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> service.registrarSaida(pecaId, 1, "obs"))
                     .isInstanceOf(EntityNotFoundException.class);
@@ -342,15 +360,15 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve decrementar estoque e registrar movimentacao VENDA")
         void deveDecrementarERegistrar() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
-            when(pecaInsumoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.salvar(any())).thenAnswer(inv -> inv.getArgument(0));
 
             var captor = ArgumentCaptor.forClass(MovimentacaoEstoque.class);
 
             service.registrarVenda(pecaId, 2, "Venda OS-010");
 
             assertThat(peca.getQuantidadeEstoque()).isEqualTo(8);
-            verify(movimentacaoRepository).save(captor.capture());
+            verify(movimentacaoRepository).salvar(captor.capture());
             assertThat(captor.getValue().getTipoMovimentacao()).isEqualTo(TipoMovimentacao.VENDA);
             assertThat(captor.getValue().getQuantidade()).isEqualTo(2);
         }
@@ -358,7 +376,7 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve lancar EntityNotFoundException quando peca nao existe")
         void deveLancarExcecaoQuandoNaoEncontrado() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.empty());
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> service.registrarVenda(pecaId, 1, "obs"))
                     .isInstanceOf(EntityNotFoundException.class);
@@ -381,8 +399,8 @@ class EstoqueServiceTest {
                     .tipoMovimentacao(TipoMovimentacao.ENTRADA)
                     .quantidade(5)
                     .build();
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
-            when(movimentacaoRepository.findByPecaInsumoOrderByCriadoEmDesc(peca))
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
+            when(movimentacaoRepository.buscarPorPecaInsumoOrdenadoPorDataDesc(peca))
                     .thenReturn(List.of(mov));
 
             var resultado = service.listarMovimentacoes(pecaId);
@@ -394,7 +412,7 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve lancar EntityNotFoundException quando peca nao existe")
         void deveLancarExcecaoQuandoNaoEncontrado() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.empty());
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> service.listarMovimentacoes(pecaId))
                     .isInstanceOf(EntityNotFoundException.class);
@@ -411,15 +429,15 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve incrementar estoque e registrar movimentacao AJUSTE")
         void deveIncrementarERegistrarAjuste() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
-            when(pecaInsumoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.salvar(any())).thenAnswer(inv -> inv.getArgument(0));
 
             var captor = ArgumentCaptor.forClass(MovimentacaoEstoque.class);
 
             service.cancelarReserva(pecaId, 3, "Cancelamento de OS");
 
             assertThat(peca.getQuantidadeEstoque()).isEqualTo(13);
-            verify(movimentacaoRepository).save(captor.capture());
+            verify(movimentacaoRepository).salvar(captor.capture());
             assertThat(captor.getValue().getTipoMovimentacao()).isEqualTo(TipoMovimentacao.AJUSTE);
             assertThat(captor.getValue().getQuantidade()).isEqualTo(3);
         }
@@ -427,7 +445,7 @@ class EstoqueServiceTest {
         @Test
         @DisplayName("deve lancar EntityNotFoundException quando peca nao existe")
         void deveLancarExcecaoQuandoNaoEncontrado() {
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.empty());
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> service.cancelarReserva(pecaId, 1, "obs"))
                     .isInstanceOf(EntityNotFoundException.class);
@@ -446,14 +464,14 @@ class EstoqueServiceTest {
         void deveReporEstoqueDeExistente() {
             var request = new EntradaEstoqueRequestDTO(
                     pecaId, null, null, null, null, null, 5, null, "Compra NF", null);
-            when(pecaInsumoRepository.findById(pecaId)).thenReturn(Optional.of(peca));
-            when(pecaInsumoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(pecaInsumoRepository.buscarPorId(pecaId)).thenReturn(Optional.of(peca));
+            when(pecaInsumoRepository.salvar(any())).thenAnswer(inv -> inv.getArgument(0));
 
             service.darEntrada(request);
 
             assertThat(peca.getQuantidadeEstoque()).isEqualTo(15);
             var captor = ArgumentCaptor.forClass(MovimentacaoEstoque.class);
-            verify(movimentacaoRepository).save(captor.capture());
+            verify(movimentacaoRepository).salvar(captor.capture());
             assertThat(captor.getValue().getTipoMovimentacao()).isEqualTo(TipoMovimentacao.ENTRADA);
         }
 
@@ -469,7 +487,7 @@ class EstoqueServiceTest {
                     .id(UUID.randomUUID()).nome("Vela de Ignição")
                     .precoVenda(new BigDecimal("25.00")).precoCompra(new BigDecimal("15.00"))
                     .quantidadeEstoque(40).quantidadeMinima(5).tipo(TipoPecaInsumo.PECA).build();
-            when(pecaInsumoRepository.save(any())).thenReturn(salva);
+            when(pecaInsumoRepository.salvar(any())).thenReturn(salva);
 
             var dto = service.darEntrada(request);
 
@@ -486,7 +504,7 @@ class EstoqueServiceTest {
                     null, 10, null, null, TipoPecaInsumo.INSUMO);
 
             var captor = ArgumentCaptor.forClass(PecaInsumo.class);
-            when(pecaInsumoRepository.save(captor.capture())).thenAnswer(inv -> inv.getArgument(0));
+            when(pecaInsumoRepository.salvar(captor.capture())).thenAnswer(inv -> inv.getArgument(0));
 
             service.darEntrada(request);
 

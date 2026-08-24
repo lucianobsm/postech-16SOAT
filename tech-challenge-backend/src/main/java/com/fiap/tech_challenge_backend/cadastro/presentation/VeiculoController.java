@@ -1,10 +1,10 @@
 package com.fiap.tech_challenge_backend.cadastro.presentation;
 
-import com.fiap.tech_challenge_backend.cadastro.application.usecases.AtualizarVeiculoUseCase;
-import com.fiap.tech_challenge_backend.cadastro.application.usecases.BuscarVeiculoUseCase;
-import com.fiap.tech_challenge_backend.cadastro.application.usecases.CadastroVeiculoUseCase;
-import com.fiap.tech_challenge_backend.cadastro.application.usecases.DeletarVeiculoUseCase;
-import com.fiap.tech_challenge_backend.cadastro.application.usecases.ListarVeiculosUseCase;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.AtualizarVeiculoInputPort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.BuscarVeiculoInputPort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.CadastrarVeiculoInputPort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.DeletarVeiculoInputPort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.ListarVeiculosInputPort;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.AtualizarVeiculoRequest;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroVeiculoRequest;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroVeiculoResponse;
@@ -23,18 +23,18 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class VeiculoController {
 
-    private final CadastroVeiculoUseCase cadastroVeiculoUseCase;
-    private final ListarVeiculosUseCase listarVeiculosUseCase;
-    private final BuscarVeiculoUseCase buscarVeiculoUseCase;
-    private final AtualizarVeiculoUseCase atualizarVeiculoUseCase;
-    private final DeletarVeiculoUseCase deletarVeiculoUseCase;
+    private final CadastrarVeiculoInputPort cadastroVeiculoUseCase;
+    private final ListarVeiculosInputPort listarVeiculosUseCase;
+    private final BuscarVeiculoInputPort buscarVeiculoUseCase;
+    private final AtualizarVeiculoInputPort atualizarVeiculoUseCase;
+    private final DeletarVeiculoInputPort deletarVeiculoUseCase;
 
     public VeiculoController(
-            CadastroVeiculoUseCase cadastroVeiculoUseCase,
-            ListarVeiculosUseCase listarVeiculosUseCase,
-            BuscarVeiculoUseCase buscarVeiculoUseCase,
-            AtualizarVeiculoUseCase atualizarVeiculoUseCase,
-            DeletarVeiculoUseCase deletarVeiculoUseCase) {
+            CadastrarVeiculoInputPort cadastroVeiculoUseCase,
+            ListarVeiculosInputPort listarVeiculosUseCase,
+            BuscarVeiculoInputPort buscarVeiculoUseCase,
+            AtualizarVeiculoInputPort atualizarVeiculoUseCase,
+            DeletarVeiculoInputPort deletarVeiculoUseCase) {
         this.cadastroVeiculoUseCase = cadastroVeiculoUseCase;
         this.listarVeiculosUseCase = listarVeiculosUseCase;
         this.buscarVeiculoUseCase = buscarVeiculoUseCase;

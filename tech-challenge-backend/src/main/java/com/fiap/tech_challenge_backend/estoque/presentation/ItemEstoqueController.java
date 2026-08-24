@@ -1,10 +1,15 @@
 package com.fiap.tech_challenge_backend.estoque.presentation;
 
 import com.fiap.tech_challenge_backend.shared.application.dto.RelatorioResponseDTO;
-import com.fiap.tech_challenge_backend.estoque.application.EstoqueService;
 import com.fiap.tech_challenge_backend.estoque.application.dto.EntradaEstoqueRequestDTO;
+import com.fiap.tech_challenge_backend.estoque.application.dto.EstoqueRelatorioResponseFactory;
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoResponseDTO;
+import com.fiap.tech_challenge_backend.estoque.application.ports.in.AtualizarPecaInsumoUseCase;
+import com.fiap.tech_challenge_backend.estoque.application.ports.in.BuscarPecaInsumoUseCase;
+import com.fiap.tech_challenge_backend.estoque.application.ports.in.CadastrarPecaInsumoUseCase;
+import com.fiap.tech_challenge_backend.estoque.application.ports.in.DarEntradaEstoqueUseCase;
+import com.fiap.tech_challenge_backend.estoque.application.ports.in.MovimentarEstoqueUseCase;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,25 +33,29 @@ import java.util.UUID;
 public class ItemEstoqueController {
 
     private static final Logger log = LoggerFactory.getLogger(ItemEstoqueController.class);
-    private final EstoqueService service;
+    private final CadastrarPecaInsumoUseCase cadastrarUseCase;
+    private final AtualizarPecaInsumoUseCase atualizarUseCase;
+    private final BuscarPecaInsumoUseCase buscarUseCase;
+    private final DarEntradaEstoqueUseCase darEntradaUseCase;
+    private final MovimentarEstoqueUseCase movimentarUseCase;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Cadastrar peça ou insumo")
     public PecaInsumoResponseDTO cadastrar(@Valid @RequestBody PecaInsumoRequestDTO request) {
-        return service.cadastrar(request);
+        return cadastrarUseCase.cadastrar(request);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar peça ou insumo")
     public PecaInsumoResponseDTO atualizar(@PathVariable UUID id, @Valid @RequestBody PecaInsumoRequestDTO request) {
-        return service.atualizar(id, request);
+        return atualizarUseCase.atualizar(id, request);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Buscar por ID")
     public PecaInsumoResponseDTO buscarPorId(@PathVariable UUID id) {
-        return service.buscarPorId(id);
+        return buscarUseCase.buscarPorId(id);
     }
 
     @GetMapping("/abaixo-do-minimo")
@@ -55,16 +64,16 @@ public class ItemEstoqueController {
         log.debug("Requisição recebida: Listar itens abaixo do mínimo");
 
         try {
-            List<PecaInsumoResponseDTO> itens = service.listarAbaixoDoMinimo();
+            List<PecaInsumoResponseDTO> itens = buscarUseCase.listarAbaixoDoMinimo();
             log.debug("Itens abaixo do mínimo listados | Total: {}", itens.size());
 
             if (itens.isEmpty()) {
                 log.info("Nenhum item abaixo do mínimo encontrado");
-                return RelatorioResponseDTO.estoqueVazio("ITENS ABAIXO DO MINIMO");
+                return EstoqueRelatorioResponseFactory.vazio("ITENS ABAIXO DO MINIMO");
             }
 
             log.info("Itens abaixo do mínimo retornados com sucesso | Total: {}", itens.size());
-            return RelatorioResponseDTO.estoqueSucesso(itens);
+            return EstoqueRelatorioResponseFactory.sucesso(itens);
 
         } catch (Exception e) {
             log.error("Erro ao listar itens abaixo do mínimo", e);
@@ -75,13 +84,13 @@ public class ItemEstoqueController {
     @GetMapping
     @Operation(summary = "Listar itens do estoque. Filtra por tipo (PECA ou INSUMO) quando informado.")
     public List<PecaInsumoResponseDTO> listar(@RequestParam(required = false) TipoPecaInsumo tipo) {
-        return service.listarTodos(tipo);
+        return buscarUseCase.listarTodos(tipo);
     }
 
     @PostMapping("/entrada")
     @Operation(summary = "Dar entrada no estoque: cadastra a peça/insumo se não existir ou repõe o estoque se já existir")
     public PecaInsumoResponseDTO darEntrada(@Valid @RequestBody EntradaEstoqueRequestDTO request) {
-        return service.darEntrada(request);
+        return darEntradaUseCase.darEntrada(request);
     }
 
     @PatchMapping("/{id}/entrada")
@@ -95,12 +104,12 @@ public class ItemEstoqueController {
                 id, quantidade, observacao != null ? observacao : "Sem observação");
 
         try {
-            service.registrarEntrada(id, quantidade, observacao);
-            PecaInsumoResponseDTO item = service.buscarPorId(id);
+            movimentarUseCase.registrarEntrada(id, quantidade, observacao);
+            PecaInsumoResponseDTO item = buscarUseCase.buscarPorId(id);
 
             log.info("Entrada de estoque registrada com sucesso | ID: {} | Quantidade: {}", id, quantidade);
 
-            return RelatorioResponseDTO.entradaEstoqueSucesso(List.of(item), quantidade);
+            return EstoqueRelatorioResponseFactory.entradaSucesso(List.of(item), quantidade);
 
         } catch (Exception e) {
             log.error("Erro ao registrar entrada de estoque | ID: {} | Quantidade: {} | Erro: {}",
@@ -120,12 +129,12 @@ public class ItemEstoqueController {
                 id, quantidade, observacao != null ? observacao : "Sem observação");
 
         try {
-            service.registrarSaida(id, quantidade, observacao);
-            PecaInsumoResponseDTO item = service.buscarPorId(id);
+            movimentarUseCase.registrarSaida(id, quantidade, observacao);
+            PecaInsumoResponseDTO item = buscarUseCase.buscarPorId(id);
 
             log.info("Saída de estoque registrada com sucesso | ID: {} | Quantidade: {}", id, quantidade);
 
-            return RelatorioResponseDTO.saidaEstoqueSucesso(List.of(item), quantidade);
+            return EstoqueRelatorioResponseFactory.saidaSucesso(List.of(item), quantidade);
 
         } catch (Exception e) {
             log.error("Erro ao registrar saída de estoque | ID: {} | Quantidade: {} | Erro: {}",
@@ -138,7 +147,7 @@ public class ItemEstoqueController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Remover item")
     public RelatorioResponseDTO<PecaInsumoResponseDTO> remover(@PathVariable UUID id) {
-        service.remover(id);
-        return RelatorioResponseDTO.deleteItemEstoqueSucesso();
+        atualizarUseCase.remover(id);
+        return EstoqueRelatorioResponseFactory.deleteItemSucesso();
     }
 }

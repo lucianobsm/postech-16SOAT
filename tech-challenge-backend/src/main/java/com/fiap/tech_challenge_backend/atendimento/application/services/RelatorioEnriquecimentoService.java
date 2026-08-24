@@ -1,7 +1,9 @@
 package com.fiap.tech_challenge_backend.atendimento.application.services;
 
+import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.*;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
+import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -12,6 +14,12 @@ import java.util.Set;
 
 @Service
 public class RelatorioEnriquecimentoService {
+
+    private final OrdemServicoEnriquecimentoService enriquecimentoService;
+
+    public RelatorioEnriquecimentoService(OrdemServicoEnriquecimentoService enriquecimentoService) {
+        this.enriquecimentoService = enriquecimentoService;
+    }
 
     public RelatorioOsEnriquecidoResponseDTO enriquecer(
             RelatorioOrdemServicoResponseDTO base,
@@ -38,21 +46,26 @@ public class RelatorioEnriquecimentoService {
 
         // Aplica expands
         if (expandSet.contains("Cliente")) {
-            dto = dto.comCliente(ClienteInfoDTO.from(os.getCliente()));
+            Cliente cliente = enriquecimentoService.resolverCliente(os.getClienteId());
+            String email = enriquecimentoService.resolverEmailCliente(cliente);
+            dto = dto.comCliente(ClienteInfoDTO.from(cliente, email));
         }
 
         if (expandSet.contains("Veiculo")) {
-            dto = dto.comVeiculo(VeiculoInfoDTO.from(os.getVeiculo()));
+            dto = dto.comVeiculo(VeiculoInfoDTO.from(enriquecimentoService.resolverVeiculo(os.getVeiculoId())));
         }
 
-        if (expandSet.contains("Mecanico") && os.getMecanico() != null) {
-            dto = dto.comMecanico(MecanicoInfoDTO.from(os.getMecanico()));
+        if (expandSet.contains("Mecanico")) {
+            Usuario mecanico = enriquecimentoService.resolverMecanico(os.getMecanicoId());
+            if (mecanico != null) {
+                dto = dto.comMecanico(MecanicoInfoDTO.from(mecanico));
+            }
         }
 
         if (expandSet.contains("Orcamentos")) {
             List<OrcamentoDTO> orcamentos = os.getOrcamentos() != null
                     ? os.getOrcamentos().stream()
-                        .map(OrcamentoDTO::from)
+                        .map(orc -> OrcamentoDTO.from(orc, enriquecimentoService::resolverNomePeca))
                         .toList()
                     : List.of();
             dto = dto.comOrcamentos(orcamentos);

@@ -1,7 +1,8 @@
 package com.fiap.tech_challenge_backend.acompanhamento.presentation;
 
-import com.fiap.tech_challenge_backend.acompanhamento.application.AcompanhamentoService;
 import com.fiap.tech_challenge_backend.acompanhamento.application.dto.AcompanhamentoOsResponseDTO;
+import com.fiap.tech_challenge_backend.acompanhamento.application.dto.AcompanhamentoRelatorioResponseFactory;
+import com.fiap.tech_challenge_backend.acompanhamento.application.ports.in.ConsultarAcompanhamentoUseCase;
 import com.fiap.tech_challenge_backend.shared.application.dto.RelatorioResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -21,22 +22,22 @@ import java.util.UUID;
 @SecurityRequirement(name = "bearerAuth")
 public class AcompanhamentoController {
 
-    private final AcompanhamentoService service;
+    private final ConsultarAcompanhamentoUseCase consultarUseCase;
 
-    public AcompanhamentoController(AcompanhamentoService service) {
-        this.service = service;
+    public AcompanhamentoController(ConsultarAcompanhamentoUseCase consultarUseCase) {
+        this.consultarUseCase = consultarUseCase;
     }
 
     @GetMapping
     @Operation(summary = "Lista todas as ordens de servico do cliente")
     public ResponseEntity<RelatorioResponseDTO<AcompanhamentoOsResponseDTO>> listar(@PathVariable UUID clienteId) {
-        List<AcompanhamentoOsResponseDTO> ordens = service.listarPorCliente(clienteId);
+        List<AcompanhamentoOsResponseDTO> ordens = consultarUseCase.listarPorCliente(clienteId);
 
         if (ordens.isEmpty()) {
-            return ResponseEntity.ok(RelatorioResponseDTO.acompanhamentoVazio());
+            return ResponseEntity.ok(AcompanhamentoRelatorioResponseFactory.vazio());
         }
 
-        return ResponseEntity.ok(RelatorioResponseDTO.acompanhamentoSucesso(ordens));
+        return ResponseEntity.ok(AcompanhamentoRelatorioResponseFactory.sucesso(ordens));
     }
 
     @GetMapping("/{osId}")
@@ -44,7 +45,7 @@ public class AcompanhamentoController {
     public ResponseEntity<RelatorioResponseDTO<AcompanhamentoOsResponseDTO>> detalhe(
             @PathVariable UUID clienteId,
             @PathVariable Long osId) {
-        AcompanhamentoOsResponseDTO ordem = service.buscarDetalhe(clienteId, osId);
-        return ResponseEntity.ok(RelatorioResponseDTO.acompanhamentoSucesso(List.of(ordem)));
+        AcompanhamentoOsResponseDTO ordem = consultarUseCase.buscarDetalhe(clienteId, osId);
+        return ResponseEntity.ok(AcompanhamentoRelatorioResponseFactory.sucesso(List.of(ordem)));
     }
 }

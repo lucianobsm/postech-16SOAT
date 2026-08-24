@@ -1,7 +1,7 @@
 package com.fiap.tech_challenge_backend.acompanhamento.presentation;
 
-import com.fiap.tech_challenge_backend.acompanhamento.application.AcompanhamentoService;
 import com.fiap.tech_challenge_backend.acompanhamento.application.dto.AcompanhamentoOsResponseDTO;
+import com.fiap.tech_challenge_backend.acompanhamento.application.ports.in.ConsultarAcompanhamentoUseCase;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico;
 import com.fiap.tech_challenge_backend.config.TestSecurityConfig;
 import com.fiap.tech_challenge_backend.shared.application.dto.RelatorioResponseDTO;
@@ -38,7 +38,7 @@ class AcompanhamentoControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private AcompanhamentoService acompanhamentoService;
+    private ConsultarAcompanhamentoUseCase consultarUseCase;
 
     private UUID clienteId;
     private Long osId;
@@ -74,7 +74,7 @@ class AcompanhamentoControllerTest {
     @DisplayName("GET /clientes/{clienteId}/ordens - deve listar ordens com sucesso")
     void testListarOrdensComSucesso() throws Exception {
         List<AcompanhamentoOsResponseDTO> ordens = List.of(acompanhamentoDto);
-        when(acompanhamentoService.listarPorCliente(clienteId))
+        when(consultarUseCase.listarPorCliente(clienteId))
                 .thenReturn(ordens);
 
         mockMvc.perform(get("/clientes/{clienteId}/ordens", clienteId)
@@ -85,14 +85,14 @@ class AcompanhamentoControllerTest {
                 .andExpect(jsonPath("$.dados[0].veiculoPlaca").value("ABC1234"))
                 .andExpect(jsonPath("$.dados[0].status").value("EM_EXECUCAO"));
 
-        verify(acompanhamentoService, times(1)).listarPorCliente(clienteId);
+        verify(consultarUseCase, times(1)).listarPorCliente(clienteId);
     }
 
     @Test
     @WithMockUser
     @DisplayName("GET /clientes/{clienteId}/ordens - deve retornar vazio quando não há ordens")
     void testListarOrdensVazio() throws Exception {
-        when(acompanhamentoService.listarPorCliente(clienteId))
+        when(consultarUseCase.listarPorCliente(clienteId))
                 .thenReturn(List.of());
 
         mockMvc.perform(get("/clientes/{clienteId}/ordens", clienteId)
@@ -100,14 +100,14 @@ class AcompanhamentoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.dados", hasSize(0)));
 
-        verify(acompanhamentoService, times(1)).listarPorCliente(clienteId);
+        verify(consultarUseCase, times(1)).listarPorCliente(clienteId);
     }
 
     @Test
     @WithMockUser
     @DisplayName("GET /clientes/{clienteId}/ordens/{osId} - deve buscar detalhe com sucesso")
     void testBuscarDetalheComSucesso() throws Exception {
-        when(acompanhamentoService.buscarDetalhe(clienteId, osId))
+        when(consultarUseCase.buscarDetalhe(clienteId, osId))
                 .thenReturn(acompanhamentoDto);
 
         mockMvc.perform(get("/clientes/{clienteId}/ordens/{osId}", clienteId, osId)
@@ -118,21 +118,21 @@ class AcompanhamentoControllerTest {
                 .andExpect(jsonPath("$.dados[0].mecanicoNome").value("João Mecânico"))
                 .andExpect(jsonPath("$.dados[0].valorTotal").value(80.00));
 
-        verify(acompanhamentoService, times(1)).buscarDetalhe(clienteId, osId);
+        verify(consultarUseCase, times(1)).buscarDetalhe(clienteId, osId);
     }
 
     @Test
     @WithMockUser
     @DisplayName("GET /clientes/{clienteId}/ordens/{osId} - deve retornar 404 quando OS não encontrada")
     void testBuscarDetalheNaoEncontrado() throws Exception {
-        when(acompanhamentoService.buscarDetalhe(clienteId, osId))
+        when(consultarUseCase.buscarDetalhe(clienteId, osId))
                 .thenThrow(new jakarta.persistence.EntityNotFoundException("Ordem de servico nao encontrada"));
 
         mockMvc.perform(get("/clientes/{clienteId}/ordens/{osId}", clienteId, osId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
-        verify(acompanhamentoService, times(1)).buscarDetalhe(clienteId, osId);
+        verify(consultarUseCase, times(1)).buscarDetalhe(clienteId, osId);
     }
 
     @Test

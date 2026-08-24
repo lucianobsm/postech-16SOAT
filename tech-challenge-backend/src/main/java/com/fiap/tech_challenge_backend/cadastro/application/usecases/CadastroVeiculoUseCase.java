@@ -7,6 +7,7 @@ import com.fiap.tech_challenge_backend.cadastro.application.exceptions.VeiculoJa
 import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteRepository;
 import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteVeiculoRepository;
 import com.fiap.tech_challenge_backend.cadastro.application.ports.VeiculoRepository;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.CadastrarVeiculoInputPort;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.ClienteVeiculo;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
@@ -21,7 +22,7 @@ import org.springframework.stereotype.Service;
  * Camada: Application
  */
 @Service
-public class CadastroVeiculoUseCase {
+public class CadastroVeiculoUseCase implements CadastrarVeiculoInputPort {
 
     private final VeiculoRepository veiculoRepository;
     private final ClienteRepository clienteRepository;
@@ -37,6 +38,7 @@ public class CadastroVeiculoUseCase {
         this.clienteVeiculoRepository = clienteVeiculoRepository;
     }
 
+    @Override
     @Transactional
     public CadastroVeiculoResponse execute(CadastroVeiculoRequest request) {
         CpfCnpj cpfCnpj = new CpfCnpj(request.cpfCnpj());

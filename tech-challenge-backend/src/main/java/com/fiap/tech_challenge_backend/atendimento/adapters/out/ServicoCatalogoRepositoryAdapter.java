@@ -1,5 +1,6 @@
 package com.fiap.tech_challenge_backend.atendimento.adapters.out;
 
+import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.ServicoCatalogoMapper;
 import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.ServicoCatalogoRepository;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.out.ServicoCatalogoRepositoryPort;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.ServicoCatalogo;
@@ -19,6 +20,6 @@ public class ServicoCatalogoRepositoryAdapter implements ServicoCatalogoReposito
 
     @Override
     public Optional<ServicoCatalogo> buscarPorId(UUID id) {
-        return repository.findById(id);
+        return repository.findById(id).map(ServicoCatalogoMapper::toDomain);
     }
 }

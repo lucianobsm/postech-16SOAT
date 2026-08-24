@@ -1,9 +1,8 @@
 package com.fiap.tech_challenge_backend.acesso.presentation;
 
 import com.fiap.tech_challenge_backend.acesso.application.dtos.LoginRequest;
-import com.fiap.tech_challenge_backend.acesso.application.services.AuthService;
+import com.fiap.tech_challenge_backend.acesso.application.ports.in.AutenticarUsuarioUseCase;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,20 +18,15 @@ import java.util.Map;
 @RestController
 public class AuthController {
 
-    private final AuthService authService;
+    private final AutenticarUsuarioUseCase autenticarUsuarioUseCase;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
+    public AuthController(AutenticarUsuarioUseCase autenticarUsuarioUseCase) {
+        this.autenticarUsuarioUseCase = autenticarUsuarioUseCase;
     }
 
     @PostMapping("/auth/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest request) {
-        try {
-            Map<String, String> resposta = authService.autenticar(request.email(), request.password());
-            return ResponseEntity.ok(resposta);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("erro", e.getMessage()));
-        }
+        String token = autenticarUsuarioUseCase.autenticar(request.email(), request.password());
+        return ResponseEntity.ok(Map.of("accessToken", token));
     }
 }

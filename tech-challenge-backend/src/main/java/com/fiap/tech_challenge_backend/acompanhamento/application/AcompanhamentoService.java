@@ -1,8 +1,12 @@
 package com.fiap.tech_challenge_backend.acompanhamento.application;
 
 import com.fiap.tech_challenge_backend.acompanhamento.application.dto.AcompanhamentoOsResponseDTO;
-import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.OrdemServicoRepository;
+import com.fiap.tech_challenge_backend.acompanhamento.application.ports.in.ConsultarAcompanhamentoUseCase;
+import com.fiap.tech_challenge_backend.acompanhamento.application.ports.out.AcompanhamentoRepositoryPort;
+import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
+import com.fiap.tech_challenge_backend.atendimento.application.services.OrdemServicoEnriquecimentoService;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
+import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,28 +16,40 @@ import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
-public class AcompanhamentoService {
+public class AcompanhamentoService implements ConsultarAcompanhamentoUseCase {
 
-    private final OrdemServicoRepository ordemServicoRepository;
+    private final AcompanhamentoRepositoryPort acompanhamentoRepository;
+    private final OrdemServicoEnriquecimentoService enriquecimentoService;
 
-    public AcompanhamentoService(OrdemServicoRepository ordemServicoRepository) {
-        this.ordemServicoRepository = ordemServicoRepository;
+    public AcompanhamentoService(AcompanhamentoRepositoryPort acompanhamentoRepository,
+                                  OrdemServicoEnriquecimentoService enriquecimentoService) {
+        this.acompanhamentoRepository = acompanhamentoRepository;
+        this.enriquecimentoService = enriquecimentoService;
     }
 
+    @Override
     public List<AcompanhamentoOsResponseDTO> listarPorCliente(UUID clienteId) {
-        return ordemServicoRepository.findByClienteIdWithDetails(clienteId).stream()
-                .map(AcompanhamentoOsResponseDTO::from)
+        return acompanhamentoRepository.buscarPorClienteId(clienteId).stream()
+                .map(this::montar)
                 .toList();
     }
 
+    @Override
     public AcompanhamentoOsResponseDTO buscarDetalhe(UUID clienteId, Long osId) {
-        OrdemServico ordem = ordemServicoRepository.findById(osId)
+        OrdemServico ordem = acompanhamentoRepository.buscarPorId(osId)
                 .orElseThrow(() -> new EntityNotFoundException("Ordem de servico nao encontrada"));
 
-        if (!ordem.getCliente().getId().equals(clienteId)) {
+        if (!ordem.getClienteId().equals(clienteId)) {
             throw new EntityNotFoundException("Ordem de servico nao encontrada para o cliente informado");
         }
 
-        return AcompanhamentoOsResponseDTO.from(ordem);
+        return montar(ordem);
+    }
+
+    private AcompanhamentoOsResponseDTO montar(OrdemServico os) {
+        Veiculo veiculo = enriquecimentoService.resolverVeiculo(os.getVeiculoId());
+        Usuario mecanico = enriquecimentoService.resolverMecanico(os.getMecanicoId());
+        return AcompanhamentoOsResponseDTO.from(
+                os, veiculo, mecanico != null ? mecanico.getNome() : null, enriquecimentoService::resolverNomePeca);
     }
 }

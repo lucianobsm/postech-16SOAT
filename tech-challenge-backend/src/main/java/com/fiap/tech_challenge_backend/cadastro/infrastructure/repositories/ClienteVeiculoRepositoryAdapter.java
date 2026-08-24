@@ -19,7 +19,8 @@ public class ClienteVeiculoRepositoryAdapter implements ClienteVeiculoRepository
 
     @Override
     public ClienteVeiculo salvar(ClienteVeiculo clienteVeiculo) {
-        return this.clienteVeiculoJpaRepository.save(clienteVeiculo);
+        var salvo = this.clienteVeiculoJpaRepository.save(ClienteVeiculoMapper.toEntity(clienteVeiculo));
+        return ClienteVeiculoMapper.toDomain(salvo);
     }
 
     @Override

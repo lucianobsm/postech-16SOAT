@@ -20,7 +20,8 @@ public class VeiculoRepositoryAdapter implements VeiculoRepository {
 
     @Override
     public Veiculo salvar(Veiculo veiculo) {
-        return this.veiculoJpaRepository.save(veiculo);
+        var salvo = this.veiculoJpaRepository.save(VeiculoMapper.toEntity(veiculo));
+        return VeiculoMapper.toDomain(salvo);
     }
 
     @Override
@@ -30,18 +31,21 @@ public class VeiculoRepositoryAdapter implements VeiculoRepository {
 
     @Override
     public Optional<Veiculo> buscarPorPlaca(Placa placa) {
-        return this.veiculoJpaRepository.findByPlacaValor(placa.valor());
+        return this.veiculoJpaRepository.findByPlacaValor(placa.valor()).map(VeiculoMapper::toDomain);
     }
 
     @Override
     public Optional<Veiculo> buscarPorId(UUID id) {
         return this.veiculoJpaRepository.findById(id)
-                .filter(v -> v.getDeletedAt() == null);
+                .filter(v -> v.getDeletedAt() == null)
+                .map(VeiculoMapper::toDomain);
     }
 
     @Override
     public List<Veiculo> listar() {
-        return this.veiculoJpaRepository.findAllActive();
+        return this.veiculoJpaRepository.findAllActive().stream()
+                .map(VeiculoMapper::toDomain)
+                .toList();
     }
 
     @Override

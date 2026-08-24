@@ -1,5 +1,6 @@
 package com.fiap.tech_challenge_backend.atendimento.adapters.out;
 
+import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.ServicoCatalogoJpaEntity;
 import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.ServicoCatalogoRepository;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.ServicoCatalogo;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,7 @@ class ServicoCatalogoRepositoryAdapterTest {
     @Mock
     private ServicoCatalogoRepository repository;
 
-    private ServicoCatalogo servicoCatalogo;
+    private ServicoCatalogoJpaEntity servicoCatalogo;
     private UUID servicoId;
 
     @BeforeEach
@@ -32,7 +33,7 @@ class ServicoCatalogoRepositoryAdapterTest {
         adapter = new ServicoCatalogoRepositoryAdapter(repository);
 
         servicoId = UUID.randomUUID();
-        servicoCatalogo = ServicoCatalogo.builder()
+        servicoCatalogo = ServicoCatalogoJpaEntity.builder()
                 .id(servicoId)
                 .nome("Troca de Óleo")
                 .descricao("Troca de óleo do motor com filtro")
@@ -70,7 +71,7 @@ class ServicoCatalogoRepositoryAdapterTest {
     @Test
     @DisplayName("Deve buscar serviço de diagnóstico")
     void testBuscarServicodDiagnostico() {
-        ServicoCatalogo diagnostico = ServicoCatalogo.builder()
+        ServicoCatalogoJpaEntity diagnostico = ServicoCatalogoJpaEntity.builder()
                 .id(servicoId)
                 .nome("Diagnóstico Eletrônico")
                 .descricao("Diagnóstico completo do veículo")
@@ -90,7 +91,7 @@ class ServicoCatalogoRepositoryAdapterTest {
     @Test
     @DisplayName("Deve buscar serviço corretivo")
     void testBuscarServicoCorretivo() {
-        ServicoCatalogo corretivo = ServicoCatalogo.builder()
+        ServicoCatalogoJpaEntity corretivo = ServicoCatalogoJpaEntity.builder()
                 .id(servicoId)
                 .nome("Reparo de Freios")
                 .descricao("Reparo completo do sistema de freios")
@@ -111,7 +112,7 @@ class ServicoCatalogoRepositoryAdapterTest {
     @Test
     @DisplayName("Deve buscar serviço de garantia")
     void testBuscarServicoGarantia() {
-        ServicoCatalogo garantia = ServicoCatalogo.builder()
+        ServicoCatalogoJpaEntity garantia = ServicoCatalogoJpaEntity.builder()
                 .id(servicoId)
                 .nome("Revisão de Garantia")
                 .descricao("Revisão coberta pela garantia")

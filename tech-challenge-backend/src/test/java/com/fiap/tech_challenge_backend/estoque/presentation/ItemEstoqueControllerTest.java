@@ -2,10 +2,14 @@ package com.fiap.tech_challenge_backend.estoque.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fiap.tech_challenge_backend.config.TestSecurityConfigWithAuth;
-import com.fiap.tech_challenge_backend.estoque.application.EstoqueService;
 import com.fiap.tech_challenge_backend.estoque.application.dto.EntradaEstoqueRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoResponseDTO;
+import com.fiap.tech_challenge_backend.estoque.application.ports.in.AtualizarPecaInsumoUseCase;
+import com.fiap.tech_challenge_backend.estoque.application.ports.in.BuscarPecaInsumoUseCase;
+import com.fiap.tech_challenge_backend.estoque.application.ports.in.CadastrarPecaInsumoUseCase;
+import com.fiap.tech_challenge_backend.estoque.application.ports.in.DarEntradaEstoqueUseCase;
+import com.fiap.tech_challenge_backend.estoque.application.ports.in.MovimentarEstoqueUseCase;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
 import com.fiap.tech_challenge_backend.shared.application.dto.RelatorioResponseDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +46,19 @@ class ItemEstoqueControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private EstoqueService estoqueService;
+    private CadastrarPecaInsumoUseCase cadastrarUseCase;
+
+    @MockBean
+    private AtualizarPecaInsumoUseCase atualizarUseCase;
+
+    @MockBean
+    private BuscarPecaInsumoUseCase buscarUseCase;
+
+    @MockBean
+    private DarEntradaEstoqueUseCase darEntradaUseCase;
+
+    @MockBean
+    private MovimentarEstoqueUseCase movimentarUseCase;
 
     private UUID itemId;
     private PecaInsumoResponseDTO responseDTO;
@@ -77,7 +93,7 @@ class ItemEstoqueControllerTest {
         @WithMockUser
         @DisplayName("deve cadastrar item e retornar 201 com o DTO")
         void deveCadastrarItemERetornar201() throws Exception {
-            when(estoqueService.cadastrar(any(PecaInsumoRequestDTO.class))).thenReturn(responseDTO);
+            when(cadastrarUseCase.cadastrar(any(PecaInsumoRequestDTO.class))).thenReturn(responseDTO);
 
             mockMvc.perform(post("/estoque/itens")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -88,7 +104,7 @@ class ItemEstoqueControllerTest {
                     .andExpect(jsonPath("$.tipo").value("PECA"))
                     .andExpect(jsonPath("$.quantidadeEstoque").value(20));
 
-            verify(estoqueService).cadastrar(any(PecaInsumoRequestDTO.class));
+            verify(cadastrarUseCase).cadastrar(any(PecaInsumoRequestDTO.class));
         }
 
         @Test
@@ -127,7 +143,7 @@ class ItemEstoqueControllerTest {
         @WithMockUser
         @DisplayName("deve atualizar item e retornar 200")
         void deveAtualizarItemERetornar200() throws Exception {
-            when(estoqueService.atualizar(eq(itemId), any(PecaInsumoRequestDTO.class))).thenReturn(responseDTO);
+            when(atualizarUseCase.atualizar(eq(itemId), any(PecaInsumoRequestDTO.class))).thenReturn(responseDTO);
 
             mockMvc.perform(put("/estoque/itens/{id}", itemId)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -136,7 +152,7 @@ class ItemEstoqueControllerTest {
                     .andExpect(jsonPath("$.id").value(itemId.toString()))
                     .andExpect(jsonPath("$.nome").value("Filtro de óleo"));
 
-            verify(estoqueService).atualizar(eq(itemId), any(PecaInsumoRequestDTO.class));
+            verify(atualizarUseCase).atualizar(eq(itemId), any(PecaInsumoRequestDTO.class));
         }
     }
 
@@ -152,14 +168,14 @@ class ItemEstoqueControllerTest {
         @WithMockUser
         @DisplayName("deve buscar item por ID e retornar 200")
         void deveBuscarItemPorId() throws Exception {
-            when(estoqueService.buscarPorId(itemId)).thenReturn(responseDTO);
+            when(buscarUseCase.buscarPorId(itemId)).thenReturn(responseDTO);
 
             mockMvc.perform(get("/estoque/itens/{id}", itemId))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(itemId.toString()))
                     .andExpect(jsonPath("$.nome").value("Filtro de óleo"));
 
-            verify(estoqueService).buscarPorId(itemId);
+            verify(buscarUseCase).buscarPorId(itemId);
         }
     }
 
@@ -180,7 +196,7 @@ class ItemEstoqueControllerTest {
                     BigDecimal.valueOf(80), BigDecimal.valueOf(50),
                     null, 2, 10, TipoPecaInsumo.PECA, true
             );
-            when(estoqueService.listarAbaixoDoMinimo()).thenReturn(List.of(critico));
+            when(buscarUseCase.listarAbaixoDoMinimo()).thenReturn(List.of(critico));
 
             mockMvc.perform(get("/estoque/itens/abaixo-do-minimo"))
                     .andExpect(status().isOk())
@@ -189,14 +205,14 @@ class ItemEstoqueControllerTest {
                     .andExpect(jsonPath("$.dados[0].nome").value("Pastilha de freio"))
                     .andExpect(jsonPath("$.totalResultados").value(1));
 
-            verify(estoqueService).listarAbaixoDoMinimo();
+            verify(buscarUseCase).listarAbaixoDoMinimo();
         }
 
         @Test
         @WithMockUser
         @DisplayName("deve retornar vazio quando nenhum item esta abaixo do minimo")
         void deveRetornarVazioQuandoEstoqueAdequado() throws Exception {
-            when(estoqueService.listarAbaixoDoMinimo()).thenReturn(List.of());
+            when(buscarUseCase.listarAbaixoDoMinimo()).thenReturn(List.of());
 
             mockMvc.perform(get("/estoque/itens/abaixo-do-minimo"))
                     .andExpect(status().isOk())
@@ -205,7 +221,7 @@ class ItemEstoqueControllerTest {
                     .andExpect(jsonPath("$.totalResultados").value(0))
                     .andExpect(jsonPath("$.dados", hasSize(0)));
 
-            verify(estoqueService).listarAbaixoDoMinimo();
+            verify(buscarUseCase).listarAbaixoDoMinimo();
         }
     }
 
@@ -221,35 +237,35 @@ class ItemEstoqueControllerTest {
         @WithMockUser
         @DisplayName("deve listar todos os itens sem filtro")
         void deveListarTodosOsItens() throws Exception {
-            when(estoqueService.listarTodos(null)).thenReturn(List.of(responseDTO));
+            when(buscarUseCase.listarTodos(null)).thenReturn(List.of(responseDTO));
 
             mockMvc.perform(get("/estoque/itens"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(1)))
                     .andExpect(jsonPath("$[0].nome").value("Filtro de óleo"));
 
-            verify(estoqueService).listarTodos(null);
+            verify(buscarUseCase).listarTodos(null);
         }
 
         @Test
         @WithMockUser
         @DisplayName("deve listar itens filtrados por tipo PECA")
         void deveListarItensFiltrandoPorTipo() throws Exception {
-            when(estoqueService.listarTodos(TipoPecaInsumo.PECA)).thenReturn(List.of(responseDTO));
+            when(buscarUseCase.listarTodos(TipoPecaInsumo.PECA)).thenReturn(List.of(responseDTO));
 
             mockMvc.perform(get("/estoque/itens").param("tipo", "PECA"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(1)))
                     .andExpect(jsonPath("$[0].tipo").value("PECA"));
 
-            verify(estoqueService).listarTodos(TipoPecaInsumo.PECA);
+            verify(buscarUseCase).listarTodos(TipoPecaInsumo.PECA);
         }
 
         @Test
         @WithMockUser
         @DisplayName("deve retornar lista vazia quando nao ha itens")
         void deveRetornarListaVazia() throws Exception {
-            when(estoqueService.listarTodos(null)).thenReturn(List.of());
+            when(buscarUseCase.listarTodos(null)).thenReturn(List.of());
 
             mockMvc.perform(get("/estoque/itens"))
                     .andExpect(status().isOk())
@@ -275,7 +291,7 @@ class ItemEstoqueControllerTest {
                     "4 unidades", 8, 2, "NF-001", TipoPecaInsumo.PECA
             );
 
-            when(estoqueService.darEntrada(any(EntradaEstoqueRequestDTO.class))).thenReturn(responseDTO);
+            when(darEntradaUseCase.darEntrada(any(EntradaEstoqueRequestDTO.class))).thenReturn(responseDTO);
 
             mockMvc.perform(post("/estoque/itens/entrada")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -283,7 +299,7 @@ class ItemEstoqueControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(itemId.toString()));
 
-            verify(estoqueService).darEntrada(any(EntradaEstoqueRequestDTO.class));
+            verify(darEntradaUseCase).darEntrada(any(EntradaEstoqueRequestDTO.class));
         }
     }
 
@@ -299,8 +315,8 @@ class ItemEstoqueControllerTest {
         @WithMockUser
         @DisplayName("deve registrar entrada sem observacao e retornar relatorio")
         void deveRegistrarEntradaSemObservacao() throws Exception {
-            doNothing().when(estoqueService).registrarEntrada(eq(itemId), eq(10), isNull());
-            when(estoqueService.buscarPorId(itemId)).thenReturn(responseDTO);
+            doNothing().when(movimentarUseCase).registrarEntrada(eq(itemId), eq(10), isNull());
+            when(buscarUseCase.buscarPorId(itemId)).thenReturn(responseDTO);
 
             mockMvc.perform(patch("/estoque/itens/{id}/entrada", itemId)
                             .param("quantidade", "10"))
@@ -310,15 +326,15 @@ class ItemEstoqueControllerTest {
                     .andExpect(jsonPath("$.totalResultados").value(1))
                     .andExpect(jsonPath("$.dados[0].nome").value("Filtro de óleo"));
 
-            verify(estoqueService).registrarEntrada(eq(itemId), eq(10), isNull());
+            verify(movimentarUseCase).registrarEntrada(eq(itemId), eq(10), isNull());
         }
 
         @Test
         @WithMockUser
         @DisplayName("deve registrar entrada com observacao")
         void deveRegistrarEntradaComObservacao() throws Exception {
-            doNothing().when(estoqueService).registrarEntrada(eq(itemId), eq(5), eq("NF-002"));
-            when(estoqueService.buscarPorId(itemId)).thenReturn(responseDTO);
+            doNothing().when(movimentarUseCase).registrarEntrada(eq(itemId), eq(5), eq("NF-002"));
+            when(buscarUseCase.buscarPorId(itemId)).thenReturn(responseDTO);
 
             mockMvc.perform(patch("/estoque/itens/{id}/entrada", itemId)
                             .param("quantidade", "5")
@@ -327,7 +343,7 @@ class ItemEstoqueControllerTest {
                     .andExpect(jsonPath("$.mensagem")
                             .value("Entrada de estoque registrada com sucesso | Quantidade adicionada: 5"));
 
-            verify(estoqueService).registrarEntrada(eq(itemId), eq(5), eq("NF-002"));
+            verify(movimentarUseCase).registrarEntrada(eq(itemId), eq(5), eq("NF-002"));
         }
     }
 
@@ -343,8 +359,8 @@ class ItemEstoqueControllerTest {
         @WithMockUser
         @DisplayName("deve registrar saida sem observacao e retornar relatorio")
         void deveRegistrarSaidaSemObservacao() throws Exception {
-            doNothing().when(estoqueService).registrarSaida(eq(itemId), eq(3), isNull());
-            when(estoqueService.buscarPorId(itemId)).thenReturn(responseDTO);
+            doNothing().when(movimentarUseCase).registrarSaida(eq(itemId), eq(3), isNull());
+            when(buscarUseCase.buscarPorId(itemId)).thenReturn(responseDTO);
 
             mockMvc.perform(patch("/estoque/itens/{id}/saida", itemId)
                             .param("quantidade", "3"))
@@ -354,15 +370,15 @@ class ItemEstoqueControllerTest {
                     .andExpect(jsonPath("$.totalResultados").value(1))
                     .andExpect(jsonPath("$.dados[0].nome").value("Filtro de óleo"));
 
-            verify(estoqueService).registrarSaida(eq(itemId), eq(3), isNull());
+            verify(movimentarUseCase).registrarSaida(eq(itemId), eq(3), isNull());
         }
 
         @Test
         @WithMockUser
         @DisplayName("deve registrar saida com observacao")
         void deveRegistrarSaidaComObservacao() throws Exception {
-            doNothing().when(estoqueService).registrarSaida(eq(itemId), eq(2), eq("Uso OS-55"));
-            when(estoqueService.buscarPorId(itemId)).thenReturn(responseDTO);
+            doNothing().when(movimentarUseCase).registrarSaida(eq(itemId), eq(2), eq("Uso OS-55"));
+            when(buscarUseCase.buscarPorId(itemId)).thenReturn(responseDTO);
 
             mockMvc.perform(patch("/estoque/itens/{id}/saida", itemId)
                             .param("quantidade", "2")
@@ -371,7 +387,7 @@ class ItemEstoqueControllerTest {
                     .andExpect(jsonPath("$.mensagem")
                             .value("Saída de estoque registrada com sucesso | Quantidade removida: 2"));
 
-            verify(estoqueService).registrarSaida(eq(itemId), eq(2), eq("Uso OS-55"));
+            verify(movimentarUseCase).registrarSaida(eq(itemId), eq(2), eq("Uso OS-55"));
         }
     }
 
@@ -387,7 +403,7 @@ class ItemEstoqueControllerTest {
         @WithMockUser
         @DisplayName("deve remover item e retornar mensagem de confirmacao")
         void deveRemoverItemERetornarConfirmacao() throws Exception {
-            doNothing().when(estoqueService).remover(itemId);
+            doNothing().when(atualizarUseCase).remover(itemId);
 
             mockMvc.perform(delete("/estoque/itens/{id}", itemId))
                     .andExpect(status().isOk())
@@ -396,7 +412,7 @@ class ItemEstoqueControllerTest {
                     .andExpect(jsonPath("$.totalResultados").value(0))
                     .andExpect(jsonPath("$.dados", hasSize(0)));
 
-            verify(estoqueService).remover(itemId);
+            verify(atualizarUseCase).remover(itemId);
         }
     }
 }

@@ -2,6 +2,7 @@ package com.fiap.tech_challenge_backend.cadastro.application.usecases;
 
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.BuscarClienteResponse;
 import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteRepository;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.ListarClientesInputPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class ListarClientesUseCase {
+public class ListarClientesUseCase implements ListarClientesInputPort {
 
     private static final Logger log = LoggerFactory.getLogger(ListarClientesUseCase.class);
     private final ClienteRepository clienteRepository;
@@ -18,6 +19,7 @@ public class ListarClientesUseCase {
         this.clienteRepository = clienteRepository;
     }
 
+    @Override
     public List<BuscarClienteResponse> execute() {
         log.debug("Iniciando listagem de clientes");
 

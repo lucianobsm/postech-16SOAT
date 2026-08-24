@@ -2,9 +2,13 @@ package com.fiap.tech_challenge_backend.cadastro.presentation;
 
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.AtualizarClienteRequest;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.BuscarClienteResponse;
-import com.fiap.tech_challenge_backend.cadastro.application.usecases.*;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroClienteRequest;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroClienteResponse;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.AtualizarClienteInputPort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.BuscarClienteInputPort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.CadastrarClienteInputPort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.DeletarClienteInputPort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.ListarClientesInputPort;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -29,18 +33,18 @@ public class ClienteController {
 
     private static final Logger log = LoggerFactory.getLogger(ClienteController.class);
 
-    private final CadastroClienteUseCase cadastroClienteUseCase;
-    private final BuscarClienteUseCase buscarClienteUseCase;
-    private final ListarClientesUseCase listarClientesUseCase;
-    private final AtualizarClienteUseCase atualizarClienteUseCase;
-    private final DeletarClienteUseCase deletarClienteUseCase;
+    private final CadastrarClienteInputPort cadastroClienteUseCase;
+    private final BuscarClienteInputPort buscarClienteUseCase;
+    private final ListarClientesInputPort listarClientesUseCase;
+    private final AtualizarClienteInputPort atualizarClienteUseCase;
+    private final DeletarClienteInputPort deletarClienteUseCase;
 
     public ClienteController(
-            CadastroClienteUseCase cadastroClienteUseCase,
-            BuscarClienteUseCase buscarClienteUseCase,
-            ListarClientesUseCase listarClientesUseCase,
-            AtualizarClienteUseCase atualizarClienteUseCase,
-            DeletarClienteUseCase deletarClienteUseCase
+            CadastrarClienteInputPort cadastroClienteUseCase,
+            BuscarClienteInputPort buscarClienteUseCase,
+            ListarClientesInputPort listarClientesUseCase,
+            AtualizarClienteInputPort atualizarClienteUseCase,
+            DeletarClienteInputPort deletarClienteUseCase
     ) {
         this.cadastroClienteUseCase = cadastroClienteUseCase;
         this.buscarClienteUseCase = buscarClienteUseCase;

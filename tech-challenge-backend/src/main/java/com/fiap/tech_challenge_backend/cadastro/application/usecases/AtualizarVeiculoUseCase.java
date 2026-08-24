@@ -4,13 +4,14 @@ import com.fiap.tech_challenge_backend.cadastro.application.dtos.AtualizarVeicul
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.BuscarVeiculoResponse;
 import com.fiap.tech_challenge_backend.cadastro.application.exceptions.VeiculoNaoEncontradoException;
 import com.fiap.tech_challenge_backend.cadastro.application.ports.VeiculoRepository;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.AtualizarVeiculoInputPort;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Placa;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AtualizarVeiculoUseCase {
+public class AtualizarVeiculoUseCase implements AtualizarVeiculoInputPort {
 
     private final VeiculoRepository veiculoRepository;
 
@@ -18,6 +19,7 @@ public class AtualizarVeiculoUseCase {
         this.veiculoRepository = veiculoRepository;
     }
 
+    @Override
     @Transactional
     public BuscarVeiculoResponse execute(String placa, AtualizarVeiculoRequest request) {
         Veiculo veiculo = veiculoRepository.buscarPorPlaca(new Placa(placa))

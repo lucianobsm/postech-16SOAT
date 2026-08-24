@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.acesso.domain.enums.PerfilUsuario;
 import com.fiap.tech_challenge_backend.acesso.infrastructure.repositories.UsuarioJpaRepository;
+import com.fiap.tech_challenge_backend.acesso.infrastructure.repositories.UsuarioMapper;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.AtualizarVeiculoRequest;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroVeiculoRequest;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.ClienteJpaRepository;
+import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.ClienteMapper;
 import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.ClienteVeiculoJpaRepository;
 import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.VeiculoJpaRepository;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Cep;
@@ -92,11 +94,11 @@ class VeiculoControllerIT {
                 .perfil(PerfilUsuario.CLIENTE)
                 .cpfCnpj(new CpfCnpj("12345678901"))
                 .build();
-        usuarioJpaRepository.save(usuario);
+        Usuario usuarioSalvo = UsuarioMapper.toDomain(usuarioJpaRepository.save(UsuarioMapper.toEntity(usuario)));
 
         Cliente cliente = Cliente.builder()
                 .nome("João Silva")
-                .usuario(usuario)
+                .usuarioId(usuarioSalvo.getId())
                 .cpfCnpj(new CpfCnpj("12345678901"))
                 .telefone(new Telefone("11987654321"))
                 .cep(new Cep("01310100"))
@@ -106,7 +108,7 @@ class VeiculoControllerIT {
                 .cidade("São Paulo")
                 .estado("SP")
                 .build();
-        clienteJpaRepository.save(cliente);
+        clienteJpaRepository.save(ClienteMapper.toEntity(cliente));
     }
 
     private CadastroVeiculoRequest requestFord() {

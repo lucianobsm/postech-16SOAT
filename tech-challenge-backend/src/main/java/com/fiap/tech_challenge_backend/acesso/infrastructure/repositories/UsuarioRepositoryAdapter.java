@@ -20,32 +20,33 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
 
     @Override
     public Usuario salvar(Usuario usuario) {
-        return usuarioJpaRepository.save(usuario);
+        var salvo = usuarioJpaRepository.save(UsuarioMapper.toEntity(usuario));
+        return UsuarioMapper.toDomain(salvo);
     }
 
     @Override
     public boolean existePorEmail(Email email) {
-        return usuarioJpaRepository.existsByEmailValor(email.valor());
+        return usuarioJpaRepository.existsByEmail(email.valor());
     }
 
     @Override
     public boolean existePorCpfCnpj(CpfCnpj cpfCnpj) {
-        return usuarioJpaRepository.existsByCpfCnpjValor(cpfCnpj.valor());
+        return usuarioJpaRepository.existsByCpfCnpj(cpfCnpj.valor());
     }
 
     @Override
     public Optional<Usuario> procuraPorEmail(Email email) {
-        return usuarioJpaRepository.findByEmailValor(email.valor());
+        return usuarioJpaRepository.findByEmail(email.valor()).map(UsuarioMapper::toDomain);
     }
 
     @Override
     public Optional<Usuario> procuraPorCpfCnpj(CpfCnpj cpfCnpj) {
-        return usuarioJpaRepository.findByCpfCnpjValor(cpfCnpj.valor());
+        return usuarioJpaRepository.findByCpfCnpj(cpfCnpj.valor()).map(UsuarioMapper::toDomain);
     }
 
     @Override
     public Optional<Usuario> buscarPorId(UUID id) {
-        return usuarioJpaRepository.findById(id);
+        return usuarioJpaRepository.findById(id).map(UsuarioMapper::toDomain);
     }
 
     @Override

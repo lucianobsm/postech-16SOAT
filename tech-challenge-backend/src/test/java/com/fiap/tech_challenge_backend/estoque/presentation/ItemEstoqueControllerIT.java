@@ -5,6 +5,7 @@ import com.fiap.tech_challenge_backend.estoque.application.dto.EntradaEstoqueReq
 import com.fiap.tech_challenge_backend.estoque.application.dto.PecaInsumoRequestDTO;
 import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
 import com.fiap.tech_challenge_backend.estoque.domain.enums.TipoPecaInsumo;
+import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoMapper;
 import com.fiap.tech_challenge_backend.estoque.infrastructure.PecaInsumoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -69,7 +70,7 @@ class ItemEstoqueControllerIT {
     }
 
     private PecaInsumo salvarFiltroOleo() {
-        return pecaInsumoRepository.save(PecaInsumo.builder()
+        return PecaInsumoMapper.toDomain(pecaInsumoRepository.save(PecaInsumoMapper.toEntity(PecaInsumo.builder()
                 .nome("Filtro de óleo")
                 .descricao("Filtro para motor 1.0")
                 .precoVenda(new BigDecimal("35.00"))
@@ -78,7 +79,7 @@ class ItemEstoqueControllerIT {
                 .quantidadeEstoque(20)
                 .quantidadeMinima(5)
                 .tipo(TipoPecaInsumo.PECA)
-                .build());
+                .build())));
     }
 
     // ─────────────────────────────────────────────────────────
@@ -162,14 +163,14 @@ class ItemEstoqueControllerIT {
     @DisplayName("GET /estoque/itens - deve listar todos os itens cadastrados")
     void deveListarTodosOsItens() throws Exception {
         salvarFiltroOleo();
-        pecaInsumoRepository.save(PecaInsumo.builder()
+        pecaInsumoRepository.save(PecaInsumoMapper.toEntity(PecaInsumo.builder()
                 .nome("Óleo lubrificante")
                 .precoVenda(new BigDecimal("40.00"))
                 .precoCompra(new BigDecimal("30.00"))
                 .quantidadeEstoque(10)
                 .quantidadeMinima(2)
                 .tipo(TipoPecaInsumo.INSUMO)
-                .build());
+                .build()));
 
         mockMvc.perform(get("/estoque/itens"))
                 .andExpect(status().isOk())
@@ -181,14 +182,14 @@ class ItemEstoqueControllerIT {
     @DisplayName("GET /estoque/itens - deve listar itens filtrados por tipo PECA")
     void deveListarItensFiltrandoPorTipoPeca() throws Exception {
         salvarFiltroOleo();
-        pecaInsumoRepository.save(PecaInsumo.builder()
+        pecaInsumoRepository.save(PecaInsumoMapper.toEntity(PecaInsumo.builder()
                 .nome("Óleo lubrificante")
                 .precoVenda(new BigDecimal("40.00"))
                 .precoCompra(new BigDecimal("30.00"))
                 .quantidadeEstoque(10)
                 .quantidadeMinima(2)
                 .tipo(TipoPecaInsumo.INSUMO)
-                .build());
+                .build()));
 
         mockMvc.perform(get("/estoque/itens").param("tipo", "PECA"))
                 .andExpect(status().isOk())
@@ -214,14 +215,14 @@ class ItemEstoqueControllerIT {
     @WithMockUser
     @DisplayName("GET /estoque/itens/abaixo-do-minimo - deve listar itens com estoque crítico")
     void deveListarItensAbaixoDoMinimo() throws Exception {
-        pecaInsumoRepository.save(PecaInsumo.builder()
+        pecaInsumoRepository.save(PecaInsumoMapper.toEntity(PecaInsumo.builder()
                 .nome("Pastilha de freio")
                 .precoVenda(new BigDecimal("80.00"))
                 .precoCompra(new BigDecimal("50.00"))
                 .quantidadeEstoque(2)
                 .quantidadeMinima(10)
                 .tipo(TipoPecaInsumo.PECA)
-                .build());
+                .build()));
 
         mockMvc.perform(get("/estoque/itens/abaixo-do-minimo"))
                 .andExpect(status().isOk())

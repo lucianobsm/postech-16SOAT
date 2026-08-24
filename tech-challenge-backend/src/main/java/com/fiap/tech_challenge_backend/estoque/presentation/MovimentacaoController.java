@@ -1,7 +1,7 @@
 package com.fiap.tech_challenge_backend.estoque.presentation;
 
-import com.fiap.tech_challenge_backend.estoque.application.EstoqueService;
 import com.fiap.tech_challenge_backend.estoque.application.dto.MovimentacaoResponseDTO;
+import com.fiap.tech_challenge_backend.estoque.application.ports.in.ListarMovimentacoesUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,11 +23,11 @@ import java.util.UUID;
 @SecurityRequirement(name = "bearerAuth")
 public class MovimentacaoController {
 
-    private final EstoqueService service;
+    private final ListarMovimentacoesUseCase listarMovimentacoesUseCase;
 
     @GetMapping("/item/{pecaInsumoId}")
     @Operation(summary = "Listar movimentações de uma peça ou insumo")
     public List<MovimentacaoResponseDTO> listarPorItem(@PathVariable UUID pecaInsumoId) {
-        return service.listarMovimentacoes(pecaInsumoId);
+        return listarMovimentacoesUseCase.listarMovimentacoes(pecaInsumoId);
     }
 }

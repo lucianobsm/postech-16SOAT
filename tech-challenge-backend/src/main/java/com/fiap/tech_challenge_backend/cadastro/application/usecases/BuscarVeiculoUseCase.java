@@ -3,11 +3,12 @@ package com.fiap.tech_challenge_backend.cadastro.application.usecases;
 import com.fiap.tech_challenge_backend.cadastro.application.dtos.BuscarVeiculoResponse;
 import com.fiap.tech_challenge_backend.cadastro.application.exceptions.VeiculoNaoEncontradoException;
 import com.fiap.tech_challenge_backend.cadastro.application.ports.VeiculoRepository;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.BuscarVeiculoInputPort;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Placa;
 import org.springframework.stereotype.Service;
 
 @Service
-public class BuscarVeiculoUseCase {
+public class BuscarVeiculoUseCase implements BuscarVeiculoInputPort {
 
     private final VeiculoRepository veiculoRepository;
 
@@ -15,6 +16,7 @@ public class BuscarVeiculoUseCase {
         this.veiculoRepository = veiculoRepository;
     }
 
+    @Override
     public BuscarVeiculoResponse execute(String placa) {
         return veiculoRepository.buscarPorPlaca(new Placa(placa))
                 .map(v -> new BuscarVeiculoResponse(

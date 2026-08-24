@@ -1,20 +1,14 @@
 package com.fiap.tech_challenge_backend.shared.domain.valueobjects;
 
 import com.fiap.tech_challenge_backend.shared.application.exceptions.ValorInvalidoException;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class CpfCnpj {
 
     private static final String REGEX = "^(\\d{11}|[A-Za-z0-9]{14})$";
 
-    @Column(name = "cpf_cnpj", length = 14)
     private String valor;
-
-    protected CpfCnpj() {}
 
     public CpfCnpj(String valor) {
         if (valor == null || valor.isBlank()) {

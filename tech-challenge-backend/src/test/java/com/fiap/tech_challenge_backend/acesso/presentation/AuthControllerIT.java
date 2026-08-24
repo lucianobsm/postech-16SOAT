@@ -1,11 +1,9 @@
 package com.fiap.tech_challenge_backend.acesso.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.acesso.domain.enums.PerfilUsuario;
+import com.fiap.tech_challenge_backend.acesso.infrastructure.repositories.UsuarioJpaEntity;
 import com.fiap.tech_challenge_backend.acesso.infrastructure.repositories.UsuarioJpaRepository;
-import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
-import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Email;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -63,12 +61,12 @@ class AuthControllerIT {
     void setUp() {
         usuarioJpaRepository.deleteAll();
 
-        usuarioJpaRepository.save(Usuario.builder()
+        usuarioJpaRepository.save(UsuarioJpaEntity.builder()
                 .nome("João Silva")
-                .email(new Email("joao@email.com"))
+                .email("joao@email.com")
                 .senha(passwordEncoder.encode("senha123"))
                 .perfil(PerfilUsuario.CLIENTE)
-                .cpfCnpj(new CpfCnpj("12345678901"))
+                .cpfCnpj("12345678901")
                 .build());
     }
 

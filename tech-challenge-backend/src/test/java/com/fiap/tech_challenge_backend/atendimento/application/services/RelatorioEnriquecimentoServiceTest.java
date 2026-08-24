@@ -10,6 +10,9 @@ import com.fiap.tech_challenge_backend.atendimento.domain.enums.TipoOrcamento;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,14 +23,18 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 @DisplayName("RelatorioEnriquecimentoService")
 class RelatorioEnriquecimentoServiceTest {
+
+    @Mock
+    private OrdemServicoEnriquecimentoService enriquecimentoService;
 
     private RelatorioEnriquecimentoService service;
 
     @BeforeEach
     void setUp() {
-        service = new RelatorioEnriquecimentoService();
+        service = new RelatorioEnriquecimentoService(enriquecimentoService);
     }
 
     @Test
@@ -101,11 +108,13 @@ class RelatorioEnriquecimentoServiceTest {
         );
 
         Cliente cliente = new Cliente();
+        cliente.setId(UUID.randomUUID());
         cliente.setNome("João Silva");
+        org.mockito.Mockito.when(enriquecimentoService.resolverCliente(cliente.getId())).thenReturn(cliente);
 
         OrdemServico os = OrdemServico.builder()
                 .id(1L)
-                .cliente(cliente)
+                .clienteId(cliente.getId())
                 .orcamentos(null)
                 .build();
 
@@ -132,12 +141,14 @@ class RelatorioEnriquecimentoServiceTest {
         );
 
         Veiculo veiculo = new Veiculo();
+        veiculo.setId(UUID.randomUUID());
         veiculo.setModelo("Ford Ka");
         veiculo.setCor("Branco");
+        org.mockito.Mockito.when(enriquecimentoService.resolverVeiculo(veiculo.getId())).thenReturn(veiculo);
 
         OrdemServico os = OrdemServico.builder()
                 .id(1L)
-                .veiculo(veiculo)
+                .veiculoId(veiculo.getId())
                 .orcamentos(null)
                 .build();
 
@@ -164,11 +175,13 @@ class RelatorioEnriquecimentoServiceTest {
         );
 
         Usuario mecanico = new Usuario();
+        mecanico.setId(UUID.randomUUID());
         mecanico.setNome("Carlos Mecânico");
+        org.mockito.Mockito.when(enriquecimentoService.resolverMecanico(mecanico.getId())).thenReturn(mecanico);
 
         OrdemServico os = OrdemServico.builder()
                 .id(1L)
-                .mecanico(mecanico)
+                .mecanicoId(mecanico.getId())
                 .orcamentos(null)
                 .build();
 
@@ -195,7 +208,7 @@ class RelatorioEnriquecimentoServiceTest {
 
         OrdemServico os = OrdemServico.builder()
                 .id(1L)
-                .mecanico(null)
+                .mecanicoId(null)
                 .orcamentos(null)
                 .build();
 
@@ -222,19 +235,25 @@ class RelatorioEnriquecimentoServiceTest {
         );
 
         Cliente cliente = new Cliente();
+        cliente.setId(UUID.randomUUID());
         cliente.setNome("João Silva");
+        org.mockito.Mockito.when(enriquecimentoService.resolverCliente(cliente.getId())).thenReturn(cliente);
 
         Veiculo veiculo = new Veiculo();
+        veiculo.setId(UUID.randomUUID());
         veiculo.setModelo("Chevrolet");
+        org.mockito.Mockito.when(enriquecimentoService.resolverVeiculo(veiculo.getId())).thenReturn(veiculo);
 
         Usuario mecanico = new Usuario();
+        mecanico.setId(UUID.randomUUID());
         mecanico.setNome("Carlos");
+        org.mockito.Mockito.when(enriquecimentoService.resolverMecanico(mecanico.getId())).thenReturn(mecanico);
 
         OrdemServico os = OrdemServico.builder()
                 .id(1L)
-                .cliente(cliente)
-                .veiculo(veiculo)
-                .mecanico(mecanico)
+                .clienteId(cliente.getId())
+                .veiculoId(veiculo.getId())
+                .mecanicoId(mecanico.getId())
                 .orcamentos(null)
                 .build();
 
@@ -372,10 +391,11 @@ class RelatorioEnriquecimentoServiceTest {
         );
 
         Cliente cliente = new Cliente();
+        cliente.setId(UUID.randomUUID());
         cliente.setNome("Joao");
 
         OrdemServico os = OrdemServico.builder()
-                .id(1L).cliente(cliente).orcamentos(null).build();
+                .id(1L).clienteId(cliente.getId()).orcamentos(null).build();
 
         RelatorioOsEnriquecidoResponseDTO resultado = service.enriquecer(baseDTO, os, new String[]{"cliente"}); // lowercase
 

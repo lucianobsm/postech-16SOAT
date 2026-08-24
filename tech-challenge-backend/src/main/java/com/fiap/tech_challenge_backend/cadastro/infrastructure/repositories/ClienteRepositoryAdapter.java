@@ -20,29 +20,28 @@ public class ClienteRepositoryAdapter implements ClienteRepository {
 
     @Override
     public Cliente salvar(Cliente cliente) {
-
-        return clienteJpaRepository.save(cliente);
+        var salvo = clienteJpaRepository.save(ClienteMapper.toEntity(cliente));
+        return ClienteMapper.toDomain(salvo);
     }
 
     @Override
     public boolean existePorCpfCnpj(CpfCnpj cpfCnpj) {
-
-        return clienteJpaRepository.existsByCpfCnpjValor(cpfCnpj.valor());
+        return clienteJpaRepository.existsByCpfCnpj(cpfCnpj.valor());
     }
 
     @Override
     public Optional<Cliente> buscarPorCpfCnpj(CpfCnpj cpfCnpj) {
-        return clienteJpaRepository.findByCpfCnpjValor(cpfCnpj.valor());
+        return clienteJpaRepository.findByCpfCnpj(cpfCnpj.valor()).map(ClienteMapper::toDomain);
     }
 
     @Override
     public Optional<Cliente> buscarPorId(UUID id) {
-        return clienteJpaRepository.findById(id);
+        return clienteJpaRepository.findById(id).map(ClienteMapper::toDomain);
     }
 
     @Override
     public List<Cliente> listar() {
-        return this.clienteJpaRepository.findAll();
+        return this.clienteJpaRepository.findAll().stream().map(ClienteMapper::toDomain).toList();
     }
 
     @Override

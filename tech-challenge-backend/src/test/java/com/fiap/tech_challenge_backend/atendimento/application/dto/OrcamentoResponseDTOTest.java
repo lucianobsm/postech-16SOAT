@@ -124,7 +124,7 @@ class OrcamentoResponseDTOTest {
                     .dataCriacao(criacao)
                     .build();
 
-            OrcamentoResponseDTO dto = OrcamentoResponseDTO.from(orc);
+            OrcamentoResponseDTO dto = OrcamentoResponseDTO.from(orc, id -> null);
 
             assertThat(dto.id()).isEqualTo(42L);
             assertThat(dto.tipo()).isEqualTo(TipoOrcamento.INICIAL);
@@ -143,7 +143,7 @@ class OrcamentoResponseDTOTest {
                     .dataCriacao(LocalDateTime.now())
                     .build();
 
-            OrcamentoResponseDTO dto = OrcamentoResponseDTO.from(orc);
+            OrcamentoResponseDTO dto = OrcamentoResponseDTO.from(orc, id -> null);
 
             assertThat(dto.servicos()).isNotNull().isEmpty();
             assertThat(dto.pecas()).isNotNull().isEmpty();
@@ -171,7 +171,7 @@ class OrcamentoResponseDTOTest {
                     .servicos(List.of(osServico))
                     .build();
 
-            OrcamentoResponseDTO dto = OrcamentoResponseDTO.from(orc);
+            OrcamentoResponseDTO dto = OrcamentoResponseDTO.from(orc, id -> null);
 
             assertThat(dto.servicos()).hasSize(1);
             assertThat(dto.servicos().get(0).id()).isEqualTo(osServicoId);
@@ -191,7 +191,7 @@ class OrcamentoResponseDTOTest {
             UUID osPecaId = UUID.randomUUID();
             OsPeca osPeca = OsPeca.builder()
                     .id(osPecaId)
-                    .peca(pecaInsumo)
+                    .pecaInsumoId(pecaInsumoId)
                     .quantidade(2)
                     .precoVendaAplicado(BigDecimal.valueOf(45))
                     .build();
@@ -203,7 +203,7 @@ class OrcamentoResponseDTOTest {
                     .pecas(List.of(osPeca))
                     .build();
 
-            OrcamentoResponseDTO dto = OrcamentoResponseDTO.from(orc);
+            OrcamentoResponseDTO dto = OrcamentoResponseDTO.from(orc, id -> pecaInsumo.getNome());
 
             assertThat(dto.pecas()).hasSize(1);
             assertThat(dto.pecas().get(0).id()).isEqualTo(osPecaId);
@@ -232,7 +232,7 @@ class OrcamentoResponseDTOTest {
 
             OsPeca osPeca = OsPeca.builder()
                     .id(UUID.randomUUID())
-                    .peca(pecaInsumo)
+                    .pecaInsumoId(pecaInsumo.getId())
                     .quantidade(1)
                     .precoVendaAplicado(BigDecimal.valueOf(35))
                     .build();
@@ -246,7 +246,7 @@ class OrcamentoResponseDTOTest {
                     .pecas(List.of(osPeca))
                     .build();
 
-            OrcamentoResponseDTO dto = OrcamentoResponseDTO.from(orc);
+            OrcamentoResponseDTO dto = OrcamentoResponseDTO.from(orc, id -> pecaInsumo.getNome());
 
             assertThat(dto.servicos()).hasSize(1);
             assertThat(dto.pecas()).hasSize(1);

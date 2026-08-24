@@ -2,13 +2,13 @@ package com.fiap.tech_challenge_backend.atendimento.adapters.in.web;
 
 import com.fiap.tech_challenge_backend.atendimento.application.dto.AprovarRejeitarOrcamentoRequestDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrcamentoResponseDTO;
+import com.fiap.tech_challenge_backend.atendimento.application.exceptions.OrdemServicoNaoEncontradaException;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.AutorizarOrdemServicoUseCase;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.ResponderOrcamentoUseCase;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrcamento;
 import com.fiap.tech_challenge_backend.atendimento.domain.exceptions.OrdemServicoStatusException;
 import com.fiap.tech_challenge_backend.config.TestSecurityConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -70,7 +70,7 @@ class ClienteOrdemServicoControllerTest {
     @DisplayName("GET /api/public/atendimento/ordens/{id}/autorizar - deve retornar 404 quando OS não encontrada")
     void testAutorizarOrcamentoNaoEncontrada() throws Exception {
         Long osId = 1L;
-        doThrow(new EntityNotFoundException("Ordem de Serviço não encontrada"))
+        doThrow(new OrdemServicoNaoEncontradaException("Ordem de Serviço não encontrada"))
                 .when(autorizarOrdemServicoUseCase).autorizar(osId);
 
         mockMvc.perform(get("/api/public/atendimento/ordens/{id}/autorizar", osId)
@@ -154,7 +154,7 @@ class ClienteOrdemServicoControllerTest {
         AprovarRejeitarOrcamentoRequestDTO request = new AprovarRejeitarOrcamentoRequestDTO(StatusOrcamento.APROVADO);
 
         when(responderOrcamentoUseCase.responder(eq(osId), eq(orcamentoId), any(AprovarRejeitarOrcamentoRequestDTO.class)))
-                .thenThrow(new EntityNotFoundException("Orçamento não encontrado"));
+                .thenThrow(new OrdemServicoNaoEncontradaException("Orçamento não encontrado"));
 
         mockMvc.perform(patch("/api/public/atendimento/ordens/{id}/orcamentos/{orcamentoId}/status", osId, orcamentoId)
                 .contentType(MediaType.APPLICATION_JSON)

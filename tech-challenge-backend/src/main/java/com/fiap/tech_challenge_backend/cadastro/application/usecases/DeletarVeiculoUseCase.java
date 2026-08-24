@@ -3,13 +3,16 @@ package com.fiap.tech_challenge_backend.cadastro.application.usecases;
 import com.fiap.tech_challenge_backend.cadastro.application.exceptions.VeiculoNaoEncontradoException;
 import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteVeiculoRepository;
 import com.fiap.tech_challenge_backend.cadastro.application.ports.VeiculoRepository;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.in.DeletarVeiculoInputPort;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Placa;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
-public class DeletarVeiculoUseCase {
+public class DeletarVeiculoUseCase implements DeletarVeiculoInputPort {
 
     private final VeiculoRepository veiculoRepository;
     private final ClienteVeiculoRepository clienteVeiculoRepository;
@@ -22,12 +25,14 @@ public class DeletarVeiculoUseCase {
         this.clienteVeiculoRepository = clienteVeiculoRepository;
     }
 
+    @Override
     @Transactional
     public void execute(String placa) {
         Veiculo veiculo = veiculoRepository.buscarPorPlaca(new Placa(placa))
                 .orElseThrow(() -> new VeiculoNaoEncontradoException(placa));
 
-        veiculo.setDeletedAt(java.time.LocalDateTime.now());
+        veiculo.setDeletedAt(LocalDateTime.now());
         veiculoRepository.salvar(veiculo);
+        clienteVeiculoRepository.deletarPorVeiculoId(veiculo.getId());
     }
 }

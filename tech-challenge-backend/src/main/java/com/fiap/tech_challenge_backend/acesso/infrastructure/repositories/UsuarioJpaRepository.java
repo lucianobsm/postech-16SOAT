@@ -1,18 +1,17 @@
 package com.fiap.tech_challenge_backend.acesso.infrastructure.repositories;
 
-import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UsuarioJpaRepository extends JpaRepository<Usuario, UUID> {
+public interface UsuarioJpaRepository extends JpaRepository<UsuarioJpaEntity, UUID> {
 
-    boolean existsByEmailValor(String email);
+    boolean existsByEmail(String email);
 
-    boolean existsByCpfCnpjValor(String cpfCnpj);
+    boolean existsByCpfCnpj(String cpfCnpj);
 
-    Optional<Usuario> findByEmailValor(String email);
+    Optional<UsuarioJpaEntity> findByEmail(String email);
 
-    Optional<Usuario> findByCpfCnpjValor(String cpfCnpj);
+    Optional<UsuarioJpaEntity> findByCpfCnpj(String cpfCnpj);
 }

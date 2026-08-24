@@ -97,40 +97,6 @@ class MovimentacaoEstoqueTest {
         }
     }
 
-    @Nested
-    @DisplayName("prePersist")
-    class PrePersistTests {
-
-        @Test
-        @DisplayName("deve preencher criadoEm ao chamar prePersist")
-        void devePreencherCriadoEm() {
-            var mov = MovimentacaoEstoque.builder()
-                    .pecaInsumo(pecaValida())
-                    .tipoMovimentacao(TipoMovimentacao.ENTRADA)
-                    .quantidade(5)
-                    .build();
-
-            mov.prePersist();
-
-            assertThat(mov.getCriadoEm()).isNotNull();
-        }
-
-        @Test
-        @DisplayName("criadoEm deve ser próximo ao momento atual")
-        void criadoEmDeveSerAtual() {
-            var mov = MovimentacaoEstoque.builder()
-                    .pecaInsumo(pecaValida())
-                    .tipoMovimentacao(TipoMovimentacao.SAIDA)
-                    .quantidade(2)
-                    .build();
-
-            var antes = java.time.LocalDateTime.now().minusSeconds(1);
-            mov.prePersist();
-            var depois = java.time.LocalDateTime.now().plusSeconds(1);
-
-            assertThat(mov.getCriadoEm()).isAfter(antes).isBefore(depois);
-        }
-    }
 
     @Nested
     @DisplayName("TipoMovimentacao")

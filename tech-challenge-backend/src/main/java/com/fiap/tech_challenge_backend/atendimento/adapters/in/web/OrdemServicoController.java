@@ -16,7 +16,6 @@ import com.fiap.tech_challenge_backend.atendimento.application.ports.in.BuscarOr
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.BuscarOrdemServicoUseCase;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.CriarOrcamentoUseCase;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.in.CriarOrdemServicoClienteUseCase;
-import com.fiap.tech_challenge_backend.atendimento.application.ports.in.CriarOrdemServicoUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,7 +45,6 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class OrdemServicoController {
 
-    private final CriarOrdemServicoUseCase criarUseCase;
     private final CriarOrdemServicoClienteUseCase criarClienteUseCase;
     private final BuscarOrdemServicoUseCase buscarUseCase;
     private final AtualizarOrdemServicoUseCase atualizarUseCase;
@@ -54,14 +52,12 @@ public class OrdemServicoController {
     private final CriarOrcamentoUseCase criarOrcamentoUseCase;
     private final BuscarOrcamentoUseCase buscarOrcamentoUseCase;
 
-    public OrdemServicoController(CriarOrdemServicoUseCase criarUseCase,
-                                  CriarOrdemServicoClienteUseCase criarClienteUseCase,
+    public OrdemServicoController(CriarOrdemServicoClienteUseCase criarClienteUseCase,
                                   BuscarOrdemServicoUseCase buscarUseCase,
                                   AtualizarOrdemServicoUseCase atualizarUseCase,
                                   AlterarStatusOrdemServicoUseCase alterarStatusUseCase,
                                   CriarOrcamentoUseCase criarOrcamentoUseCase,
                                   BuscarOrcamentoUseCase buscarOrcamentoUseCase) {
-        this.criarUseCase = criarUseCase;
         this.criarClienteUseCase = criarClienteUseCase;
         this.buscarUseCase = buscarUseCase;
         this.atualizarUseCase = atualizarUseCase;

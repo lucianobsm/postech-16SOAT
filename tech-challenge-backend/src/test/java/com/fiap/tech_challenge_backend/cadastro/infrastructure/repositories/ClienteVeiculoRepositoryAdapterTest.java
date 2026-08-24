@@ -28,7 +28,7 @@ class ClienteVeiculoRepositoryAdapterTest {
     class Salvar {
 
         @Test
-        @DisplayName("delega para jpaRepository.save e retorna resultado")
+        @DisplayName("delega para jpaRepository.save e retorna resultado mapeado")
         void delegaParaSave() {
             UUID clienteId = UUID.randomUUID();
             UUID veiculoId = UUID.randomUUID();
@@ -39,22 +39,21 @@ class ClienteVeiculoRepositoryAdapterTest {
                     .ativo(true)
                     .build();
 
-            ClienteVeiculo salvo = ClienteVeiculo.builder()
+            ClienteVeiculoJpaEntity salvo = ClienteVeiculoJpaEntity.builder()
                     .clienteId(clienteId)
                     .veiculoId(veiculoId)
                     .ativo(true)
                     .build();
 
-            when(jpaRepository.save(entrada)).thenReturn(salvo);
+            when(jpaRepository.save(any(ClienteVeiculoJpaEntity.class))).thenReturn(salvo);
 
             ClienteVeiculo resultado = adapter.salvar(entrada);
 
-            assertThat(resultado).isEqualTo(salvo);
-            verify(jpaRepository).save(entrada);
+            assertThat(resultado).isEqualTo(entrada);
         }
 
         @Test
-        @DisplayName("repassa o objeto sem modificacoes para o jpaRepository")
+        @DisplayName("repassa o objeto mapeado sem modificacoes para o jpaRepository")
         void repassaObjetoSemModificacoes() {
             ClienteVeiculo cv = ClienteVeiculo.builder()
                     .clienteId(UUID.randomUUID())
@@ -62,11 +61,12 @@ class ClienteVeiculoRepositoryAdapterTest {
                     .ativo(false)
                     .build();
 
-            when(jpaRepository.save(cv)).thenReturn(cv);
+            when(jpaRepository.save(any(ClienteVeiculoJpaEntity.class)))
+                    .thenReturn(ClienteVeiculoMapper.toEntity(cv));
 
             adapter.salvar(cv);
 
-            verify(jpaRepository, times(1)).save(cv);
+            verify(jpaRepository, times(1)).save(ClienteVeiculoMapper.toEntity(cv));
         }
     }
 
