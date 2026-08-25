@@ -1,8 +1,8 @@
 package com.fiap.tech_challenge_backend.acesso.application.services;
 
 import com.fiap.tech_challenge_backend.acesso.application.exceptions.CredenciaisInvalidasException;
-import com.fiap.tech_challenge_backend.acesso.application.ports.TokenGenerator;
-import com.fiap.tech_challenge_backend.acesso.application.ports.UsuarioRepository;
+import com.fiap.tech_challenge_backend.acesso.application.ports.out.TokenGeneratorPort;
+import com.fiap.tech_challenge_backend.acesso.application.ports.out.UsuarioRepositoryPort;
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.acesso.domain.enums.PerfilUsuario;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Email;
@@ -31,21 +31,21 @@ import static org.mockito.Mockito.when;
 
 /**
  * Testes unitários do único caso de uso de autenticação, mockando exclusivamente
- * as portas de saída ({@link UsuarioRepository}, {@link PasswordEncoder},
- * {@link TokenGenerator}) — nenhum contexto Spring é iniciado.
+ * as portas de saída ({@link UsuarioRepositoryPort}, {@link PasswordEncoder},
+ * {@link TokenGeneratorPort}) — nenhum contexto Spring é iniciado.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AutenticarUsuarioService")
 class AutenticarUsuarioServiceTest {
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UsuarioRepositoryPort usuarioRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
-    private TokenGenerator tokenGenerator;
+    private TokenGeneratorPort tokenGenerator;
 
     @InjectMocks
     private AutenticarUsuarioService autenticarUsuarioService;

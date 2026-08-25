@@ -1,6 +1,6 @@
 package com.fiap.tech_challenge_backend.atendimento.application.services;
 
-import com.fiap.tech_challenge_backend.acesso.application.ports.UsuarioRepository;
+import com.fiap.tech_challenge_backend.acesso.application.ports.out.UsuarioRepositoryPort;
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrdemServicoResponseDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.exceptions.OrdemServicoNaoEncontradaException;
@@ -30,13 +30,13 @@ public class AlterarStatusOrdemServicoService implements AlterarStatusOrdemServi
 
     private final OrdemServicoRepositoryPort ordemServicoRepository;
     private final OsHistoricoStatusRepositoryPort osHistoricoStatusRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioRepositoryPort usuarioRepository;
     private final OrdemServicoNotificacaoService notificacaoService;
     private final OrdemServicoEnriquecimentoService enriquecimentoService;
 
     public AlterarStatusOrdemServicoService(OrdemServicoRepositoryPort ordemServicoRepository,
                                              OsHistoricoStatusRepositoryPort osHistoricoStatusRepository,
-                                             UsuarioRepository usuarioRepository,
+                                             UsuarioRepositoryPort usuarioRepository,
                                              OrdemServicoNotificacaoService notificacaoService,
                                              OrdemServicoEnriquecimentoService enriquecimentoService) {
         this.ordemServicoRepository = ordemServicoRepository;

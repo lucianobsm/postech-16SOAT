@@ -8,8 +8,8 @@ import com.fiap.tech_challenge_backend.atendimento.application.ports.out.OsHisto
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsHistoricoStatus;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico;
-import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteRepository;
-import com.fiap.tech_challenge_backend.cadastro.application.ports.VeiculoRepository;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.out.ClienteRepositoryPort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.out.VeiculoRepositoryPort;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
@@ -34,15 +34,15 @@ public class CriarOrdemServicoClienteService implements CriarOrdemServicoCliente
 
     private final OrdemServicoRepositoryPort ordemServicoRepository;
     private final OsHistoricoStatusRepositoryPort osHistoricoStatusRepository;
-    private final ClienteRepository clienteRepository;
-    private final VeiculoRepository veiculoRepository;
+    private final ClienteRepositoryPort clienteRepository;
+    private final VeiculoRepositoryPort veiculoRepository;
     private final IdGeneratorService idGeneratorService;
     private final OrdemServicoEnriquecimentoService enriquecimentoService;
 
     public CriarOrdemServicoClienteService(OrdemServicoRepositoryPort ordemServicoRepository,
                                             OsHistoricoStatusRepositoryPort osHistoricoStatusRepository,
-                                            ClienteRepository clienteRepository,
-                                            VeiculoRepository veiculoRepository,
+                                            ClienteRepositoryPort clienteRepository,
+                                            VeiculoRepositoryPort veiculoRepository,
                                             IdGeneratorService idGeneratorService,
                                             OrdemServicoEnriquecimentoService enriquecimentoService) {
         this.ordemServicoRepository = ordemServicoRepository;

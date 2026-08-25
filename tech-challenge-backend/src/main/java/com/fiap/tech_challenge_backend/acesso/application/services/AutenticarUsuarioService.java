@@ -1,8 +1,8 @@
 package com.fiap.tech_challenge_backend.acesso.application.services;
 
 import com.fiap.tech_challenge_backend.acesso.application.exceptions.CredenciaisInvalidasException;
-import com.fiap.tech_challenge_backend.acesso.application.ports.TokenGenerator;
-import com.fiap.tech_challenge_backend.acesso.application.ports.UsuarioRepository;
+import com.fiap.tech_challenge_backend.acesso.application.ports.out.TokenGeneratorPort;
+import com.fiap.tech_challenge_backend.acesso.application.ports.out.UsuarioRepositoryPort;
 import com.fiap.tech_challenge_backend.acesso.application.ports.in.AutenticarUsuarioUseCase;
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Email;
@@ -13,22 +13,22 @@ import java.util.Map;
 
 /**
  * Único caso de uso de autenticação da aplicação: verifica as credenciais
- * através da porta de saída {@link UsuarioRepository} e delega a emissão do
- * token à porta de saída {@link TokenGenerator}.
+ * através da porta de saída {@link UsuarioRepositoryPort} e delega a emissão do
+ * token à porta de saída {@link TokenGeneratorPort}.
  * Contexto Delimitado: acesso
  * Camada: Application
  */
 @Service
 public class AutenticarUsuarioService implements AutenticarUsuarioUseCase {
 
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioRepositoryPort usuarioRepository;
     private final PasswordEncoder passwordEncoder;
-    private final TokenGenerator tokenGenerator;
+    private final TokenGeneratorPort tokenGenerator;
 
     public AutenticarUsuarioService(
-            UsuarioRepository usuarioRepository,
+            UsuarioRepositoryPort usuarioRepository,
             PasswordEncoder passwordEncoder,
-            TokenGenerator tokenGenerator
+            TokenGeneratorPort tokenGenerator
     ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;

@@ -1,13 +1,13 @@
 package com.fiap.tech_challenge_backend.atendimento.application.services;
 
-import com.fiap.tech_challenge_backend.acesso.application.ports.UsuarioRepository;
+import com.fiap.tech_challenge_backend.acesso.application.ports.out.UsuarioRepositoryPort;
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.atendimento.application.dto.OrdemServicoResponseDTO;
 import com.fiap.tech_challenge_backend.atendimento.application.exceptions.ReferenciaNaoEncontradaException;
 import com.fiap.tech_challenge_backend.atendimento.application.ports.out.PecaInsumoCatalogoRepositoryPort;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
-import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteRepository;
-import com.fiap.tech_challenge_backend.cadastro.application.ports.VeiculoRepository;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.out.ClienteRepositoryPort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.out.VeiculoRepositoryPort;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
 import com.fiap.tech_challenge_backend.estoque.domain.entities.PecaInsumo;
@@ -26,14 +26,14 @@ import java.util.UUID;
 @Service
 public class OrdemServicoEnriquecimentoService {
 
-    private final ClienteRepository clienteRepository;
-    private final VeiculoRepository veiculoRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final ClienteRepositoryPort clienteRepository;
+    private final VeiculoRepositoryPort veiculoRepository;
+    private final UsuarioRepositoryPort usuarioRepository;
     private final PecaInsumoCatalogoRepositoryPort pecaInsumoRepository;
 
-    public OrdemServicoEnriquecimentoService(ClienteRepository clienteRepository,
-                                              VeiculoRepository veiculoRepository,
-                                              UsuarioRepository usuarioRepository,
+    public OrdemServicoEnriquecimentoService(ClienteRepositoryPort clienteRepository,
+                                              VeiculoRepositoryPort veiculoRepository,
+                                              UsuarioRepositoryPort usuarioRepository,
                                               PecaInsumoCatalogoRepositoryPort pecaInsumoRepository) {
         this.clienteRepository = clienteRepository;
         this.veiculoRepository = veiculoRepository;

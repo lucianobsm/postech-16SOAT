@@ -1,6 +1,6 @@
 package com.fiap.tech_challenge_backend.atendimento.application.services;
 
-import com.fiap.tech_challenge_backend.acesso.application.ports.UsuarioRepository;
+import com.fiap.tech_challenge_backend.acesso.application.ports.out.UsuarioRepositoryPort;
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.atendimento.application.exceptions.OrdemServicoNaoEncontradaException;
 import com.fiap.tech_challenge_backend.atendimento.application.exceptions.ReferenciaNaoEncontradaException;
@@ -42,7 +42,7 @@ class AlterarStatusOrdemServicoServiceTest {
     private OsHistoricoStatusRepositoryPort osHistoricoStatusRepository;
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UsuarioRepositoryPort usuarioRepository;
 
     @Mock
     private OrdemServicoNotificacaoService notificacaoService;

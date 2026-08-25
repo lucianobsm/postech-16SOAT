@@ -6,8 +6,8 @@ import com.fiap.tech_challenge_backend.atendimento.application.ports.out.OrdemSe
 import com.fiap.tech_challenge_backend.atendimento.application.ports.out.OsHistoricoStatusRepositoryPort;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico;
-import com.fiap.tech_challenge_backend.cadastro.application.ports.ClienteRepository;
-import com.fiap.tech_challenge_backend.cadastro.application.ports.VeiculoRepository;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.out.ClienteRepositoryPort;
+import com.fiap.tech_challenge_backend.cadastro.application.ports.out.VeiculoRepositoryPort;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,10 +41,10 @@ class CriarOrdemServicoClienteServiceTest {
     private OsHistoricoStatusRepositoryPort osHistoricoStatusRepository;
 
     @Mock
-    private ClienteRepository clienteRepository;
+    private ClienteRepositoryPort clienteRepository;
 
     @Mock
-    private VeiculoRepository veiculoRepository;
+    private VeiculoRepositoryPort veiculoRepository;
 
     @Mock
     private IdGeneratorService idGeneratorService;
