@@ -27,6 +27,7 @@ Sistema completo para:
 | Flyway | 11.7.2 | Migrações de banco |
 | SpringDoc OpenAPI | 2.8.16 | Documentação Swagger |
 | WireMock | 3.9.1 | Mocking de chamadas externas |
+| ArchUnit | 1.3.0 | Testes de arquitetura (fitness functions) |
 | Maven | 3.x | Gerenciador de dependências |
 | Docker + Docker Compose | Latest | Containerização |
 
@@ -73,6 +74,7 @@ Aguarde até ver mensagens indicando que a aplicação está pronta:
 - **API**: [http://localhost:8080](http://localhost:8080)
 - **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 - **Health Check**: [http://localhost:8080/ping](http://localhost:8080/ping)
+- **MailHog (e-mails enviados em dev)**: [http://localhost:8025](http://localhost:8025)
 
 #### 4. Parar a aplicação
 ```bash
@@ -212,36 +214,34 @@ src/
 │   ├── java/com/fiap/tech_challenge_backend/
 │   │   ├── acesso/                          # Módulo de autenticação
 │   │   │   ├── domain/
-│   │   │   ├── application/
-│   │   │   ├── infrastructure/
-│   │   │   └── presentation/
+│   │   │   ├── application/                 # ports/in, ports/out, services, dto, exceptions
+│   │   │   └── adapters/                    # in/web (controllers), out (persistence, infra)
 │   │   │
 │   │   ├── cadastro/                        # Módulo de clientes e veículos
 │   │   │   ├── domain/
 │   │   │   ├── application/
-│   │   │   ├── infrastructure/
-│   │   │   └── presentation/
+│   │   │   └── adapters/
 │   │   │
-│   │   ├── atendimento/                     # Módulo de ordens e orçamentos
+│   │   ├── atendimento/                     # Módulo de ordens, orçamentos e relatórios
 │   │   │   ├── domain/
 │   │   │   ├── application/
-│   │   │   ├── infrastructure/
-│   │   │   └── presentation/
+│   │   │   └── adapters/
 │   │   │
 │   │   ├── estoque/                         # Módulo de peças e insumos
 │   │   │   ├── domain/
 │   │   │   ├── application/
-│   │   │   ├── infrastructure/
-│   │   │   └── presentation/
+│   │   │   └── adapters/
 │   │   │
-│   │   ├── acompanhamento/                  # Módulo de acompanhamento
-│   │   ├── relatorio/                       # Módulo de relatórios
+│   │   ├── acompanhamento/                  # Módulo de acompanhamento (bounded context de leitura)
+│   │   │   ├── application/
+│   │   │   └── adapters/
+│   │   │
+│   │   ├── config/                          # Configurações gerais (ex.: Swagger)
 │   │   │
 │   │   ├── shared/                          # Código compartilhado
-│   │   │   ├── domain/
-│   │   │   ├── application/
-│   │   │   ├── infrastructure/
-│   │   │   └── exceptions/
+│   │   │   ├── domain/                      # value objects
+│   │   │   ├── application/                 # dto, exceptions
+│   │   │   └── infrastructure/              # security, web (GlobalExceptionHandler), config
 │   │   │
 │   │   └── TechChallengeBackendApplication.java
 │   │
@@ -254,13 +254,15 @@ src/
 │
 ├── test/
 │   ├── java/
-│   │   ├── integration/                     # Testes de integração
-│   │   ├── unit/                            # Testes unitários
+│   │   ├── acesso/ … estoque/               # Testes espelham a estrutura de main/ por módulo (unitários e *ControllerIT lado a lado)
+│   │   ├── architecture/                    # Testes de arquitetura (ArchUnit)
+│   │   ├── config/                          # Configurações de segurança para testes
 │   │   └── cucumber/                        # Testes BDD
 │   │
 │   └── resources/
 │       ├── features/                        # Cenários Gherkin
-│       └── wiremock/                        # Configurações WireMock
+│       ├── wiremock/                        # Configurações WireMock
+│       └── archunit.properties              # Configuração da baseline do ArchUnit
 │
 ├── pom.xml                                  # Configuração Maven
 ├── Dockerfile                               # Build da imagem Docker
@@ -294,20 +296,14 @@ Use o endpoint `/ping` que não requer token.
 ./mvnw test
 ```
 
-### Executar apenas testes unitários
+Isso já inclui os testes unitários e os cenários Cucumber/BDD (a suíte não usa `@Tag`/grupos do JUnit, então não há como filtrar por `-Dgroups`).
+
+### Executar uma classe de teste específica
 ```bash
-./mvnw test -Dgroups=unit
+./mvnw test -Dtest=NomeDaClasseTest
 ```
 
-### Executar apenas testes de integração
-```bash
-./mvnw test -Dgroups=integration
-```
-
-### Executar testes Cucumber/BDD
-```bash
-./mvnw verify
-```
+> ⚠️ O projeto não tem o plugin Failsafe configurado, então classes `*ControllerIT` (testes de integração com Testcontainers) **não** rodam via `./mvnw test` nem `./mvnw verify` — só rodam se pedidas explicitamente com `-Dtest=`.
 
 ### Gerar relatório de cobertura
 ```bash
@@ -339,7 +335,7 @@ Se estiver usando Docker Compose, o debugger está disponível na porta `5005`:
 
 ### Autenticação
 - `POST /auth/login` - Fazer login
-- `GET /auth/me` - Obter dados do usuário autenticado
+- `GET /me` - Obter dados do usuário autenticado
 
 ### Clientes
 - `POST /clientes` - Criar cliente
@@ -356,19 +352,41 @@ Se estiver usando Docker Compose, o debugger está disponível na porta `5005`:
 - `DELETE /veiculos/{placa}` - Deletar veículo
 
 ### Ordens de Serviço
-- `POST /os` - Criar ordem de serviço
-- `GET /os` - Listar ordens
-- `GET /os?id={id}` - Buscar ordem
-- `PUT /os?id={id}` - Atualizar ordem
-- `DELETE /os?id={id}` - Deletar ordem
-- `PATCH /os/status?id={id}` - Alterar status
+- `POST /api/v1/ordens-servico/criar` - Criar OS
+- `GET /api/v1/ordens-servico/listar-os` - Listar OS
+- `GET /api/v1/ordens-servico/listar-os-priorizadas` - Listar OS ativas priorizadas
+- `GET /api/v1/ordens-servico/buscar?id={id}` - Buscar OS
+- `PUT /api/v1/ordens-servico/editar?id={id}` - Atualizar OS
+- `DELETE /api/v1/ordens-servico/deletar?id={id}` - Remover OS
+- `PATCH /api/v1/ordens-servico/alterar-status?id={id}` - Alterar status da OS
+- `POST /api/v1/ordens-servico/criar-orcamento?id={id}` - Criar orçamento
+- `GET /api/v1/ordens-servico/buscar-orcamento?idOS={id}&idOrcamento={orcamentoId}` - Buscar orçamento
+
+### Relatórios
+- `GET /api/os/atendimento/relatorios/ordens-servico?expand={...}` - Relatório detalhado de ordens de serviço
+- `GET /api/os/atendimento/relatorios/ordens-servico/por-status?status={status}&expand={...}` - Relatório de ordens de serviço por status
+
+### Acompanhamento (cliente)
+- `GET /clientes/{clienteId}/ordens` - Listar ordens de serviço do cliente
+- `GET /clientes/{clienteId}/ordens/{osId}` - Consultar detalhe de uma ordem de serviço do cliente
+
+### Público
+- `GET /api/public/atendimento/ordens/{id}/autorizar` - Autorizar orçamento por link
+- `PATCH /api/public/atendimento/ordens/{id}/orcamentos/{orcamentoId}/status` - Cliente aprova ou rejeita um orçamento
+- `GET /api/public/atendimento/ordens/{id}/orcamentos/{orcamentoId}/aprovar` - Aprovar orçamento via link do e-mail
+- `GET /api/public/atendimento/ordens/{id}/orcamentos/{orcamentoId}/rejeitar` - Rejeitar orçamento via link do e-mail
 
 ### Estoque
-- `POST /estoque/pecas` - Criar peça/insumo
-- `GET /estoque/pecas` - Listar itens
-- `GET /estoque/pecas/{codigo}` - Buscar item
-- `PUT /estoque/pecas/{codigo}` - Atualizar item
-- `DELETE /estoque/pecas/{codigo}` - Deletar item
+- `POST /estoque/itens` - Cadastrar peça ou insumo
+- `GET /estoque/itens` - Listar itens (filtro opcional por tipo: PECA ou INSUMO)
+- `GET /estoque/itens/{id}` - Buscar item por ID
+- `PUT /estoque/itens/{id}` - Atualizar item
+- `DELETE /estoque/itens/{id}` - Remover item
+- `GET /estoque/itens/abaixo-do-minimo` - Listar itens com estoque abaixo do mínimo
+- `POST /estoque/itens/entrada` - Dar entrada no estoque (cadastra se não existir ou repõe se já existir)
+- `PATCH /estoque/itens/{id}/entrada` - Registrar entrada de estoque
+- `PATCH /estoque/itens/{id}/saida` - Registrar saída de estoque
+- `GET /estoque/movimentacoes/item/{pecaInsumoId}` - Listar movimentações de um item
 
 Veja a documentação completa no Swagger: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
@@ -379,18 +397,33 @@ Veja a documentação completa no Swagger: [http://localhost:8080/swagger-ui.htm
 As variáveis estão definidas em `.env.example`. Principais:
 
 ```env
+# Spring Profile
+SPRING_PROFILES_ACTIVE=dev
+
 # Banco de Dados
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/tech_challenge
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=postgres
 DB_NAME=tech_challenge
 DB_USER=postgres
 DB_PASS=postgres
 
-# Conexão (ajustes automáticos pelo Docker Compose)
-SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/tech_challenge
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=postgres
+# Autenticação (chave HMAC-SHA256, mínimo 32 caracteres)
+JWT_SECRET=uma-chave-local-de-desenvolvimento-com-32-caracteres
 
-# Spring Profile
-SPRING_PROFILES_ACTIVE=dev
+# E-mail (SMTP) - em dev, aponta para o MailHog do docker-compose
+MAIL_HOST=localhost
+MAIL_PORT=1025
+MAIL_USERNAME=
+MAIL_PASSWORD=
+
+# Flyway
+FLYWAY_ENABLED=true
+
+# Logging
+LOGGING_LEVEL_ROOT=INFO
+LOGGING_LEVEL_COM_FIAP=DEBUG
+LOGGING_LEVEL_SPRING_MAIL=DEBUG
 ```
 
 ---
@@ -425,6 +458,27 @@ docker compose exec app bash
 # Ver status dos containers
 docker compose ps
 ```
+
+---
+
+## 🔧 Solução de Problemas Comuns
+
+### Erro do Flyway: "Migration checksum mismatch"
+
+```
+Migration checksum mismatch for migration version X
+-> Applied to database : ...
+-> Resolved locally    : ...
+```
+
+Acontece quando o volume do Postgres já tem uma migration aplicada com um conteúdo diferente do arquivo `.sql` atual (por exemplo, após um `git pull` que alterou uma migration já versionada, ou ao trocar de branch). Como o volume local é descartável, a forma mais rápida de resolver é recriá-lo do zero:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+Isso apaga os dados do Postgres local e deixa o Flyway reaplicar todas as migrations (incluindo o seed de dados de teste) do começo.
 
 ---
 

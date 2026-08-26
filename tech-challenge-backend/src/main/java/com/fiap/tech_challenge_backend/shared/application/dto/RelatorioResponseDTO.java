@@ -31,59 +31,11 @@ public record RelatorioResponseDTO<T>(
         );
     }
 
-    public static <T> RelatorioResponseDTO<T> estoqueVazio(String statusBuscado) {
-        return new RelatorioResponseDTO<>(
-                "Nenhuma peça ou insumo encontrada com o status: " + statusBuscado,
-                0,
-                List.of()
-        );
-    }
-
-    public static <T> RelatorioResponseDTO<T> estoqueSucesso(List<T> dados) {
-        return new RelatorioResponseDTO<>(
-                "Estoque carregado com sucesso",
-                dados.size(),
-                dados
-        );
-    }
-
-    public static <T> RelatorioResponseDTO<T> entradaEstoqueSucesso(List<T> dados, Integer quantidade) {
-        return new RelatorioResponseDTO<>(
-                "Entrada de estoque registrada com sucesso | Quantidade adicionada: " + quantidade,
-                dados.size(),
-                dados
-        );
-    }
-
-    public static <T> RelatorioResponseDTO<T> saidaEstoqueSucesso(List<T> dados, Integer quantidade) {
-        return new RelatorioResponseDTO<>(
-                "Saída de estoque registrada com sucesso | Quantidade removida: " + quantidade,
-                dados.size(),
-                dados
-        );
-    }
-
     public static <T> RelatorioResponseDTO<T> alterarSucesso(List<T> dados) {
         return new RelatorioResponseDTO<>(
                 "Ordem de serviço alterada com sucesso",
                 dados.size(),
                 dados
-        );
-    }
-
-    public static <T> RelatorioResponseDTO<T> acompanhamentoSucesso(List<T> dados) {
-        return new RelatorioResponseDTO<>(
-                "Ordens de serviço do cliente carregadas com sucesso",
-                dados.size(),
-                dados
-        );
-    }
-
-    public static <T> RelatorioResponseDTO<T> acompanhamentoVazio() {
-        return new RelatorioResponseDTO<>(
-                "Cliente ainda não possui nenhuma ordem de serviço registrada.",
-                0,
-                List.of()
         );
     }
 
@@ -103,11 +55,4 @@ public record RelatorioResponseDTO<T>(
         );
     }
 
-    public static <T> RelatorioResponseDTO<T> deleteItemEstoqueSucesso() {
-        return new RelatorioResponseDTO<>(
-                "Item de estoque removido com sucesso. Todos os registros de utilização nas ordens de serviço foram preservados no histórico.",
-                0,
-                List.of()
-        );
-    }
 }

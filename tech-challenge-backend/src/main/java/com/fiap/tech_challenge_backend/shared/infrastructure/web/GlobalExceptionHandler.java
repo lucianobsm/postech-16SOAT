@@ -1,7 +1,5 @@
 package com.fiap.tech_challenge_backend.shared.infrastructure.web;
 
-import com.fiap.tech_challenge_backend.atendimento.domain.exceptions.OrdemServicoStatusException;
-import jakarta.persistence.EntityNotFoundException;
 import com.fiap.tech_challenge_backend.shared.application.exceptions.ApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,20 +36,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(exception.getStatus()).body(response);
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleEntityNotFoundException(EntityNotFoundException exception) {
-        ApiErrorResponse response = new ApiErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.NOT_FOUND.value(),
-                HttpStatus.NOT_FOUND.getReasonPhrase(),
-                "ENTITY_NOT_FOUND",
-                exception.getMessage(),
-                List.of()
-        );
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiErrorResponse> handleIllegalArgumentException(IllegalArgumentException exception) {
         ApiErrorResponse response = new ApiErrorResponse(
@@ -64,20 +48,6 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    @ExceptionHandler(OrdemServicoStatusException.class)
-    public ResponseEntity<ApiErrorResponse> handleOrdemServicoStatusException(OrdemServicoStatusException exception) {
-        ApiErrorResponse response = new ApiErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.UNPROCESSABLE_ENTITY.value(),
-                HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
-                "ORDEM_SERVICO_STATUS_INVALID",
-                exception.getMessage(),
-                List.of()
-        );
-
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

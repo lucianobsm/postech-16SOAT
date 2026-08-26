@@ -1,13 +1,10 @@
 package com.fiap.tech_challenge_backend.shared.domain.valueobjects;
 
 import com.fiap.tech_challenge_backend.shared.application.exceptions.ValorInvalidoException;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-@Embeddable
 public class Email {
 
     private static final Pattern REGEX = Pattern.compile(
@@ -15,11 +12,7 @@ public class Email {
             Pattern.CASE_INSENSITIVE
     );
 
-    @Column(name = "email", length = 150)
     private String valor;
-
-    protected Email() {
-    }
 
     public Email(String valor) {
         if (valor == null || valor.isBlank()) {

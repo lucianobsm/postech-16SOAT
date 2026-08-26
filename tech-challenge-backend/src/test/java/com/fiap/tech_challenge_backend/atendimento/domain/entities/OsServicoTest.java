@@ -41,8 +41,8 @@ class OsServicoTest {
 
         OrdemServico ordemServico = OrdemServico.builder()
                 .id(1L)
-                .cliente(cliente)
-                .veiculo(veiculo)
+                .clienteId(cliente.getId())
+                .veiculoId(veiculo.getId())
                 .status(StatusOrdemServico.RECEBIDA)
                 .queixaCliente("Problema")
                 .dataCriacao(LocalDateTime.now())

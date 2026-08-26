@@ -40,8 +40,8 @@ class OsHistoricoStatusTest {
 
         ordemServico = OrdemServico.builder()
                 .id(1L)
-                .cliente(cliente)
-                .veiculo(veiculo)
+                .clienteId(cliente.getId())
+                .veiculoId(veiculo.getId())
                 .status(StatusOrdemServico.RECEBIDA)
                 .queixaCliente("Problema no motor")
                 .dataCriacao(LocalDateTime.now())
@@ -58,7 +58,7 @@ class OsHistoricoStatusTest {
                 .statusOrigem(StatusOrdemServico.RECEBIDA)
                 .statusDestino(StatusOrdemServico.EM_DIAGNOSTICO)
                 .ordemServico(ordemServico)
-                .usuario(usuario)
+                .usuarioId(usuario.getId())
                 .dataMudanca(LocalDateTime.now())
                 .build();
     }
@@ -70,7 +70,7 @@ class OsHistoricoStatusTest {
         assertEquals(StatusOrdemServico.RECEBIDA, historico.getStatusOrigem());
         assertEquals(StatusOrdemServico.EM_DIAGNOSTICO, historico.getStatusDestino());
         assertEquals(ordemServico, historico.getOrdemServico());
-        assertEquals(usuario, historico.getUsuario());
+        assertEquals(usuario.getId(), historico.getUsuarioId());
     }
 
     @Test
@@ -83,32 +83,6 @@ class OsHistoricoStatusTest {
     @DisplayName("Deve ter data de mudança preenchida")
     void testDataMudancaPreenchida() {
         assertNotNull(historico.getDataMudanca());
-    }
-
-    @Test
-    @DisplayName("Deve inicializar dataMudanca ao persistir se null")
-    void testPrePersistComDataMudancaNula() {
-        OsHistoricoStatus novo = OsHistoricoStatus.builder()
-                .statusOrigem(StatusOrdemServico.RECEBIDA)
-                .statusDestino(StatusOrdemServico.EM_DIAGNOSTICO)
-                .build();
-        novo.prePersist();
-
-        assertNotNull(novo.getDataMudanca());
-    }
-
-    @Test
-    @DisplayName("Deve manter dataMudanca existente ao persistir")
-    void testPrePersistComDataMudancaExistente() {
-        LocalDateTime data = LocalDateTime.now().minusDays(1);
-        OsHistoricoStatus novo = OsHistoricoStatus.builder()
-                .statusOrigem(StatusOrdemServico.RECEBIDA)
-                .statusDestino(StatusOrdemServico.EM_DIAGNOSTICO)
-                .dataMudanca(data)
-                .build();
-        novo.prePersist();
-
-        assertEquals(data, novo.getDataMudanca());
     }
 
     @Test
@@ -128,10 +102,10 @@ class OsHistoricoStatusTest {
         OsHistoricoStatus novo = OsHistoricoStatus.builder()
                 .statusOrigem(StatusOrdemServico.RECEBIDA)
                 .statusDestino(StatusOrdemServico.EM_DIAGNOSTICO)
-                .usuario(null)
+                .usuarioId(null)
                 .build();
 
-        assertNull(novo.getUsuario());
+        assertNull(novo.getUsuarioId());
     }
 
     @Test
@@ -150,6 +124,6 @@ class OsHistoricoStatusTest {
     @Test
     @DisplayName("Deve preservar referência do usuário")
     void testReferenciaDoUsuario() {
-        assertEquals(usuario.getId(), historico.getUsuario().getId());
+        assertEquals(usuario.getId(), historico.getUsuarioId());
     }
 }

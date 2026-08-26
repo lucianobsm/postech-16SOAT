@@ -2,15 +2,19 @@ package com.fiap.tech_challenge_backend.cucumber.steps;
 
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.acesso.domain.enums.PerfilUsuario;
-import com.fiap.tech_challenge_backend.acesso.infrastructure.repositories.UsuarioJpaRepository;
+import com.fiap.tech_challenge_backend.acesso.adapters.out.persistence.UsuarioJpaRepository;
+import com.fiap.tech_challenge_backend.acesso.adapters.out.persistence.UsuarioMapper;
+import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.OrdemServicoMapper;
 import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.OrdemServicoRepository;
 import com.fiap.tech_challenge_backend.atendimento.application.services.IdGeneratorService;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
-import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.ClienteJpaRepository;
-import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.VeiculoJpaRepository;
+import com.fiap.tech_challenge_backend.cadastro.adapters.out.persistence.ClienteJpaRepository;
+import com.fiap.tech_challenge_backend.cadastro.adapters.out.persistence.ClienteMapper;
+import com.fiap.tech_challenge_backend.cadastro.adapters.out.persistence.VeiculoJpaRepository;
+import com.fiap.tech_challenge_backend.cadastro.adapters.out.persistence.VeiculoMapper;
 import com.fiap.tech_challenge_backend.cucumber.context.ScenarioContext;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Cep;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
@@ -77,11 +81,11 @@ public class AcompanhamentoStepDefinitions {
                 .perfil(PerfilUsuario.CLIENTE)
                 .cpfCnpj(new CpfCnpj(cpf))
                 .build();
-        usuarioJpaRepository.save(usuario);
+        Usuario usuarioSalvo = UsuarioMapper.toDomain(usuarioJpaRepository.save(UsuarioMapper.toEntity(usuario)));
 
         Cliente cliente = Cliente.builder()
                 .nome(nome)
-                .usuario(usuario)
+                .usuarioId(usuarioSalvo.getId())
                 .cpfCnpj(new CpfCnpj(cpf))
                 .telefone(new Telefone(telefone))
                 .cep(new Cep("01310100"))
@@ -90,7 +94,7 @@ public class AcompanhamentoStepDefinitions {
                 .cidade("São Paulo")
                 .estado("SP")
                 .build();
-        return clienteJpaRepository.save(cliente);
+        return ClienteMapper.toDomain(clienteJpaRepository.save(ClienteMapper.toEntity(cliente)));
     }
 
     @Dado("que sou um cliente autenticado")
@@ -101,7 +105,7 @@ public class AcompanhamentoStepDefinitions {
 
     @Dado("tenho uma ordem de serviço em execução")
     public void tenhoUmaOrdemEmExecucao() {
-        Cliente cliente = clienteJpaRepository.findById(clienteId).orElseThrow();
+        Cliente cliente = ClienteMapper.toDomain(clienteJpaRepository.findById(clienteId).orElseThrow());
         Veiculo veiculo = Veiculo.builder()
                 .placa(new Placa("ABC1234"))
                 .marca("Ford")
@@ -109,19 +113,19 @@ public class AcompanhamentoStepDefinitions {
                 .ano(2020)
                 .cor("Branco")
                 .build();
-        veiculoJpaRepository.save(veiculo);
+        Veiculo veiculoSalvo = VeiculoMapper.toDomain(veiculoJpaRepository.save(VeiculoMapper.toEntity(veiculo)));
 
         OrdemServico os = OrdemServico.builder()
                 .id(idGeneratorService.gerarIdOrdemServico())
-                .cliente(cliente)
-                .veiculo(veiculo)
+                .clienteId(cliente.getId())
+                .veiculoId(veiculoSalvo.getId())
                 .status(StatusOrdemServico.EM_EXECUCAO)
                 .dataCriacao(LocalDateTime.now().minusDays(2))
                 .dataInicioExecucao(LocalDateTime.now().minusHours(1))
                 .valorTotal(BigDecimal.valueOf(80.00))
                 .queixaCliente("Verificar troca de óleo e revisão geral")
                 .build();
-        osId = ordemServicoRepository.save(os).getId();
+        osId = ordemServicoRepository.save(OrdemServicoMapper.toEntity(os)).getId();
     }
 
     @Dado("tenho uma ordem de serviço com ID {long}")
@@ -146,19 +150,19 @@ public class AcompanhamentoStepDefinitions {
                 .ano(2021)
                 .cor("Preto")
                 .build();
-        veiculoJpaRepository.save(veiculo);
+        Veiculo veiculoSalvo = VeiculoMapper.toDomain(veiculoJpaRepository.save(VeiculoMapper.toEntity(veiculo)));
 
         OrdemServico os = OrdemServico.builder()
                 .id(idGeneratorService.gerarIdOrdemServico())
-                .cliente(cliente2)
-                .veiculo(veiculo)
+                .clienteId(cliente2.getId())
+                .veiculoId(veiculoSalvo.getId())
                 .status(StatusOrdemServico.EM_EXECUCAO)
                 .dataCriacao(LocalDateTime.now().minusDays(2))
                 .dataInicioExecucao(LocalDateTime.now().minusHours(1))
                 .valorTotal(BigDecimal.valueOf(100.00))
                 .queixaCliente("Verificar freios e suspensão")
                 .build();
-        osId = ordemServicoRepository.save(os).getId();
+        osId = ordemServicoRepository.save(OrdemServicoMapper.toEntity(os)).getId();
     }
 
     @Dado("tenho uma ordem com status {string}")

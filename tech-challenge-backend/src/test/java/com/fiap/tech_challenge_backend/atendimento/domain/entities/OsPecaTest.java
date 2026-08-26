@@ -42,8 +42,8 @@ class OsPecaTest {
 
         OrdemServico ordemServico = OrdemServico.builder()
                 .id(1L)
-                .cliente(cliente)
-                .veiculo(veiculo)
+                .clienteId(cliente.getId())
+                .veiculoId(veiculo.getId())
                 .status(StatusOrdemServico.RECEBIDA)
                 .queixaCliente("Problema")
                 .dataCriacao(LocalDateTime.now())
@@ -66,7 +66,7 @@ class OsPecaTest {
         osPeca = OsPeca.builder()
                 .id(UUID.randomUUID())
                 .orcamento(orcamento)
-                .peca(peca)
+                .pecaInsumoId(peca.getId())
                 .quantidade(2)
                 .precoVendaAplicado(BigDecimal.valueOf(50))
                 .build();
@@ -77,7 +77,7 @@ class OsPecaTest {
     void testCriarOsPeca() {
         assertNotNull(osPeca);
         assertEquals(orcamento, osPeca.getOrcamento());
-        assertEquals(peca, osPeca.getPeca());
+        assertEquals(peca.getId(), osPeca.getPecaInsumoId());
         assertEquals(2, osPeca.getQuantidade());
         assertEquals(BigDecimal.valueOf(50), osPeca.getPrecoVendaAplicado());
     }
@@ -132,7 +132,7 @@ class OsPecaTest {
     @Test
     @DisplayName("Deve manter referência da peça")
     void testReferenciaPeca() {
-        assertEquals(peca.getId(), osPeca.getPeca().getId());
+        assertEquals(peca.getId(), osPeca.getPecaInsumoId());
     }
 
     @Test

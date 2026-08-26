@@ -51,8 +51,8 @@ class OrdemServicoTest {
 
         ordemServico = OrdemServico.builder()
                 .id(1L)
-                .cliente(cliente)
-                .veiculo(veiculo)
+                .clienteId(cliente.getId())
+                .veiculoId(veiculo.getId())
                 .status(StatusOrdemServico.RECEBIDA)
                 .queixaCliente("Carro não liga")
                 .dataCriacao(LocalDateTime.now())
@@ -169,7 +169,7 @@ class OrdemServicoTest {
         ordemServico.alterarStatus(StatusOrdemServico.EM_EXECUCAO, mecanico);
 
         assertEquals(StatusOrdemServico.EM_EXECUCAO, ordemServico.getStatus());
-        assertEquals(mecanico, ordemServico.getMecanico());
+        assertEquals(mecanico.getId(), ordemServico.getMecanicoId());
     }
 
     @Test
@@ -178,7 +178,45 @@ class OrdemServicoTest {
         ordemServico.alterarStatus(StatusOrdemServico.EM_EXECUCAO, null);
 
         assertEquals(StatusOrdemServico.EM_EXECUCAO, ordemServico.getStatus());
-        assertNull(ordemServico.getMecanico());
+        assertNull(ordemServico.getMecanicoId());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar retroceder o status")
+    void testAlterarStatusNaoPermiteRetroceder() {
+        ordemServico.setStatus(StatusOrdemServico.EM_EXECUCAO);
+
+        assertThrows(OrdemServicoStatusException.class,
+                () -> ordemServico.alterarStatus(StatusOrdemServico.EM_DIAGNOSTICO, null));
+
+        assertEquals(StatusOrdemServico.EM_EXECUCAO, ordemServico.getStatus());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar alterar status de uma OS já entregue")
+    void testAlterarStatusEmOsEntregue() {
+        ordemServico.setStatus(StatusOrdemServico.ENTREGUE);
+
+        assertThrows(OrdemServicoStatusException.class,
+                () -> ordemServico.alterarStatus(StatusOrdemServico.EM_EXECUCAO, null));
+    }
+
+    @Test
+    @DisplayName("Deve permitir manter o status ENTREGUE ao reenviar o mesmo status")
+    void testAlterarStatusEntregueParaEntregue() {
+        ordemServico.setStatus(StatusOrdemServico.ENTREGUE);
+
+        ordemServico.alterarStatus(StatusOrdemServico.ENTREGUE, mecanico);
+
+        assertEquals(StatusOrdemServico.ENTREGUE, ordemServico.getStatus());
+        assertEquals(mecanico.getId(), ordemServico.getMecanicoId());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando novo status é nulo")
+    void testAlterarStatusComStatusNulo() {
+        assertThrows(IllegalArgumentException.class,
+                () -> ordemServico.alterarStatus(null, null));
     }
 
     @Test
@@ -318,25 +356,5 @@ class OrdemServicoTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> ordemServico.rejeitarOrcamento(1L));
-    }
-
-    @Test
-    @DisplayName("Deve atualizar datas ao mudar para EM_EXECUCAO")
-    void testAtualizarDataInicioExecucao() {
-        ordemServico.setDataInicioExecucao(null);
-        ordemServico.setStatus(StatusOrdemServico.EM_EXECUCAO);
-        ordemServico.preUpdate();
-
-        assertNotNull(ordemServico.getDataInicioExecucao());
-    }
-
-    @Test
-    @DisplayName("Deve atualizar data de finalização ao mudar para FINALIZADA")
-    void testAtualizarDataFinalizacao() {
-        ordemServico.setDataFinalizacao(null);
-        ordemServico.setStatus(StatusOrdemServico.FINALIZADA);
-        ordemServico.preUpdate();
-
-        assertNotNull(ordemServico.getDataFinalizacao());
     }
 }

@@ -1,8 +1,6 @@
 package com.fiap.tech_challenge_backend.shared.infrastructure.web;
 
-import com.fiap.tech_challenge_backend.atendimento.domain.exceptions.OrdemServicoStatusException;
 import com.fiap.tech_challenge_backend.shared.application.exceptions.ApplicationException;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -77,27 +75,6 @@ class GlobalExceptionHandlerTest {
         }
     }
 
-    // ─── EntityNotFoundException ─────────────────────────────────────────────
-
-    @Nested
-    @DisplayName("EntityNotFoundException")
-    class HandleEntityNotFoundException {
-
-        @Test
-        @DisplayName("retorna 404 com code ENTITY_NOT_FOUND")
-        void retorna404() {
-            EntityNotFoundException ex = new EntityNotFoundException("Ordem de servico nao encontrada");
-
-            ResponseEntity<ApiErrorResponse> response = handler.handleEntityNotFoundException(ex);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-            assertThat(response.getBody().status()).isEqualTo(404);
-            assertThat(response.getBody().code()).isEqualTo("ENTITY_NOT_FOUND");
-            assertThat(response.getBody().message()).isEqualTo("Ordem de servico nao encontrada");
-            assertThat(response.getBody().details()).isEmpty();
-        }
-    }
-
     // ─── IllegalArgumentException ─────────────────────────────────────────────
 
     @Nested
@@ -114,26 +91,6 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody().code()).isEqualTo("ILLEGAL_ARGUMENT");
             assertThat(response.getBody().message()).isEqualTo("valor invalido");
-        }
-    }
-
-    // ─── OrdemServicoStatusException ──────────────────────────────────────────
-
-    @Nested
-    @DisplayName("OrdemServicoStatusException")
-    class HandleOrdemServicoStatusException {
-
-        @Test
-        @DisplayName("retorna 422 com code ORDEM_SERVICO_STATUS_INVALID")
-        void retorna422() {
-            OrdemServicoStatusException ex = new OrdemServicoStatusException("transicao invalida");
-
-            ResponseEntity<ApiErrorResponse> response = handler.handleOrdemServicoStatusException(ex);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-            assertThat(response.getBody().status()).isEqualTo(422);
-            assertThat(response.getBody().code()).isEqualTo("ORDEM_SERVICO_STATUS_INVALID");
-            assertThat(response.getBody().message()).isEqualTo("transicao invalida");
         }
     }
 

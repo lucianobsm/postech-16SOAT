@@ -1,7 +1,9 @@
 package com.fiap.tech_challenge_backend.atendimento.adapters.out.infrastructure;
 
 import com.fiap.tech_challenge_backend.atendimento.application.ports.out.PdfGeneratorPort;
+import com.fiap.tech_challenge_backend.atendimento.application.ports.out.PecaInsumoCatalogoRepositoryPort;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsOrcamento;
+import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.DeviceRgb;
@@ -43,8 +45,14 @@ public class PdfGeneratorAdapter implements PdfGeneratorPort {
     private static final Color COR_DESTAQUE = new DeviceRgb(39, 174, 96);    // #27ae60 - Verde
     private static final Color COR_BRANCO = new DeviceRgb(255, 255, 255);    // Branco
 
+    private final PecaInsumoCatalogoRepositoryPort pecaInsumoRepository;
+
+    public PdfGeneratorAdapter(PecaInsumoCatalogoRepositoryPort pecaInsumoRepository) {
+        this.pecaInsumoRepository = pecaInsumoRepository;
+    }
+
     @Override
-    public byte[] gerarDocumentoTexto(OsOrcamento orcamento) {
+    public byte[] gerarDocumentoTexto(OsOrcamento orcamento, Veiculo veiculo) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             PdfWriter writer = new PdfWriter(outputStream);
             PdfDocument pdfDoc = new PdfDocument(writer);
@@ -64,7 +72,7 @@ public class PdfGeneratorAdapter implements PdfGeneratorPort {
 
             adicionarDadosOrcamento(doc, orcamento, fontBold, fontRegular);
             doc.add(new Paragraph("\n").setFontSize(6));
-            adicionarDadosVeiculo(doc, orcamento, fontBold, fontRegular);
+            adicionarDadosVeiculo(doc, veiculo, fontBold, fontRegular);
             doc.add(new Paragraph("\n").setFontSize(6));
             adicionarTabelaServicos(doc, orcamento, fontBold, fontRegular);
             doc.add(new Paragraph("\n").setFontSize(6));
@@ -185,7 +193,7 @@ public class PdfGeneratorAdapter implements PdfGeneratorPort {
         doc.add(table);
     }
 
-    private void adicionarDadosVeiculo(Document doc, OsOrcamento orcamento, PdfFont fontBold, PdfFont fontRegular) {
+    private void adicionarDadosVeiculo(Document doc, Veiculo veiculo, PdfFont fontBold, PdfFont fontRegular) {
         Paragraph secao = new Paragraph("INFORMAÇÕES DO VEÍCULO")
                 .setFont(fontBold)
                 .setFontSize(11)
@@ -193,9 +201,7 @@ public class PdfGeneratorAdapter implements PdfGeneratorPort {
                 .setMarginBottom(6);
         doc.add(secao);
 
-        if (orcamento.getOrdemServico() != null && orcamento.getOrdemServico().getVeiculo() != null) {
-            var veiculo = orcamento.getOrdemServico().getVeiculo();
-
+        if (veiculo != null) {
             Table table = new Table(UnitValue.createPercentArray(new float[]{1, 1, 1}))
                     .setWidth(UnitValue.createPercentValue(100));
 
@@ -260,7 +266,10 @@ public class PdfGeneratorAdapter implements PdfGeneratorPort {
             boolean alternado = false;
             for (var peca : orcamento.getPecas()) {
                 BigDecimal subtotal = peca.getPrecoVendaAplicado().multiply(BigDecimal.valueOf(peca.getQuantidade()));
-                table.addCell(criarCelulaCorpo(peca.getPeca().getDescricao(), fontRegular, alternado))
+                String descricao = pecaInsumoRepository.buscarPorId(peca.getPecaInsumoId())
+                        .map(p -> p.getDescricao())
+                        .orElse("—");
+                table.addCell(criarCelulaCorpo(descricao, fontRegular, alternado))
                         .addCell(criarCelulaCorpoAlinhada(peca.getQuantidade().toString(), fontRegular, alternado))
                         .addCell(criarCelulaCorpoAlinhada(formatarCurrency(peca.getPrecoVendaAplicado()), fontRegular, alternado))
                         .addCell(criarCelulaCorpoAlinhada(formatarCurrency(subtotal), fontRegular, alternado));

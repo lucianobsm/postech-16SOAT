@@ -2,11 +2,13 @@ package com.fiap.tech_challenge_backend.acompanhamento.application.dto;
 
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico;
+import com.fiap.tech_challenge_backend.cadastro.domain.entities.Veiculo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 public record AcompanhamentoOsResponseDTO(
         Long id,
@@ -27,7 +29,16 @@ public record AcompanhamentoOsResponseDTO(
 
     public record ItemPecaDTO(String nome, int quantidade, BigDecimal subtotal) {}
 
-    public static AcompanhamentoOsResponseDTO from(OrdemServico os) {
+    /**
+     * @param veiculo      veículo da OS, já resolvido pelo chamador a partir de
+     *                     {@code os.getVeiculoId()}.
+     * @param mecanicoNome nome do mecânico da OS (opcional), já resolvido pelo chamador.
+     * @param nomePeca     resolve o nome de uma peça/insumo a partir do seu ID.
+     */
+    public static AcompanhamentoOsResponseDTO from(OrdemServico os,
+                                                    Veiculo veiculo,
+                                                    String mecanicoNome,
+                                                    Function<UUID, String> nomePeca) {
         var servicos = os.getOrcamentos().stream()
                 .flatMap(orc -> orc.getServicos().stream())
                 .map(s -> new ItemServicoDTO(
@@ -38,7 +49,7 @@ public record AcompanhamentoOsResponseDTO(
         var pecas = os.getOrcamentos().stream()
                 .flatMap(orc -> orc.getPecas().stream())
                 .map(p -> new ItemPecaDTO(
-                        p.getPeca().getNome(),
+                        nomePeca.apply(p.getPecaInsumoId()),
                         p.getQuantidade(),
                         p.getPrecoVendaAplicado().multiply(BigDecimal.valueOf(p.getQuantidade()))))
                 .toList();
@@ -47,9 +58,9 @@ public record AcompanhamentoOsResponseDTO(
                 os.getId(),
                 os.getStatus(),
                 descreverStatus(os.getStatus()),
-                os.getVeiculo().getPlaca().valor(),
-                os.getVeiculo().getModelo(),
-                os.getMecanico() != null ? os.getMecanico().getNome() : null,
+                veiculo.getPlaca().valor(),
+                veiculo.getModelo(),
+                mecanicoNome,
                 servicos,
                 pecas,
                 os.getValorTotal(),

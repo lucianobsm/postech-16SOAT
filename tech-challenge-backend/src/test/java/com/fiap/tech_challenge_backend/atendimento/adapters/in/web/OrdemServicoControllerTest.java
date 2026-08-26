@@ -41,9 +41,6 @@ class OrdemServicoControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private CriarOrdemServicoUseCase criarUseCase;
-
-    @MockBean
     private CriarOrdemServicoClienteUseCase criarClienteUseCase;
 
     @MockBean

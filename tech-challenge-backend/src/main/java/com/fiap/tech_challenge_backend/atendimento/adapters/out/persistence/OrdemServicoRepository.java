@@ -1,6 +1,5 @@
 package com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence;
 
-import com.fiap.tech_challenge_backend.atendimento.domain.entities.OrdemServico;
 import com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,14 +10,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long> {
+public interface OrdemServicoRepository extends JpaRepository<OrdemServicoJpaEntity, Long> {
 
 	@Query("""
 			SELECT os
 			FROM OrdemServico os
-			JOIN FETCH os.cliente
-			LEFT JOIN FETCH os.veiculo
-			LEFT JOIN FETCH os.mecanico
 			ORDER BY
 				os.urgente DESC,
 				COALESCE((
@@ -38,14 +34,11 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
 				), 5) ASC,
 				os.dataCriacao ASC
 			""")
-	List<OrdemServico> findAllPrioritized();
+	List<OrdemServicoJpaEntity> findAllPrioritized();
 
 	@Query("""
 			SELECT DISTINCT os
 			FROM OrdemServico os
-			JOIN FETCH os.cliente
-			LEFT JOIN FETCH os.veiculo
-			LEFT JOIN FETCH os.mecanico
 			WHERE os.status IN (
 			    com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico.EM_EXECUCAO,
 			    com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico.AGUARDANDO_APROVACAO,
@@ -62,54 +55,41 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
 			    END,
 			    os.dataCriacao ASC
 			""")
-	List<OrdemServico> findAllAtivasPrioritized();
+	List<OrdemServicoJpaEntity> findAllAtivasPrioritized();
 
 	@Query("""
 			SELECT DISTINCT os
 			FROM OrdemServico os
-			LEFT JOIN FETCH os.veiculo
-			LEFT JOIN FETCH os.cliente
-			LEFT JOIN FETCH os.mecanico
 			ORDER BY os.urgente DESC, os.dataCriacao ASC
 			""")
-	List<OrdemServico> findAllForRelatorio();
+	List<OrdemServicoJpaEntity> findAllForRelatorio();
 
 	@Query("""
 			SELECT os
 			FROM OrdemServico os
-			JOIN FETCH os.cliente
-			LEFT JOIN FETCH os.veiculo
-			LEFT JOIN FETCH os.mecanico
 			WHERE os.status = :status
 			ORDER BY os.urgente DESC, os.dataCriacao ASC
 			""")
-	List<OrdemServico> findAllByStatusPrioritized(@Param("status") StatusOrdemServico status);
+	List<OrdemServicoJpaEntity> findAllByStatusPrioritized(@Param("status") StatusOrdemServico status);
 
 	@Query("""
 			SELECT os
 			FROM OrdemServico os
-			JOIN FETCH os.cliente
-			LEFT JOIN FETCH os.veiculo
-			LEFT JOIN FETCH os.mecanico
 			LEFT JOIN FETCH os.orcamentos
 			WHERE EXISTS (
 				SELECT 1 FROM OsOrcamento orc WHERE orc.ordemServico = os AND orc.id = :orcamentoId
 			)
 			""")
-	Optional<OrdemServico> findByOrcamentoId(@Param("orcamentoId") Long orcamentoId);
+	Optional<OrdemServicoJpaEntity> findByOrcamentoId(@Param("orcamentoId") Long orcamentoId);
 
 	@EntityGraph(attributePaths = {
-			"cliente",
-			"veiculo",
-			"mecanico",
 			"orcamentos",
 			"orcamentos.servicos",
 			"orcamentos.servicos.servico",
-			"orcamentos.pecas",
-			"orcamentos.pecas.peca"
+			"orcamentos.pecas"
 	})
 	@Override
-	Optional<OrdemServico> findById(Long id);
+	Optional<OrdemServicoJpaEntity> findById(Long id);
 
 	@Query("""
 			SELECT MAX(os.id)
@@ -126,12 +106,8 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
 	@Query("""
 			SELECT os
 			FROM OrdemServico os
-			JOIN FETCH os.cliente
-			LEFT JOIN FETCH os.veiculo
-			LEFT JOIN FETCH os.mecanico
-			WHERE os.cliente.id = :clienteId
+			WHERE os.clienteId = :clienteId
 			ORDER BY os.dataCriacao DESC
 			""")
-	List<OrdemServico> findByClienteIdWithDetails(@Param("clienteId") UUID clienteId);
+	List<OrdemServicoJpaEntity> findByClienteIdWithDetails(@Param("clienteId") UUID clienteId);
 }
-
