@@ -12,11 +12,15 @@ public record PecaDTO(
         Integer quantidade,
         BigDecimal precoVendaAplicado
 ) {
-    public static PecaDTO from(OsPeca osPeca) {
+    /**
+     * @param nome nome da peça/insumo, já resolvido pelo chamador a partir de
+     *             {@code osPeca.getPecaInsumoId()} — este DTO não tem acesso a portas.
+     */
+    public static PecaDTO from(OsPeca osPeca, String nome) {
         return new PecaDTO(
                 osPeca.getId(),
-                osPeca.getPeca().getId(),
-                osPeca.getPeca().getNome(),
+                osPeca.getPecaInsumoId(),
+                nome,
                 osPeca.getQuantidade(),
                 osPeca.getPrecoVendaAplicado()
         );

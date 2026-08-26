@@ -1,20 +1,14 @@
 package com.fiap.tech_challenge_backend.shared.domain.valueobjects;
 
 import com.fiap.tech_challenge_backend.shared.application.exceptions.ValorInvalidoException;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class Cep {
 
     private static final String REGEX = "^\\d{8}$";
 
-    @Column(name = "cep", length = 8)
     private String valor;
-
-    protected Cep() {}
 
     public Cep(String valor) {
         if (valor == null || valor.isBlank()) {

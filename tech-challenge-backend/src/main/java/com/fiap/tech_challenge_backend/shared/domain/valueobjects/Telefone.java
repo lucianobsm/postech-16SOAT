@@ -1,20 +1,14 @@
 package com.fiap.tech_challenge_backend.shared.domain.valueobjects;
 
 import com.fiap.tech_challenge_backend.shared.application.exceptions.ValorInvalidoException;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class Telefone {
 
     private static final String REGEX = "^\\d{10,11}$";
 
-    @Column(name = "telefone", length = 11)
     private String valor;
-
-    protected Telefone() {}
 
     public Telefone(String valor) {
         if (valor == null || valor.isBlank()) {

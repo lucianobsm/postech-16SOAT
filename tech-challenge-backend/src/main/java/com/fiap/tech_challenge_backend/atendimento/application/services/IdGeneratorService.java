@@ -1,6 +1,6 @@
 package com.fiap.tech_challenge_backend.atendimento.application.services;
 
-import com.fiap.tech_challenge_backend.atendimento.adapters.out.persistence.OrdemServicoRepository;
+import com.fiap.tech_challenge_backend.atendimento.application.ports.out.OrdemServicoRepositoryPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,9 +23,9 @@ public class IdGeneratorService {
 
     private final AtomicLong sequenciaOrdemServico;
     private final AtomicLong sequenciaOrcamento;
-    private final OrdemServicoRepository ordemServicoRepository;
+    private final OrdemServicoRepositoryPort ordemServicoRepository;
 
-    public IdGeneratorService(OrdemServicoRepository ordemServicoRepository) {
+    public IdGeneratorService(OrdemServicoRepositoryPort ordemServicoRepository) {
         this.ordemServicoRepository = ordemServicoRepository;
         this.sequenciaOrdemServico = new AtomicLong(inicializarSequenciaOrdemServico());
         this.sequenciaOrcamento = new AtomicLong(inicializarSequenciaOrcamento());
@@ -38,7 +38,7 @@ public class IdGeneratorService {
      */
     private long inicializarSequenciaOrdemServico() {
         try {
-            Long maxId = ordemServicoRepository.findMaxId();
+            Long maxId = ordemServicoRepository.buscarMaiorIdOrdemServico();
             if (maxId != null && maxId > 0) {
                 long ultimaSequencia = extrairSequenciaDeOS(maxId);
                 log.debug("Última sequência de OS no banco: {}", ultimaSequencia);
@@ -55,7 +55,7 @@ public class IdGeneratorService {
      */
     private long inicializarSequenciaOrcamento() {
         try {
-            Long maxOrcamentoId = ordemServicoRepository.findMaxOrcamentoId();
+            Long maxOrcamentoId = ordemServicoRepository.buscarMaiorIdOrcamento();
             if (maxOrcamentoId != null && maxOrcamentoId > 0) {
                 long ultimaSequencia = extrairSequenciaDeOrcamento(maxOrcamentoId);
                 log.debug("Última sequência de Orçamento no banco: {}", ultimaSequencia);

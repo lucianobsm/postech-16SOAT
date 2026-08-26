@@ -40,8 +40,8 @@ class OsOrcamentoTest {
 
         ordemServico = OrdemServico.builder()
                 .id(1L)
-                .cliente(cliente)
-                .veiculo(veiculo)
+                .clienteId(cliente.getId())
+                .veiculoId(veiculo.getId())
                 .status(StatusOrdemServico.RECEBIDA)
                 .queixaCliente("Problema no motor")
                 .dataCriacao(LocalDateTime.now())
@@ -140,7 +140,7 @@ class OsOrcamentoTest {
         OsPeca osPeca = OsPeca.builder()
                 .id(UUID.randomUUID())
                 .orcamento(orcamento)
-                .peca(peca)
+                .pecaInsumoId(peca.getId())
                 .quantidade(2)
                 .precoVendaAplicado(BigDecimal.valueOf(50))
                 .build();
@@ -178,7 +178,7 @@ class OsOrcamentoTest {
         OsPeca osPeca = OsPeca.builder()
                 .id(UUID.randomUUID())
                 .orcamento(orcamento)
-                .peca(peca)
+                .pecaInsumoId(peca.getId())
                 .quantidade(1)
                 .precoVendaAplicado(BigDecimal.valueOf(50))
                 .build();
@@ -249,7 +249,7 @@ class OsOrcamentoTest {
 
         OsPeca osPeca = OsPeca.builder()
                 .id(UUID.randomUUID())
-                .peca(peca)
+                .pecaInsumoId(peca.getId())
                 .quantidade(1)
                 .precoVendaAplicado(BigDecimal.valueOf(50))
                 .build();
@@ -258,26 +258,5 @@ class OsOrcamentoTest {
 
         assertEquals(1, orcamento.getPecas().size());
         assertEquals(orcamento, osPeca.getOrcamento());
-    }
-
-    @Test
-    @DisplayName("Deve inicializar dataCriacao ao persistir")
-    void testInitiateDataCriacao() {
-        OsOrcamento novo = new OsOrcamento();
-        novo.prePersist();
-
-        assertNotNull(novo.getDataCriacao());
-    }
-
-    @Test
-    @DisplayName("Deve manter dataCriacao existente ao persistir")
-    void testMantendoDataCriacaoExistente() {
-        LocalDateTime data = LocalDateTime.now().minusDays(1);
-        OsOrcamento novo = OsOrcamento.builder()
-                .dataCriacao(data)
-                .build();
-        novo.prePersist();
-
-        assertEquals(data, novo.getDataCriacao());
     }
 }

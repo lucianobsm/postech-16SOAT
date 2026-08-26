@@ -1,5 +1,6 @@
 package com.fiap.tech_challenge_backend.atendimento.adapters.out.infrastructure;
 
+import com.fiap.tech_challenge_backend.atendimento.application.ports.out.PecaInsumoCatalogoRepositoryPort;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsOrcamento;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsPeca;
 import com.fiap.tech_challenge_backend.atendimento.domain.entities.OsServico;
@@ -16,19 +17,25 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PdfGeneratorAdapter Tests")
 class PdfGeneratorAdapterTest {
+
+    @Mock
+    private PecaInsumoCatalogoRepositoryPort pecaInsumoRepository;
 
     @InjectMocks
     private PdfGeneratorAdapter pdfGeneratorAdapter;
@@ -46,7 +53,6 @@ class PdfGeneratorAdapterTest {
 
         ordemServico = new OrdemServico();
         ordemServico.setId(1L);
-        ordemServico.setVeiculo(veiculo);
 
         orcamento = new OsOrcamento();
         orcamento.setId(1L);
@@ -63,7 +69,7 @@ class PdfGeneratorAdapterTest {
     @Test
     @DisplayName("deve gerar PDF com sucesso para orçamento inicial")
     void testGerarPdfOrcamentoInicial() {
-        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
@@ -74,7 +80,7 @@ class PdfGeneratorAdapterTest {
     void testGerarPdfOrcamentoAdicional() {
         orcamento.setTipo(TipoOrcamento.ADICIONAL);
 
-        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
@@ -85,7 +91,7 @@ class PdfGeneratorAdapterTest {
     void testGerarPdfComDiferentesValores() {
         orcamento.setValorTotal(new BigDecimal("5000.50"));
 
-        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
@@ -96,7 +102,7 @@ class PdfGeneratorAdapterTest {
     void testGerarPdfComDiferentesStatus() {
         orcamento.setStatus(StatusOrcamento.APROVADO);
 
-        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
@@ -105,13 +111,13 @@ class PdfGeneratorAdapterTest {
     @Test
     @DisplayName("deve gerar PDF sem lançar exceção")
     void testGerarPdfSemExcecao() {
-        assertDoesNotThrow(() -> pdfGeneratorAdapter.gerarDocumentoTexto(orcamento));
+        assertDoesNotThrow(() -> pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo));
     }
 
     @Test
     @DisplayName("deve gerar PDF com tamanho significativo")
     void testGerarPdfComTamanhoSignificativo() {
-        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         assertTrue(pdf.length > 1000, "PDF deve ter tamanho mínimo");
     }
@@ -121,7 +127,7 @@ class PdfGeneratorAdapterTest {
     void testGerarPdfComOrdemServicoNull() {
         orcamento.setOrdemServico(null);
 
-        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
@@ -130,9 +136,7 @@ class PdfGeneratorAdapterTest {
     @Test
     @DisplayName("deve gerar PDF com veículo null")
     void testGerarPdfComVeiculoNull() {
-        ordemServico.setVeiculo(null);
-
-        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, null);
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
@@ -143,7 +147,7 @@ class PdfGeneratorAdapterTest {
     void testGerarPdfComDataCriacaoNull() {
         orcamento.setDataCriacao(null);
 
-        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
@@ -154,7 +158,7 @@ class PdfGeneratorAdapterTest {
     void testGerarPdfComPrazoEstimadoNull() {
         orcamento.setPrazoEstipulado(null);
 
-        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
@@ -163,10 +167,10 @@ class PdfGeneratorAdapterTest {
     @Test
     @DisplayName("deve gerar PDF diferentes tamanhos com diferentes valores")
     void testGerarPdfDiferentesTamanhosComDiferentesValores() {
-        byte[] pdf1 = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf1 = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         orcamento.setValorTotal(new BigDecimal("100.00"));
-        byte[] pdf2 = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf2 = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         assertNotNull(pdf1);
         assertNotNull(pdf2);
@@ -179,7 +183,7 @@ class PdfGeneratorAdapterTest {
     void testGerarPdfOrcamentoRejeitado() {
         orcamento.setStatus(StatusOrcamento.REJEITADO);
 
-        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
@@ -190,7 +194,7 @@ class PdfGeneratorAdapterTest {
     void testGerarPdfOrcamentoAprovado() {
         orcamento.setStatus(StatusOrcamento.APROVADO);
 
-        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+        byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
@@ -218,10 +222,11 @@ class PdfGeneratorAdapterTest {
             PecaInsumo pecaInsumo = new PecaInsumo();
             pecaInsumo.setId(UUID.randomUUID());
             pecaInsumo.setDescricao(descricao);
+            lenient().when(pecaInsumoRepository.buscarPorId(pecaInsumo.getId())).thenReturn(Optional.of(pecaInsumo));
 
             return OsPeca.builder()
                     .id(UUID.randomUUID())
-                    .peca(pecaInsumo)
+                    .pecaInsumoId(pecaInsumo.getId())
                     .quantidade(quantidade)
                     .precoVendaAplicado(preco)
                     .build();
@@ -234,7 +239,7 @@ class PdfGeneratorAdapterTest {
                     criarServico("Troca de Óleo", BigDecimal.valueOf(150))
             )));
 
-            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
             assertNotNull(pdf);
             assertTrue(pdf.length > 0);
@@ -248,7 +253,7 @@ class PdfGeneratorAdapterTest {
                     criarServico("Alinhamento", BigDecimal.valueOf(80))
             )));
 
-            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
             assertNotNull(pdf);
             assertTrue(pdf.length > 0);
@@ -261,7 +266,7 @@ class PdfGeneratorAdapterTest {
                     criarPeca("Filtro de Óleo", 1, BigDecimal.valueOf(45))
             )));
 
-            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
             assertNotNull(pdf);
             assertTrue(pdf.length > 0);
@@ -275,7 +280,7 @@ class PdfGeneratorAdapterTest {
                     criarPeca("Pastilha de Freio", 4, BigDecimal.valueOf(120))
             )));
 
-            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
             assertNotNull(pdf);
             assertTrue(pdf.length > 0);
@@ -293,7 +298,7 @@ class PdfGeneratorAdapterTest {
                     criarPeca("Pastilha de Freio", 2, BigDecimal.valueOf(120))
             )));
 
-            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento);
+            byte[] pdf = pdfGeneratorAdapter.gerarDocumentoTexto(orcamento, veiculo);
 
             assertNotNull(pdf);
             assertTrue(pdf.length > 0);

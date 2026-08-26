@@ -10,14 +10,17 @@ public record ClienteInfoDTO(
         String telefone,
         String email
 ) {
-    public static ClienteInfoDTO from(Cliente cliente) {
+    /**
+     * @param email e-mail do usuário associado ao cliente, já resolvido pelo chamador via
+     *              {@code acesso.UsuarioRepository} a partir de {@code cliente.getUsuarioId()} —
+     *              este DTO não tem acesso a portas para buscar isso sozinho.
+     */
+    public static ClienteInfoDTO from(Cliente cliente, String email) {
         return new ClienteInfoDTO(
                 cliente.getId(),
                 cliente.getNome(),
                 cliente.getTelefone() != null ? cliente.getTelefone().valor() : null,
-                cliente.getUsuario() != null && cliente.getUsuario().getEmail() != null
-                        ? cliente.getUsuario().getEmail().valor()
-                        : null
+                email
         );
     }
 }

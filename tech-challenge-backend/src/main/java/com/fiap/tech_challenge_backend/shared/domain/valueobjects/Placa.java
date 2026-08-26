@@ -1,20 +1,14 @@
 package com.fiap.tech_challenge_backend.shared.domain.valueobjects;
 
 import com.fiap.tech_challenge_backend.shared.application.exceptions.ValorInvalidoException;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 
 import java.util.Objects;
 
-@Embeddable
 public class Placa {
 
     private static final String REGEX = "^[A-Z]{3}([0-9]{4}|[0-9][A-Z][0-9]{2})$";
 
-    @Column(name = "placa", length = 8)
     private String valor;
-
-    protected Placa() {}
 
     public Placa(String valor) {
         if (valor == null || valor.isBlank()) {

@@ -29,5 +29,11 @@ public interface OrdemServicoRepositoryPort {
     boolean existePorId(Long id);
 
     List<OrdemServico> listarParaRelatorio();
+
+    Long buscarMaiorIdOrdemServico();
+
+    Long buscarMaiorIdOrcamento();
+
+    List<OrdemServico> buscarPorClienteId(UUID clienteId);
 }
 

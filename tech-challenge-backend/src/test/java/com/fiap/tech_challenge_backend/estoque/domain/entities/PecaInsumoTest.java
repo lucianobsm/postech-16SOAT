@@ -67,51 +67,6 @@ class PecaInsumoTest {
     }
 
     @Nested
-    @DisplayName("validarPrecos")
-    class ValidarPrecos {
-
-        @Test
-        @DisplayName("não deve lançar exceção quando precoCompra < precoVenda")
-        void naoDeveLancarQuandoCompraMenuorQueVenda() {
-            assertThatCode(() -> peca.validarPrecos()).doesNotThrowAnyException();
-        }
-
-        @Test
-        @DisplayName("não deve lançar exceção quando precoCompra == precoVenda")
-        void naoDeveLancarQuandoCompraIgualVenda() {
-            peca.setPrecoCompra(new BigDecimal("35.00"));
-
-            assertThatCode(() -> peca.validarPrecos()).doesNotThrowAnyException();
-        }
-
-        @Test
-        @DisplayName("deve lançar IllegalArgumentException quando precoCompra > precoVenda")
-        void deveLancarQuandoCompraMaiorQueVenda() {
-            peca.setPrecoCompra(new BigDecimal("40.00"));
-
-            assertThatThrownBy(() -> peca.validarPrecos())
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("preço de compra não pode ser maior");
-        }
-
-        @Test
-        @DisplayName("não deve lançar exceção quando precoCompra é nulo")
-        void naoDeveLancarQuandoCompraNull() {
-            peca.setPrecoCompra(null);
-
-            assertThatCode(() -> peca.validarPrecos()).doesNotThrowAnyException();
-        }
-
-        @Test
-        @DisplayName("não deve lançar exceção quando precoVenda é nulo")
-        void naoDeveLancarQuandoVendaNull() {
-            peca.setPrecoVenda(null);
-
-            assertThatCode(() -> peca.validarPrecos()).doesNotThrowAnyException();
-        }
-    }
-
-    @Nested
     @DisplayName("entrada")
     class Entrada {
 

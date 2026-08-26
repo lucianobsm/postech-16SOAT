@@ -3,11 +3,13 @@ package com.fiap.tech_challenge_backend.cucumber.steps;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fiap.tech_challenge_backend.acesso.domain.entities.Usuario;
 import com.fiap.tech_challenge_backend.acesso.domain.enums.PerfilUsuario;
-import com.fiap.tech_challenge_backend.acesso.infrastructure.repositories.UsuarioJpaRepository;
-import com.fiap.tech_challenge_backend.cadastro.application.dtos.AtualizarClienteRequest;
-import com.fiap.tech_challenge_backend.cadastro.application.dtos.CadastroClienteRequest;
+import com.fiap.tech_challenge_backend.acesso.adapters.out.persistence.UsuarioJpaRepository;
+import com.fiap.tech_challenge_backend.acesso.adapters.out.persistence.UsuarioMapper;
+import com.fiap.tech_challenge_backend.cadastro.application.dto.AtualizarClienteRequest;
+import com.fiap.tech_challenge_backend.cadastro.application.dto.CadastroClienteRequest;
 import com.fiap.tech_challenge_backend.cadastro.domain.entities.Cliente;
-import com.fiap.tech_challenge_backend.cadastro.infrastructure.repositories.ClienteJpaRepository;
+import com.fiap.tech_challenge_backend.cadastro.adapters.out.persistence.ClienteJpaRepository;
+import com.fiap.tech_challenge_backend.cadastro.adapters.out.persistence.ClienteMapper;
 import com.fiap.tech_challenge_backend.cucumber.context.ScenarioContext;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.Cep;
 import com.fiap.tech_challenge_backend.shared.domain.valueobjects.CpfCnpj;
@@ -53,11 +55,11 @@ public class ClientesStepDefinitions {
                 .perfil(PerfilUsuario.CLIENTE)
                 .cpfCnpj(new CpfCnpj(cpf))
                 .build();
-        usuarioJpaRepository.save(usuario);
+        Usuario usuarioSalvo = UsuarioMapper.toDomain(usuarioJpaRepository.save(UsuarioMapper.toEntity(usuario)));
 
         Cliente cliente = Cliente.builder()
                 .nome(nome)
-                .usuario(usuario)
+                .usuarioId(usuarioSalvo.getId())
                 .cpfCnpj(new CpfCnpj(cpf))
                 .telefone(new Telefone("11987654321"))
                 .cep(new Cep("01310100"))
@@ -66,7 +68,7 @@ public class ClientesStepDefinitions {
                 .cidade("São Paulo")
                 .estado("SP")
                 .build();
-        clienteJpaRepository.save(cliente);
+        clienteJpaRepository.save(ClienteMapper.toEntity(cliente));
     }
 
     @Dado("que estou autenticado como administrador")

@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 public record OrcamentoResponseDTO(
         Long id,
@@ -19,7 +20,10 @@ public record OrcamentoResponseDTO(
         List<ServicoDTO> servicos,
         List<PecaDTO> pecas
 ) {
-    public static OrcamentoResponseDTO from(OsOrcamento orcamento) {
+    /**
+     * @param nomePeca resolve o nome de uma peça/insumo a partir do seu ID.
+     */
+    public static OrcamentoResponseDTO from(OsOrcamento orcamento, Function<UUID, String> nomePeca) {
         return new OrcamentoResponseDTO(
                 orcamento.getId(),
                 orcamento.getTipo(),
@@ -31,7 +35,7 @@ public record OrcamentoResponseDTO(
                         .map(ServicoDTO::from)
                         .toList(),
                 orcamento.getPecas().stream()
-                        .map(PecaDTO::from)
+                        .map(p -> PecaDTO.from(p, nomePeca.apply(p.getPecaInsumoId())))
                         .toList()
         );
     }
