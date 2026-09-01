@@ -37,7 +37,7 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServicoJpaEnt
 	List<OrdemServicoJpaEntity> findAllPrioritized();
 
 	@Query("""
-			SELECT DISTINCT os
+			SELECT os
 			FROM OrdemServico os
 			WHERE os.status IN (
 			    com.fiap.tech_challenge_backend.atendimento.domain.enums.StatusOrdemServico.EM_EXECUCAO,
