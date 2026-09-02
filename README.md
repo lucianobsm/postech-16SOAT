@@ -6,8 +6,20 @@ API REST para gerenciamento de ordens de serviço de uma oficina mecânica, cons
 Java 21 / Spring Boot 3, seguindo Clean Architecture. Todo o código-fonte, os manifests
 Kubernetes e o Terraform da infraestrutura estão em [`tech-challenge-backend/`](tech-challenge-backend/).
 
+## 🎥 Vídeo de demonstração
+
+**[Demonstração da Fase 2 — YouTube](https://www.youtube.com/watch?v=79YrCSF7ioA)**
+
+O vídeo mostra, na prática:
+
+- As **novas funcionalidades** entregues nesta fase;
+- Os **pipelines de CI/CD** no GitHub Actions (build, testes e deploy da aplicação; `plan`/`apply` da infraestrutura);
+- O provisionamento da infraestrutura com **Terraform** (VPC, cluster EKS, node group, ECR e backend de state no S3);
+- A aplicação em execução no **Kubernetes (Amazon EKS)** a partir dos manifestos de [`tech-challenge-backend/k8s/`](tech-challenge-backend/k8s/) — Deployment, Service, Ingress, HPA, PDB e o StatefulSet do PostgreSQL.
+
 ## 📋 Índice
 
+- [🎥 Vídeo de demonstração](#-vídeo-de-demonstração)
 - [1. Descrição da solução e objetivos da Fase 2](#1-descrição-da-solução-e-objetivos-da-fase-2)
 - [2. Arquitetura](#2-arquitetura)
   - [2.1. Componentes da aplicação](#21-componentes-da-aplicação)
